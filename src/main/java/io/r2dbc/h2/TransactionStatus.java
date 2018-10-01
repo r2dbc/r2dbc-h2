@@ -15,29 +15,12 @@
  */
 package io.r2dbc.h2;
 
-import io.r2dbc.spi.ConnectionFactory;
-import reactor.core.publisher.Mono;
-
 /**
  * @author Greg Turnquist
  */
-public final class H2ConnectionFactory implements ConnectionFactory {
+public enum TransactionStatus {
 
-	private final Mono<String> clientFactory;
-
-	public H2ConnectionFactory(Mono<String> clientFactory) {
-		this.clientFactory = clientFactory;
-	}
-
-	@Override
-	public Mono<H2Connection> create() {
-		
-		return this.clientFactory
-			.map(H2Connection::new);
-	}
-
-	@Override
-	public H2ConnectionFactoryMetadata getMetadata() {
-		return H2ConnectionFactoryMetadata.INSTANCE;
-	}
+	FAILED,
+	IDLE,
+	OPEN;
 }

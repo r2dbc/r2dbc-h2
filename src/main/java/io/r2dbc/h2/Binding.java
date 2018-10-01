@@ -15,29 +15,35 @@
  */
 package io.r2dbc.h2;
 
-import io.r2dbc.spi.ConnectionFactory;
-import reactor.core.publisher.Mono;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * @author Greg Turnquist
  */
-public final class H2ConnectionFactory implements ConnectionFactory {
+@ToString
+@EqualsAndHashCode
+final class Binding {
 
-	private final Mono<String> clientFactory;
+	private final SortedMap<Integer, Object> parameters = new TreeMap<>();
 
-	public H2ConnectionFactory(Mono<String> clientFactory) {
-		this.clientFactory = clientFactory;
+	Binding add(Integer index, Object parameter) {
+
+		Objects.requireNonNull(index, "index must not be null");
+		Objects.requireNonNull(parameter, "parameter must not be null");
+
+		this.parameters.put(index, parameter);
+
+		return this;
 	}
 
-	@Override
-	public Mono<H2Connection> create() {
-		
-		return this.clientFactory
-			.map(H2Connection::new);
-	}
-
-	@Override
-	public H2ConnectionFactoryMetadata getMetadata() {
-		return H2ConnectionFactoryMetadata.INSTANCE;
+	public Set<Map.Entry<Integer, Object>> getParameters() {
+		return this.parameters.entrySet();
 	}
 }

@@ -15,29 +15,19 @@
  */
 package io.r2dbc.h2;
 
-import io.r2dbc.spi.ConnectionFactory;
-import reactor.core.publisher.Mono;
+import lombok.Getter;
+
+import io.r2dbc.spi.ConnectionFactoryMetadata;
 
 /**
  * @author Greg Turnquist
  */
-public final class H2ConnectionFactory implements ConnectionFactory {
+public final class H2ConnectionFactoryMetadata implements ConnectionFactoryMetadata {
 
-	private final Mono<String> clientFactory;
+	private final @Getter String name = "H2";
 
-	public H2ConnectionFactory(Mono<String> clientFactory) {
-		this.clientFactory = clientFactory;
-	}
+	static final H2ConnectionFactoryMetadata INSTANCE  = new H2ConnectionFactoryMetadata();
 
-	@Override
-	public Mono<H2Connection> create() {
-		
-		return this.clientFactory
-			.map(H2Connection::new);
-	}
-
-	@Override
-	public H2ConnectionFactoryMetadata getMetadata() {
-		return H2ConnectionFactoryMetadata.INSTANCE;
+	private H2ConnectionFactoryMetadata() {
 	}
 }

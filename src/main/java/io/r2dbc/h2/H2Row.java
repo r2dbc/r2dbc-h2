@@ -15,29 +15,41 @@
  */
 package io.r2dbc.h2;
 
-import io.r2dbc.spi.ConnectionFactory;
-import reactor.core.publisher.Mono;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+
+import io.r2dbc.spi.Row;
+import org.h2.value.Value;
 
 /**
  * @author Greg Turnquist
  */
-public final class H2ConnectionFactory implements ConnectionFactory {
+@ToString
+@EqualsAndHashCode
+public final class H2Row implements Row {
 
-	private final Mono<String> clientFactory;
+	private final H2RowMetadata rowMetadata;
 
-	public H2ConnectionFactory(Mono<String> clientFactory) {
-		this.clientFactory = clientFactory;
-	}
+	private final Value[] value;
 
-	@Override
-	public Mono<H2Connection> create() {
+	H2Row(H2RowMetadata rowMetadata, Value[] value) {
 		
-		return this.clientFactory
-			.map(H2Connection::new);
+		this.rowMetadata = rowMetadata;
+		this.value = value;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public H2ConnectionFactoryMetadata getMetadata() {
-		return H2ConnectionFactoryMetadata.INSTANCE;
+	public <T> T get(Object identifier, Class<T> type) {
+
+		int columnIndex = this.rowMetadata.getColumnMetadata(identifier).getColumnIndex();
+
+		Value value = this.value[columnIndex];
+
+		if (type.isInstance(Integer.class)) {
+			return (T) Integer.valueOf(value.getInt());
+		}
+
+		return (T) value.getObject();
 	}
 }

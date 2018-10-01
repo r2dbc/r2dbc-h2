@@ -13,31 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.r2dbc.h2;
+package io.r2dbc.h2.helper;
 
-import io.r2dbc.spi.ConnectionFactory;
-import reactor.core.publisher.Mono;
+import java.util.Iterator;
+
+import org.h2.result.ResultInterface;
+import org.h2.value.Value;
 
 /**
  * @author Greg Turnquist
  */
-public final class H2ConnectionFactory implements ConnectionFactory {
+public class ValueIterator implements Iterator<Value[]> {
 
-	private final Mono<String> clientFactory;
+	private final ResultInterface result;
 
-	public H2ConnectionFactory(Mono<String> clientFactory) {
-		this.clientFactory = clientFactory;
+	ValueIterator(ResultInterface result) {
+		this.result = result;
 	}
 
 	@Override
-	public Mono<H2Connection> create() {
+	public boolean hasNext() {
+		return this.result.hasNext();
+	}
+
+	@Override
+	public Value[] next() {
 		
-		return this.clientFactory
-			.map(H2Connection::new);
-	}
-
-	@Override
-	public H2ConnectionFactoryMetadata getMetadata() {
-		return H2ConnectionFactoryMetadata.INSTANCE;
+		this.result.next();
+		return this.result.currentRow();
 	}
 }
