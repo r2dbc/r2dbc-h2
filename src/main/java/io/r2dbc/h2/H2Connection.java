@@ -34,6 +34,7 @@ import org.h2.engine.SysProperties;
 import org.h2.message.DbException;
 import org.h2.util.CloseWatcher;
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -48,8 +49,6 @@ public final class H2Connection implements Connection {
 	private final String user;
 	private final boolean scopeGeneratedKeys;
 	private final CloseWatcher watcher;
-
-	private TransactionStatus transactionStatus;
 
 	public H2Connection(String connectionUrl) {
 		this(createConnectionInfo(connectionUrl, "sa", ""), true);
@@ -111,12 +110,12 @@ public final class H2Connection implements Connection {
 	public Mono<Void> beginTransaction() {
 
 		return useTransactionStatus(inTransaction -> {
-			if (inTransaction) {
-				log.debug("Skipping begin transaction because already in one");
+			if (!inTransaction) {
+				this.session.setAutoCommit(false);
 				return Mono.empty();
 			} else {
-				log.debug("It appears this doesn't matter, but sending command anyway...");
-				return H2Utils.update(this.session, "BEGIN TRANSACTION").then();
+				log.debug("Skipping begin transaction because already in one");
+				return Mono.empty();
 			}
 		});
 	}
@@ -140,13 +139,13 @@ public final class H2Connection implements Connection {
 	@Override
 	public Mono<Void> commitTransaction() {
 
-		return withTransactionStatus((Function<Boolean, Mono<?>>) inTransaction -> {
-//				if (inTransaction) {
-				return H2Utils.update(this.session, "COMMIT").then();
-//				} else {
-//					log.debug("Skipping commit transaction because no transaction in progress.");
-//					return Mono.empty();
-//				}
+		return withTransactionStatus(inTransaction -> {
+				if (inTransaction) {
+					return H2Utils.update(this.session, "COMMIT").then();
+				} else {
+					log.debug("Skipping commit transaction because no transaction in progress.");
+					return Mono.empty();
+				}
 		}).then();
 	}
 
@@ -161,12 +160,12 @@ public final class H2Connection implements Connection {
 		Objects.requireNonNull(name, "name must not be null");
 
 		return useTransactionStatus(inTransaction -> {
-//			if (inTransaction) {
+			if (inTransaction) {
 				return H2Utils.update(this.session, String.format("SAVEPOINT %s", name));
-//			} else {
-//				log.debug("Skipping savepoint because no transaction in progress.");
-//				return Mono.empty();
-//			}
+			} else {
+				log.debug("Skipping savepoint because no transaction in progress.");
+				return Mono.empty();
+			}
 		});
 	}
 
@@ -184,12 +183,12 @@ public final class H2Connection implements Connection {
 		Objects.requireNonNull(name, "name must not be null");
 
 		return useTransactionStatus(inTransaction -> {
-//			if (inTransaction) {
+			if (inTransaction) {
 				return H2Utils.update(this.session, String.format("RELEASE SAVEPOINT %s", name));
-//			} else {
-//				log.debug("Skipping release savepoint because no transaction in progress.");
-//				return Mono.empty();
-//			}
+			} else {
+				log.debug("Skipping release savepoint because no transaction in progress.");
+				return Mono.empty();
+			}
 		});
 	}
 
@@ -197,12 +196,12 @@ public final class H2Connection implements Connection {
 	public Mono<Void> rollbackTransaction() {
 
 		return useTransactionStatus(inTransaction -> {
-//			if (inTransaction) {
+			if (inTransaction) {
 				return H2Utils.update(this.session, "ROLLBACK");
-//			} else {
-//				log.debug("Skipping rollback because no transaction in progress.");
-//				return Mono.empty();
-//			}
+			} else {
+				log.debug("Skipping rollback because no transaction in progress.");
+				return Mono.empty();
+			}
 		});
 	}
 
@@ -212,12 +211,12 @@ public final class H2Connection implements Connection {
 		Objects.requireNonNull(name, "name must not be null");
 
 		return useTransactionStatus(inTransaction -> {
-//			if (inTransaction) {
+			if (inTransaction) {
 				return H2Utils.update(this.session, String.format("ROLLBACK TO SAVEPOINT %s", name));
-//			} else {
-//				log.debug("Skipping rollback to savepoint because no transaction in progress.");
-//				return Mono.empty();
-//			}
+			} else {
+				log.debug("Skipping rollback to savepoint because no transaction in progress.");
+				return Mono.empty();
+			}
 		});
 	}
 
@@ -238,15 +237,21 @@ public final class H2Connection implements Connection {
 	}
 
 	private Mono<Void> useTransactionStatus(Function<Boolean, Publisher<?>> f) {
-		return withTransactionStatus(f).then();
+		return Flux.defer(() -> f.apply(inTransaction(this.session))).then();
 	}
 
 	private <T> Mono<T> withTransactionStatus(Function<Boolean, T> f) {
-		return Mono.defer(() -> {
-			boolean hasPendingTransaction = this.session.hasPendingTransaction();
-			T result = f.apply(hasPendingTransaction);
-			return Mono.just(result);
-		});
+		return Mono.defer(() -> Mono.just(f.apply(inTransaction(session))));
+	}
+
+	/**
+	 * Is this {@link SessionInterface} in the middle of a transaction?
+	 * 
+	 * @param session
+	 * @return
+	 */
+	private static boolean inTransaction(SessionInterface session) {
+		return !session.getAutoCommit();
 	}
 
 	private static String getTransactionIsolationLevelQuery(IsolationLevel isolationLevel) {

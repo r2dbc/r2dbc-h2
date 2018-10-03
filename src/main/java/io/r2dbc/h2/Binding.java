@@ -25,6 +25,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 /**
+ * @author Ben Hale
  * @author Greg Turnquist
  */
 @ToString

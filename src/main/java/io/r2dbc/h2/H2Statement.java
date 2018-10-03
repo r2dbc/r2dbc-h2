@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import io.r2dbc.h2.helper.ObjectUtils;
 import io.r2dbc.spi.Statement;
@@ -34,7 +33,8 @@ import reactor.core.publisher.Flux;
 
 /**
  * A strongly typed {@link Statement} for H2.
- * 
+ *
+ * @author Ben Hale
  * @author Greg Turnquist
  */
 @Slf4j
@@ -116,11 +116,9 @@ public final class H2Statement implements Statement {
 
 	private Flux<H2Result> execute(String sql) {
 
-		Flux<Binding> bindings = Flux.fromStream(this.bindings.stream());
-
 		if (sql.toLowerCase().startsWith("select")) {
 
-			return H2Utils.query(this.session, sql, bindings, 3)
+			return H2Utils.query(this.session, sql, this.bindings.bindings, 3)
 				.map(H2Result::toResult);
 
 		} else {
@@ -142,7 +140,7 @@ public final class H2Statement implements Statement {
 			throw new IllegalArgumentException(String.format("Identifier '%s' is not a valid identifier. Should be of the pattern '%s'.", identifier, PARAMETER_SYMBOL.pattern()));
 		}
 
-		return Integer.parseInt(matcher.group(1)) - 1;
+		return  Integer.parseInt(matcher.group(1))- 1;
 	}
 	
 	@ToString
@@ -165,10 +163,6 @@ public final class H2Statement implements Statement {
 			}
 
 			return this.current;
-		}
-
-		private Stream<Binding> stream() {
-			return this.bindings.stream();
 		}
 	}
 }
