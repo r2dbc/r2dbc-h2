@@ -15,6 +15,7 @@
  */
 package io.r2dbc.h2;
 
+import io.r2dbc.spi.IsolationLevel;
 import org.h2.engine.ConnectionInfo;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -52,8 +53,42 @@ final class H2ConnectionTest {
 		new H2Connection("mem:r2dbc-test-mem3")
 			.beginTransaction()
 			.as(StepVerifier::create)
-//			.verifyError();
 			.verifyComplete();
 	}
 
+	@Test
+	void setTransactionIsolationReadCommitted() {
+
+		new H2Connection("mem:r2dbc-test-mem4")
+			.setTransactionIsolationLevel(IsolationLevel.READ_COMMITTED)
+			.as(StepVerifier::create)
+			.verifyComplete();
+	}
+
+	@Test
+	void setTransactionIsolationReadUncommitted() {
+
+		new H2Connection("mem:r2dbc-test-mem5")
+			.setTransactionIsolationLevel(IsolationLevel.READ_UNCOMMITTED)
+			.as(StepVerifier::create)
+			.verifyComplete();
+	}
+
+	@Test
+	void setTransactionIsolationRepeatableRead() {
+
+		new H2Connection("mem:r2dbc-test-mem6")
+			.setTransactionIsolationLevel(IsolationLevel.REPEATABLE_READ)
+			.as(StepVerifier::create)
+			.verifyComplete();
+	}
+
+	@Test
+	void setTransactionIsolationSerializable() {
+
+		new H2Connection("mem:r2dbc-test-mem7")
+			.setTransactionIsolationLevel(IsolationLevel.SERIALIZABLE)
+			.as(StepVerifier::create)
+			.verifyComplete();
+	}
 }

@@ -28,10 +28,12 @@ import io.r2dbc.spi.IsolationLevel;
 import io.r2dbc.spi.Mutability;
 import org.h2.api.ErrorCode;
 import org.h2.engine.ConnectionInfo;
+import org.h2.engine.Database;
 import org.h2.engine.SessionInterface;
 import org.h2.engine.SessionRemote;
 import org.h2.engine.SysProperties;
 import org.h2.message.DbException;
+import org.h2.store.DataHandler;
 import org.h2.util.CloseWatcher;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
@@ -65,7 +67,7 @@ public final class H2Connection implements Connection {
 
 		// this will return an embedded or server connection
 		session = new SessionRemote(ci).connectEmbeddedOrServer(false);
-		session.setAutoCommit(false);
+
 		this.user = ci.getUserName();
 		if (log.isTraceEnabled()) {
 			log.trace("Connection = DriverManager.getConnection("
@@ -91,14 +93,17 @@ public final class H2Connection implements Connection {
 		
 		while (true) {
 			CloseWatcher w = CloseWatcher.pollUnclosed();
+
 			if (w == null) {
 				break;
 			}
+
 			try {
 				w.getCloseable().close();
 			} catch (Exception e) {
 				log.error(e.getMessage());
 			}
+
 			Exception ex = DbException.get(ErrorCode.TRACE_CONNECTION_NOT_CLOSED);
 			log.error(w.getOpenStackTrace());
 			log.error(ex.getMessage());
@@ -232,8 +237,27 @@ public final class H2Connection implements Connection {
 	@Override
 	public Mono<Void> setTransactionMutability(Mutability mutability) {
 
-		log.info("setTransactionMutability: Transaction mutability not yet supported.");
-		return Mono.empty();
+		Objects.requireNonNull(mutability, "mutability must not be null");
+
+		return Mono.defer(() -> {
+
+			DataHandler dataHandler = this.session.getDataHandler();
+
+			if (dataHandler instanceof Database) {
+				Database database = (Database) dataHandler;
+
+				switch (mutability) {
+					case READ_ONLY:
+						database.setReadOnly(true);
+						break;
+					case READ_WRITE:
+						database.setReadOnly(false);
+						break;
+				}
+			}
+			
+			return Mono.empty();
+		});
 	}
 
 	private Mono<Void> useTransactionStatus(Function<Boolean, Publisher<?>> f) {
@@ -254,6 +278,12 @@ public final class H2Connection implements Connection {
 		return !session.getAutoCommit();
 	}
 
+	/**
+	 * Translate from {@link IsolationLevel} to H2's {@literal SET LOCK_MODE} command.
+	 * 
+	 * @param isolationLevel
+	 * @return
+	 */
 	private static String getTransactionIsolationLevelQuery(IsolationLevel isolationLevel) {
 
 		switch (isolationLevel) {
@@ -264,24 +294,4 @@ public final class H2Connection implements Connection {
 			default: 				throw DbException.getInvalidValueException("level", isolationLevel);
 		}
 	}
-
-//	private Mono<IsolationLevel> getTransactionIsolationLevel() {
-//
-//		return H2Utils.query(this.session, "CALL LOCK_MODE()", this.bindings, 0)
-//			.map(resultInterface -> {
-//				resultInterface.next();
-//				int lockMode = resultInterface.currentRow()[0].getInt();
-//				resultInterface.close();;
-//				return lockMode;
-//			})
-//			.map(lockMode -> {
-//				switch(lockMode) {
-//					case LOCK_MODE_READ_COMMITTED: 	return READ_COMMITTED;
-//					case LOCK_MODE_OFF: 			return READ_UNCOMMITTED;
-//					case LOCK_MODE_TABLE:
-//					case LOCK_MODE_TABLE_GC:		return SERIALIZABLE;
-//					default:    					throw DbException.getInvalidValueException("level", lockMode);
-//				}
-//			});
-//	}
 }

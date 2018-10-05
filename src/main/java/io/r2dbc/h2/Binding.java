@@ -44,7 +44,7 @@ final class Binding {
 		return this;
 	}
 
-	public Set<Map.Entry<Integer, Object>> getParameters() {
+	Set<Map.Entry<Integer, Object>> getParameters() {
 		return this.parameters.entrySet();
 	}
 }
