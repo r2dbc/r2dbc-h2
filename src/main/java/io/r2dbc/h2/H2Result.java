@@ -80,4 +80,15 @@ public final class H2Result implements Result {
 
 		return new H2Result(rowMetadata, rows, rowsUpdated);
 	}
+
+	static H2Result toResult(ResultInterface result, Integer rowsUpdated) {
+
+		Mono<H2RowMetadata> rowMetadata = Mono.just(H2RowMetadata.toRowMetadata(result));
+
+		Flux<H2Row> rows = Flux.fromIterable(new ValueIterable(result))
+			.zipWith(rowMetadata.repeat())
+			.map(function((row, metadata) -> new H2Row(metadata, row)));
+
+		return new H2Result(rowMetadata, rows, Mono.just(rowsUpdated));
+	}
 }

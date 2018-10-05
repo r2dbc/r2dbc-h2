@@ -32,6 +32,7 @@ import org.h2.value.ValueNull;
 import org.h2.value.ValueString;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 
 /**
  * @author Greg Turnquist
@@ -67,17 +68,17 @@ final class H2Utils {
 	 * @param sql
 	 * @return
 	 */
-	static Flux<ResultInterface> update(SessionInterface session, String sql, List<Binding> bindings) {
+	static Flux<Tuple2<ResultInterface, Integer>> update(SessionInterface session, String sql, List<Binding> bindings) {
 
 		Objects.requireNonNull(sql, "sql must not be null");
 
 		return Flux.fromIterable(bindings)
 			.filter(binding -> !binding.getParameters().isEmpty())
-			.map(binding -> updateWithBinding(session, sql, binding))
-			.switchIfEmpty(Flux.defer(() -> Mono.just(updateWithoutBinding(session, sql))));
+			.flatMap(binding -> updateWithBinding(session, sql, binding))
+			.switchIfEmpty(Flux.defer(() -> updateWithoutBinding(session, sql)));
 	}
 
-	static Flux<ResultInterface> update(SessionInterface session, String sql) {
+	static Flux<Tuple2<ResultInterface, Integer>> update(SessionInterface session, String sql) {
 		return update(session, sql, Collections.emptyList());
 	}
 
@@ -107,7 +108,7 @@ final class H2Utils {
 		return command.executeQuery(maxRows, false);
 	}
 
-	private static ResultInterface updateWithBinding(SessionInterface session, String sql, Binding binding) {
+	private static Mono<Tuple2<ResultInterface, Integer>> updateWithBinding(SessionInterface session, String sql, Binding binding) {
 
 		if (log.isTraceEnabled()) {
 			log.trace(String.format("Executing update '%s' with '%s' bindings.", sql, binding.getParameters()));
@@ -118,10 +119,10 @@ final class H2Utils {
 		bindParametersToCommand(binding, command);
 
 		ResultWithGeneratedKeys resultWithGeneratedKeys = command.executeUpdate(true);
-		return resultWithGeneratedKeys.getGeneratedKeys();
+		return Mono.just(resultWithGeneratedKeys.getGeneratedKeys()).zipWith(Mono.just(resultWithGeneratedKeys.getUpdateCount()));
 	}
 
-	private static ResultInterface updateWithoutBinding(SessionInterface session, String sql) {
+	private static Mono<Tuple2<ResultInterface, Integer>> updateWithoutBinding(SessionInterface session, String sql) {
 
 		if (log.isTraceEnabled()) {
 			log.trace(String.format("Executing update '%s' with NO bindings.", sql));
@@ -130,7 +131,7 @@ final class H2Utils {
 		CommandInterface command = session.prepareCommand(sql, Integer.MAX_VALUE);
 
 		ResultWithGeneratedKeys resultWithGeneratedKeys = command.executeUpdate(true);
-		return resultWithGeneratedKeys.getGeneratedKeys();
+		return Mono.just(resultWithGeneratedKeys.getGeneratedKeys()).zipWith(Mono.just(resultWithGeneratedKeys.getUpdateCount()));
 	}
 
 	private static void bindParametersToCommand(Binding binding, CommandInterface command) {

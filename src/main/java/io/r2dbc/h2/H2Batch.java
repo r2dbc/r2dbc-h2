@@ -15,6 +15,8 @@
  */
 package io.r2dbc.h2;
 
+import static reactor.function.TupleUtils.function;
+
 import lombok.Value;
 
 import java.util.ArrayList;
@@ -58,11 +60,12 @@ public final class H2Batch implements Batch {
 		return Flux.fromIterable(this.statements)
 			.flatMap(statement -> {
 				if (statement.toLowerCase().startsWith("select")) {
-					return H2Utils.query(this.session, statement, Integer.MAX_VALUE);
+					return H2Utils.query(this.session, statement, Integer.MAX_VALUE)
+						.map(H2Result::toResult);
 				} else {
-					return H2Utils.update(this.session, statement);
+					return H2Utils.update(this.session, statement)
+						.map(function(H2Result::toResult));
 				}
-			})
-			.map(H2Result::toResult);
+			});
 	}
 }

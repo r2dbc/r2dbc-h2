@@ -15,6 +15,8 @@
  */
 package io.r2dbc.h2;
 
+import static reactor.function.TupleUtils.*;
+
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -124,7 +126,7 @@ public final class H2Statement implements Statement {
 		} else {
 
 			return H2Utils.update(this.session, sql, this.bindings.bindings)
-				.map(H2Result::toResult);
+				.map(function(H2Result::toResult));
 		}
 	}
 
