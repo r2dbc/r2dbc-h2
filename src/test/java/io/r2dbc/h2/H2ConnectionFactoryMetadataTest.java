@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.r2dbc.h2.helper;
 
-import java.util.Iterator;
+package io.r2dbc.h2;
 
-import org.h2.result.ResultInterface;
-import org.h2.value.Value;
+import org.junit.jupiter.api.Test;
 
-/**
- * @author Greg Turnquist
- */
-public class ValueIterable implements Iterable<org.h2.value.Value[]> {
+import static org.assertj.core.api.Assertions.assertThat;
 
-	private final ResultInterface queryResult;
+final class H2ConnectionFactoryMetadataTest {
 
-	public ValueIterable(ResultInterface queryResult) {
-		this.queryResult = queryResult;
+    @Test
+    void name() {
+        assertThat(H2ConnectionFactoryMetadata.INSTANCE.getName()).isEqualTo(H2ConnectionFactoryMetadata.NAME);
+    }
 
-	}
-
-	@Override
-	public Iterator<Value[]> iterator() {
-		return new ValueIterator(queryResult);
-	}
 }

@@ -13,31 +13,70 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.client.Client;
+import io.r2dbc.h2.client.SessionClient;
 import io.r2dbc.spi.ConnectionFactory;
+import org.h2.engine.ConnectionInfo;
 import reactor.core.publisher.Mono;
 
+import java.util.Objects;
+import java.util.Properties;
+
+import static org.h2.engine.Constants.START_URL;
+
 /**
- * @author Greg Turnquist
+ * An implementation of {@link ConnectionFactory} for creating connections to an H2 database.
  */
 public final class H2ConnectionFactory implements ConnectionFactory {
 
-	private final Mono<String> clientFactory;
+    private final Mono<? extends Client> clientFactory;
 
-	public H2ConnectionFactory(Mono<String> clientFactory) {
-		this.clientFactory = clientFactory;
-	}
+    /**
+     * Creates a new connection factory.
+     *
+     * @param configuration the configuration to use to create connections
+     * @throws NullPointerException if {@code configuration} is {@code null}
+     */
+    public H2ConnectionFactory(H2ConnectionConfiguration configuration) {
+        this(Mono.defer(() -> {
+            Objects.requireNonNull(configuration, "configuration must not be null");
 
-	@Override
-	public Mono<H2Connection> create() {
-		
-		return this.clientFactory
-			.map(H2Connection::new);
-	}
+            return Mono.just(new SessionClient(getConnectionInfo(configuration)));
+        }));
+    }
 
-	@Override
-	public H2ConnectionFactoryMetadata getMetadata() {
-		return H2ConnectionFactoryMetadata.INSTANCE;
-	}
+    H2ConnectionFactory(Mono<? extends Client> clientFactory) {
+        this.clientFactory = Objects.requireNonNull(clientFactory, "clientFactory must not be null");
+    }
+
+    @Override
+    public Mono<H2Connection> create() {
+        return this.clientFactory
+            .map(H2Connection::new);
+    }
+
+    @Override
+    public H2ConnectionFactoryMetadata getMetadata() {
+        return H2ConnectionFactoryMetadata.INSTANCE;
+    }
+
+    @Override
+    public String toString() {
+        return "H2ConnectionFactory{" +
+            "clientFactory=" + this.clientFactory +
+            '}';
+    }
+
+    private static ConnectionInfo getConnectionInfo(H2ConnectionConfiguration configuration) {
+        StringBuilder sb = new StringBuilder(START_URL).append(configuration.getUrl()).append(":");
+        configuration.getDatabase().ifPresent(sb::append);
+        configuration.getUsername().ifPresent(username -> sb.append(";USER=").append(username));
+        configuration.getPassword().ifPresent(password -> sb.append(";PASSWORD=").append(password));
+
+        return new ConnectionInfo(sb.toString(), new Properties());
+    }
+
 }

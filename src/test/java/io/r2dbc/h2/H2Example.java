@@ -13,59 +13,104 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.r2dbc.h2;
 
-import io.r2dbc.h2.util.H2DatabaseExtension;
-import io.r2dbc.spi.ConnectionFactory;
+import io.r2dbc.h2.util.H2ServerExtension;
 import io.r2dbc.spi.test.Example;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import reactor.core.publisher.Mono;
 import org.springframework.jdbc.core.JdbcOperations;
 
-/**
- * @author Greg Turnquist
- */
-final class H2Example implements Example<String> {
+final class H2Example {
 
-	private static final String DATABASE_NAME = "mem:r2dbc-examples";
-	private static final String JDBC_CONNECTION_URL = "jdbc:h2:" + DATABASE_NAME;
+    @RegisterExtension
+    static final H2ServerExtension SERVER = new H2ServerExtension();
 
-	@RegisterExtension
-	static final H2DatabaseExtension SERVER = new H2DatabaseExtension(JDBC_CONNECTION_URL);
+    private final H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
+        .database(SERVER.getDatabase())
+        .password(SERVER.getPassword())
+        .url(SERVER.getUrl())
+        .username(SERVER.getUsername())
+        .build();
 
-	private final H2ConnectionFactory connectionFactory = new H2ConnectionFactory(Mono.defer(() -> Mono.just(DATABASE_NAME)));
+    private final H2ConnectionFactory connectionFactory = new H2ConnectionFactory(this.configuration);
 
+    // TODO: Remove once implemented
+    @Disabled("Not yet implemented")
+    @Nested
+    final class JdbcStyle implements Example<Integer> {
 
-	@Override
-	public ConnectionFactory getConnectionFactory() {
-		return this.connectionFactory;
-	}
+        @Override
+        public H2ConnectionFactory getConnectionFactory() {
+            return H2Example.this.connectionFactory;
+        }
 
-	@Override
-	public String getIdentifier(int index) {
-		return getPlaceholder(index);
-	}
+        @Override
+        public Integer getIdentifier(int index) {
+            return index;
+        }
 
-	@Override
-	public JdbcOperations getJdbcOperations() {
-		return SERVER.getJdbcOperations();
-	}
+        @Override
+        public JdbcOperations getJdbcOperations() {
+            JdbcOperations jdbcOperations = SERVER.getJdbcOperations();
 
-	@Override
-	public String getPlaceholder(int index) {
-		return String.format("$%d", index + 1);
-	}
+            if (jdbcOperations == null) {
+                throw new IllegalStateException("JdbcOperations not yet initialized");
+            }
 
-	@Disabled
-	@Override
-	public void connectionMutability() {
-		// Not implemented yet.
-	}
+            return jdbcOperations;
+        }
 
-	@Disabled
-	@Override
-	public void transactionMutability() {
-		// Not implemented yet.
-	}
+        @Override
+        public String getPlaceholder(int index) {
+            return "?";
+        }
+    }
+
+    @Nested
+    final class PostgresqlStyle implements Example<String> {
+
+        @Disabled("Not yet implemented")
+        @Override
+        @Test
+        public void connectionMutability() {
+            // TODO: Remove once implemented
+        }
+
+        @Override
+        public H2ConnectionFactory getConnectionFactory() {
+            return H2Example.this.connectionFactory;
+        }
+
+        @Override
+        public String getIdentifier(int index) {
+            return getPlaceholder(index);
+        }
+
+        @Override
+        public JdbcOperations getJdbcOperations() {
+            JdbcOperations jdbcOperations = SERVER.getJdbcOperations();
+
+            if (jdbcOperations == null) {
+                throw new IllegalStateException("JdbcOperations not yet initialized");
+            }
+
+            return jdbcOperations;
+        }
+
+        @Override
+        public String getPlaceholder(int index) {
+            return String.format("$%d", index + 1);
+        }
+
+        @Disabled("Not yet implemented")
+        @Override
+        @Test
+        public void transactionMutability() {
+            // TODO: Remove once implemented
+        }
+    }
 }

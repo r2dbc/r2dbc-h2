@@ -13,76 +13,122 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.r2dbc.h2;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
+import io.r2dbc.spi.ColumnMetadata;
 import io.r2dbc.spi.RowMetadata;
 import org.h2.result.ResultInterface;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 /**
- * @author Greg Turnquist
+ * An implementation of {@link RowMetadata} for an H2 database.
  */
-@ToString
-@EqualsAndHashCode
 public final class H2RowMetadata implements RowMetadata {
 
-	private final ResultInterface queryResult;
-	
-	private final List<H2ColumnMetadata> columnMetadata;
+    private final List<H2ColumnMetadata> columnMetadatas;
 
-	H2RowMetadata(ResultInterface queryResult, List<H2ColumnMetadata> columnMetadata) {
+    private final Map<String, H2ColumnMetadata> nameKeyedColumnMetadatas;
 
-		Objects.requireNonNull(queryResult, "queryResult must not be null");
-		Objects.requireNonNull(columnMetadata, "columnMetadata must not be null");
+    H2RowMetadata(List<H2ColumnMetadata> columnMetadatas) {
+        this.columnMetadatas = Objects.requireNonNull(columnMetadatas, "columnMetadatas must not be null");
 
-		this.queryResult = queryResult;
-		this.columnMetadata = columnMetadata;
-	}
+        this.nameKeyedColumnMetadatas = getNameKeyedColumnMetadatas(columnMetadatas);
+    }
 
-	@Override
-	public H2ColumnMetadata getColumnMetadata(Object identifier) {
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        H2RowMetadata that = (H2RowMetadata) o;
+        return Objects.equals(this.columnMetadatas, that.columnMetadatas);
+    }
 
-		Objects.requireNonNull(identifier, "identifier must not be null");
+    /**
+     * {@inheritDoc}
+     *
+     * @throws IllegalArgumentException if {@code identifier} does not correspond to a column
+     */
+    @Override
+    public ColumnMetadata getColumnMetadata(Object identifier) {
+        Objects.requireNonNull(identifier, "identifier must not be null");
 
-		if (identifier instanceof Integer) {
-			return getColumnMetadata((Integer) identifier);
-		} else if (identifier instanceof String) {
-			return getColumnMetadata((String) identifier);
-		}
+        if (identifier instanceof Integer) {
+            return getColumnMetadata((Integer) identifier);
+        } else if (identifier instanceof String) {
+            return getColumnMetadata((String) identifier);
+        }
 
-		throw new IllegalArgumentException(String.format("Identifier '%s'"));
-	}
+        throw new IllegalArgumentException(String.format("Identifier '%s' is not a valid identifier. Should either be an Integer index or a String column name.", identifier));
+    }
 
-	@Override
-	public Iterable<H2ColumnMetadata> getColumnMetadatas() {
-		return this.columnMetadata;
-	}
+    @Override
+    public List<H2ColumnMetadata> getColumnMetadatas() {
+        return Collections.unmodifiableList(this.columnMetadatas);
+    }
 
-	static H2RowMetadata toRowMetadata(ResultInterface result) {
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.columnMetadatas);
+    }
 
-		List<H2ColumnMetadata> columnMetadata = IntStream.range(0, result.getVisibleColumnCount())
-			.mapToObj(columnIndex -> new H2ColumnMetadata(result, columnIndex))
-			.collect(Collectors.toList());
+    @Override
+    public String toString() {
+        return "H2RowMetadata{" +
+            "columnMetadatas=" + this.columnMetadatas +
+            ", nameKeyedColumnMetadatas=" + this.nameKeyedColumnMetadatas +
+            '}';
+    }
 
-		return new H2RowMetadata(result, columnMetadata);
-	}
+    static H2RowMetadata toRowMetadata(ResultInterface result) {
+        Objects.requireNonNull(result, "result must not be null");
 
-	private H2ColumnMetadata getColumnMetadata(Integer index) {
-		return this.columnMetadata.get(index);
-	}
+        return new H2RowMetadata(getColumnMetadatas(result));
+    }
 
-	private H2ColumnMetadata getColumnMetadata(String id) {
+    private static List<H2ColumnMetadata> getColumnMetadatas(ResultInterface result) {
+        List<H2ColumnMetadata> columnMetadatas = new ArrayList<>(result.getVisibleColumnCount());
 
-		return this.columnMetadata.stream()
-			.filter(columnMetadata -> columnMetadata.getName().equalsIgnoreCase(id))
-			.findFirst()
-			.orElseThrow(() -> new IllegalArgumentException(String.format("Column name '%s' does not exist.", id)));
-	}
+        for (int i = 0; i < result.getVisibleColumnCount(); i++) {
+            columnMetadatas.add(H2ColumnMetadata.toColumnMetadata(result, i));
+        }
+
+        return columnMetadatas;
+    }
+
+    private ColumnMetadata getColumnMetadata(Integer index) {
+        if (index >= this.columnMetadatas.size()) {
+            throw new IllegalArgumentException(String.format("Column index %d is larger than the number of columns %d", index, this.columnMetadatas.size()));
+        }
+
+        return this.columnMetadatas.get(index);
+    }
+
+    private ColumnMetadata getColumnMetadata(String name) {
+        if (!this.nameKeyedColumnMetadatas.containsKey(name)) {
+            throw new IllegalArgumentException(String.format("Column name '%s' does not exist in column names %s", name, this.nameKeyedColumnMetadatas.keySet()));
+        }
+
+        return this.nameKeyedColumnMetadatas.get(name);
+    }
+
+    private Map<String, H2ColumnMetadata> getNameKeyedColumnMetadatas(List<H2ColumnMetadata> columnMetadatas) {
+        Map<String, H2ColumnMetadata> nameKeyedColumnMetadatas = new HashMap<>(columnMetadatas.size());
+
+        for (H2ColumnMetadata columnMetadata : columnMetadatas) {
+            nameKeyedColumnMetadatas.put(columnMetadata.getName(), columnMetadata);
+        }
+
+        return nameKeyedColumnMetadatas;
+    }
 }

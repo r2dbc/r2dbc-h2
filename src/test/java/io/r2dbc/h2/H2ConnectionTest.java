@@ -13,47 +13,356 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.r2dbc.h2;
 
-import org.h2.engine.ConnectionInfo;
+import io.r2dbc.h2.client.Client;
+import org.h2.message.DbException;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-/**
- * @author Greg Turnquist
- */
+import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
+import static io.r2dbc.spi.Mutability.READ_ONLY;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.mockito.Mockito.RETURNS_SMART_NULLS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
 final class H2ConnectionTest {
 
-	@Test
-	void constructorConnectionUrl() {
+    private final Client client = mock(Client.class, RETURNS_SMART_NULLS);
 
-		new H2Connection("mem:r2dbc-test-mem")
-			.close()
-			.as(StepVerifier::create)
-			.verifyComplete();
-	}
+    @Test
+    void beginTransaction() {
+        when(this.client.inTransaction()).thenReturn(false);
+        when(this.client.disableAutoCommit()).thenReturn(Mono.empty());
 
-	@Test
-	void constructorConnectionInfo() {
+        new H2Connection(this.client)
+            .beginTransaction()
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
 
-		ConnectionInfo connectionInfo = new ConnectionInfo("mem:r2dbc-test-mem2");
-		connectionInfo.setUserName("foo");
-		connectionInfo.setUserPasswordHash("bar".getBytes());
+    @Test
+    void beginTransactionErrorResponse() {
+        when(this.client.inTransaction()).thenReturn(false);
+        when(this.client.disableAutoCommit()).thenThrow(DbException.get(0));
 
-		new H2Connection(connectionInfo, true)
-			.close()
-			.as(StepVerifier::create)
-			.verifyComplete();
-	}
+        new H2Connection(this.client)
+            .beginTransaction()
+            .as(StepVerifier::create)
+            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+    }
 
-	@Test
-	void beginTransaction() {
+    @Test
+    void beginTransactionInTransaction() {
+        when(this.client.inTransaction()).thenReturn(true);
+        verifyNoMoreInteractions(this.client);
 
-		new H2Connection("mem:r2dbc-test-mem3")
-			.beginTransaction()
-			.as(StepVerifier::create)
-//			.verifyError();
-			.verifyComplete();
-	}
+        new H2Connection(this.client)
+            .beginTransaction()
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void close() {
+        when(this.client.close()).thenReturn(Mono.empty());
+
+        new H2Connection(this.client)
+            .close()
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void commitTransaction() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("COMMIT")).thenReturn(Mono.empty());
+        when(this.client.enableAutoCommit()).thenReturn(Mono.empty());
+
+        new H2Connection(this.client)
+            .commitTransaction()
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void commitTransactionErrorResponse() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("COMMIT")).thenThrow(DbException.get(0));
+        when(this.client.enableAutoCommit()).thenReturn(Mono.empty());
+
+        new H2Connection(this.client)
+            .commitTransaction()
+            .as(StepVerifier::create)
+            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+    }
+
+    @Test
+    void commitTransactionNonOpen() {
+        when(this.client.inTransaction()).thenReturn(false);
+        verifyNoMoreInteractions(this.client);
+
+        new H2Connection(this.client)
+            .commitTransaction()
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void constructorNoClient() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(null))
+            .withMessage("client must not be null");
+    }
+
+    @Test
+    void createBatch() {
+        assertThat(new H2Connection(this.client).createBatch()).isInstanceOf(H2Batch.class);
+    }
+
+    @Test
+    void createSavepoint() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("SAVEPOINT test-name")).thenReturn(Mono.empty());
+
+        new H2Connection(this.client)
+            .createSavepoint("test-name")
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void createSavepointErrorResponse() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("SAVEPOINT test-name")).thenThrow(DbException.get(0));
+
+        new H2Connection(this.client)
+            .createSavepoint("test-name")
+            .as(StepVerifier::create)
+            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+    }
+
+    @Test
+    void createSavepointNoName() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).createSavepoint(null))
+            .withMessage("name must not be null");
+    }
+
+    @Test
+    void createSavepointNonOpen() {
+        when(this.client.inTransaction()).thenReturn(false);
+        verifyNoMoreInteractions(this.client);
+
+        new H2Connection(this.client)
+            .createSavepoint("test-name")
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void createStatement() {
+        assertThat(new H2Connection(this.client).createStatement("test-query-?")).isInstanceOf(H2Statement.class);
+    }
+
+    @Test
+    void releaseSavepoint() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("RELEASE SAVEPOINT test-name")).thenReturn(Mono.empty());
+
+        new H2Connection(this.client)
+            .releaseSavepoint("test-name")
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void releaseSavepointErrorResponse() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("RELEASE SAVEPOINT test-name")).thenThrow(DbException.get(0));
+
+        new H2Connection(this.client)
+            .releaseSavepoint("test-name")
+            .as(StepVerifier::create)
+            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+    }
+
+    @Test
+    void releaseSavepointNoName() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).releaseSavepoint(null))
+            .withMessage("name must not be null");
+    }
+
+    @Test
+    void releaseSavepointNonOpen() {
+        when(this.client.inTransaction()).thenReturn(false);
+        verifyNoMoreInteractions(this.client);
+
+        new H2Connection(this.client)
+            .releaseSavepoint("test-name")
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void rollbackTransaction() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("ROLLBACK")).thenReturn(Mono.empty());
+        when(this.client.enableAutoCommit()).thenReturn(Mono.empty());
+
+        new H2Connection(this.client)
+            .rollbackTransaction()
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void rollbackTransactionErrorResponse() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("ROLLBACK")).thenThrow(DbException.get(0));
+        when(this.client.enableAutoCommit()).thenReturn(Mono.empty());
+
+        new H2Connection(this.client)
+            .rollbackTransaction()
+            .as(StepVerifier::create)
+            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+    }
+
+    @Test
+    void rollbackTransactionNonOpen() {
+        when(this.client.inTransaction()).thenReturn(false);
+        verifyNoMoreInteractions(this.client);
+
+        new H2Connection(this.client)
+            .rollbackTransaction()
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void rollbackTransactionToSavepoint() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("ROLLBACK TO SAVEPOINT test-name")).thenReturn(Mono.empty());
+
+        new H2Connection(this.client)
+            .rollbackTransactionToSavepoint("test-name")
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void rollbackTransactionToSavepointErrorResponse() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("ROLLBACK TO SAVEPOINT test-name")).thenThrow(DbException.get(0));
+
+        new H2Connection(this.client)
+            .rollbackTransactionToSavepoint("test-name")
+            .as(StepVerifier::create)
+            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+    }
+
+    @Test
+    void rollbackTransactionToSavepointNoName() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).rollbackTransactionToSavepoint(null))
+            .withMessage("name must not be null");
+    }
+
+    @Test
+    void rollbackTransactionToSavepointNonOpen() {
+        when(this.client.inTransaction()).thenReturn(false);
+        verifyNoMoreInteractions(this.client);
+
+        new H2Connection(this.client)
+            .rollbackTransactionToSavepoint("test-name")
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void setTransactionIsolationLevel() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("SET LOCK_MODE 3")).thenReturn(Mono.empty());
+
+        new H2Connection(this.client)
+            .setTransactionIsolationLevel(READ_COMMITTED)
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Disabled("Not yet implemented")
+    @Test
+    void setTransactionIsolationLevelErrorResponse() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("SET LOCK_MODE 3")).thenThrow(DbException.get(0));
+
+        new H2Connection(this.client)
+            .setTransactionIsolationLevel(READ_COMMITTED)
+            .as(StepVerifier::create)
+            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+    }
+
+    @Test
+    void setTransactionIsolationLevelNoIsolationLevel() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).setTransactionIsolationLevel(null))
+            .withMessage("isolationLevel must not be null");
+    }
+
+    @Disabled("Not yet implemented")
+    @Test
+    void setTransactionIsolationLevelNonOpen() {
+        when(this.client.inTransaction()).thenReturn(false);
+        verifyNoMoreInteractions(this.client);
+
+        new H2Connection(this.client)
+            .setTransactionIsolationLevel(READ_COMMITTED)
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Disabled("Not yet implemented")
+    @Test
+    void setTransactionMutability() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("SET TRANSACTION READ ONLY")).thenReturn(Mono.empty());
+
+        new H2Connection(this.client)
+            .setTransactionMutability(READ_ONLY)
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Disabled("Not yet implemented")
+    @Test
+    void setTransactionMutabilityErrorResponse() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("SET TRANSACTION READ ONLY")).thenThrow(DbException.get(0));
+
+        new H2Connection(this.client)
+            .setTransactionIsolationLevel(READ_COMMITTED)
+            .as(StepVerifier::create)
+            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+    }
+
+    @Test
+    void setTransactionMutabilityNoMutability() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).setTransactionMutability(null))
+            .withMessage("mutability must not be null");
+    }
+
+    @Disabled("Not yet implemented")
+    @Test
+    void setTransactionMutabilityNonOpen() {
+        when(this.client.inTransaction()).thenReturn(false);
+        verifyNoMoreInteractions(this.client);
+
+        new H2Connection(this.client)
+            .setTransactionMutability(READ_ONLY)
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
 
 }

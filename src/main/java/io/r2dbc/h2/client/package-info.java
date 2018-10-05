@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 the original author or authors.
+ * Copyright 2017-2018 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,33 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.r2dbc.h2.helper;
-
-import java.util.Iterator;
-
-import org.h2.result.ResultInterface;
-import org.h2.value.Value;
 
 /**
- * @author Greg Turnquist
+ * The infrastructure for interacting with an H2 Database.
  */
-public class ValueIterator implements Iterator<Value[]> {
 
-	private final ResultInterface result;
+@NonNullApi
+package io.r2dbc.h2.client;
 
-	ValueIterator(ResultInterface result) {
-		this.result = result;
-	}
-
-	@Override
-	public boolean hasNext() {
-		return this.result.hasNext();
-	}
-
-	@Override
-	public Value[] next() {
-		
-		this.result.next();
-		return this.result.currentRow();
-	}
-}
+import reactor.util.annotation.NonNullApi;
