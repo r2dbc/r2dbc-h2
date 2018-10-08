@@ -13,45 +13,80 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.r2dbc.h2;
-
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-
-import java.util.Optional;
 
 import io.r2dbc.spi.ColumnMetadata;
 import org.h2.result.ResultInterface;
 
+import java.util.Objects;
+import java.util.Optional;
+
 /**
- * @author Greg Turnquist
+ * An implementation of {@link ColumnMetadata} for an H2 database.
  */
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-@ToString
-@EqualsAndHashCode
-public class H2ColumnMetadata implements ColumnMetadata {
+public final class H2ColumnMetadata implements ColumnMetadata {
 
-	private final ResultInterface result;
+    private final String name;
 
-	private final @Getter int columnIndex;
+    private final Long precision;
 
-	@Override
-	public String getName() {
-		return this.result.getColumnName(this.columnIndex);
-	}
+    private final Integer type;
 
-	@Override
-	public Optional<Integer> getPrecision() {
+    H2ColumnMetadata(String name, Long precision, Integer type) {
+        this.name = Objects.requireNonNull(name, "name must not be null");
+        this.precision = Objects.requireNonNull(precision, "precision must not be null");
+        this.type = Objects.requireNonNull(type, "type must not be null");
+    }
 
-		return Optional.of(this.result.getColumnPrecision(this.columnIndex))
-			.map(Long::intValue);
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        H2ColumnMetadata that = (H2ColumnMetadata) o;
+        return Objects.equals(this.name, that.name) &&
+            Objects.equals(this.precision, that.precision) &&
+            Objects.equals(this.type, that.type);
+    }
 
-	@Override
-	public Integer getType() {
-		return this.result.getColumnType(this.columnIndex);
-	}
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public Optional<Integer> getPrecision() {
+        return Optional.of(this.precision)
+            .map(Long::intValue);
+    }
+
+    @Override
+    public Integer getType() {
+        return this.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.name, this.precision, this.type);
+    }
+
+    @Override
+    public String toString() {
+        return "H2ColumnMetadata{" +
+            "name='" + this.name + '\'' +
+            ", precision=" + this.precision +
+            ", type=" + this.type +
+            '}';
+    }
+
+    static H2ColumnMetadata toColumnMetadata(ResultInterface result, int index) {
+        Objects.requireNonNull(result, "result must not be null");
+
+        return new H2ColumnMetadata(result.getColumnName(index), result.getColumnPrecision(index), result.getColumnType(index));
+    }
+
 }

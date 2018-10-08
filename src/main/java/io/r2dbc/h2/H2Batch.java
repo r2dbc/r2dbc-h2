@@ -13,59 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.r2dbc.h2;
 
-import static reactor.function.TupleUtils.function;
-
-import lombok.Value;
+import io.r2dbc.h2.client.Client;
+import io.r2dbc.spi.Batch;
+import org.h2.message.DbException;
+import reactor.core.publisher.Flux;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import io.r2dbc.spi.Batch;
-import org.h2.engine.SessionInterface;
-import reactor.core.publisher.Flux;
+import static io.r2dbc.h2.client.Client.INSERT;
 
 /**
- * @author Greg Turnquist
+ * An implementation of {@link Batch} for executing a collection of statements in a batch against an H2 database.
  */
-@Value
 public final class H2Batch implements Batch {
 
-	private final SessionInterface session;
+    private final Client client;
 
-	private final List<String> statements = new ArrayList<>();
+    private final List<String> statements = new ArrayList<>();
 
-	H2Batch(SessionInterface session) {
+    H2Batch(Client client) {
+        this.client = Objects.requireNonNull(client, "client must not be null");
+    }
 
-		Objects.requireNonNull(session, "session must not be null");
+    @Override
+    public H2Batch add(String sql) {
+        Objects.requireNonNull(sql, "sql must not be null");
 
-		this.session = session;
-	}
+        this.statements.add(sql);
+        return this;
+    }
 
-	@Override
-	public H2Batch add(String sql) {
+    @Override
+    public Flux<H2Result> execute() {
+        return Flux.fromIterable(this.statements)
+            .flatMap(statement -> {
+                if (INSERT.matcher(statement).matches()) {
+                    return this.client.update(statement, Collections.emptyList())
+                        .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount()));
+                } else {
+                    return this.client.query(statement, Collections.emptyList())
+                        .map(result -> H2Result.toResult(result, null));
+                }
+            })
+            .onErrorMap(DbException.class, H2DatabaseException::new);
+    }
 
-		Objects.requireNonNull(sql, "sql must not be null");
-
-		this.statements.add(sql);
-
-		return this;
-	}
-
-	@Override
-	public Flux<H2Result> execute() {
-		
-		return Flux.fromIterable(this.statements)
-			.flatMap(statement -> {
-				if (statement.toLowerCase().startsWith("select")) {
-					return H2Utils.query(this.session, statement, Integer.MAX_VALUE)
-						.map(H2Result::toResult);
-				} else {
-					return H2Utils.update(this.session, statement)
-						.map(function(H2Result::toResult));
-				}
-			});
-	}
 }

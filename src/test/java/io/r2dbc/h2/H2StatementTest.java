@@ -13,178 +13,169 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.r2dbc.h2;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.h2.command.CommandInterface;
-import org.h2.engine.SessionInterface;
-import org.h2.expression.Parameter;
-import org.h2.result.ResultInterface;
+import io.r2dbc.h2.client.Binding;
+import io.r2dbc.h2.client.Client;
+import org.h2.result.LocalResult;
 import org.h2.result.ResultWithGeneratedKeys;
+import org.h2.value.ValueInt;
 import org.h2.value.ValueNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-/**
- * @author Greg Turnquist
- */
+import java.util.Arrays;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.mockito.Mockito.RETURNS_SMART_NULLS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 final class H2StatementTest {
 
-	private SessionInterface mockSession;
-	private CommandInterface mockCommand;
-	private ResultInterface mockResult;
-	private H2Statement statement;
+    private final Client client = mock(Client.class, RETURNS_SMART_NULLS);
 
-	@BeforeEach
-	void setUp() {
-		
-		this.mockSession = mock(SessionInterface.class);
-		this.mockCommand = mock(CommandInterface.class);
-		this.mockResult = mock(ResultInterface.class);
+    private final H2Statement statement = new H2Statement(this.client, "test-query-$1");
 
-		this.statement = new H2Statement(mockSession, "select test-query");
-	}
+    @Test
+    void bind() {
+        assertThat(this.statement.bind("$1", 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
+    }
 
-	@Test
-	void constructorWithNullSessionShouldFail() {
+    @Test
+    void bindIndex() {
+        assertThat(this.statement.bind(0, 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
+    }
 
-		assertThatNullPointerException().isThrownBy(() -> {
-			new H2Statement(null, "test-query");
-		}).withMessage("session must not be null");
-	}
+    @Test
+    void bindIndexNoIndex() {
+        assertThatNullPointerException().isThrownBy(() -> this.statement.bind(null, ""))
+            .withMessage("index must not be null");
+    }
 
-	@Test
-	void constructorWithNullSqlShouldFail() {
+    @Test
+    void bindIndexNoValue() {
+        assertThatNullPointerException().isThrownBy(() -> this.statement.bind(1, null))
+            .withMessage("value must not be null");
+    }
 
-		assertThatNullPointerException().isThrownBy(() -> {
-			new H2Statement(this.mockSession, null);
-		}).withMessage("sql must not be null");
-	}
+    @Test
+    void bindNoIdentifier() {
+        assertThatNullPointerException().isThrownBy(() -> this.statement.bind((String) null, ""))
+            .withMessage("identifier must not be null");
+    }
 
-	@Test
-	void bindNoIndex() {
+    @Test
+    void bindNoValue() {
+        assertThatNullPointerException().isThrownBy(() -> this.statement.bind("$1", null))
+            .withMessage("value must not be null");
+    }
 
-		assertThatNullPointerException().isThrownBy(() -> {
-			this.statement.bind((Integer) null, "some value");
-		}).withMessage("index must not be null");
-	}
+    @Test
+    void bindNull() {
+        assertThat(statement.bindNull("$1", Integer.class).getCurrentBinding())
+            .isEqualTo(new Binding().add(0, ValueNull.INSTANCE));
+    }
 
-	@Test
-	void bindIndexNoValue() {
+    @Test
+    void bindNullNoIdentifier() {
+        assertThatNullPointerException().isThrownBy(() -> this.statement.bindNull(null, Integer.class))
+            .withMessage("identifier must not be null");
+    }
 
-		assertThatNullPointerException().isThrownBy(() -> {
-			this.statement.bind(1, null);
-		}).withMessage("value must not be null");
-	}
+    @Test
+    void bindNullWrongIdentifierFormat() {
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bindNull("foo", Integer.class))
+            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*\\$([\\d]+).*'.");
+    }
 
-	@Test
-	void bindNoIdentifier() {
+    @Test
+    void bindNullWrongIdentifierType() {
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bindNull(new Object(), Integer.class))
+            .withMessage("identifier must be a String");
+    }
 
-		assertThatNullPointerException().isThrownBy(() -> {
-			this.statement.bind((String) null, "some value");
-		}).withMessage("identifier must not be null");
-	}
+    @Test
+    void bindWrongIdentifierFormat() {
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("foo", ""))
+            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*\\$([\\d]+).*'.");
+    }
 
-	@Test
-	void bindIdentifierNoValue() {
+    @Test
+    void bindWrongIdentifierType() {
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind(new Object(), ""))
+            .withMessage("identifier must be a String");
+    }
 
-		assertThatNullPointerException().isThrownBy(() -> {
-			this.statement.bind("$1", null);
-		}).withMessage("value must not be null");
-	}
+    @Test
+    void constructorNoClient() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Statement(null, "test-query"))
+            .withMessage("client must not be null");
+    }
 
-	@Test
-	void bindWrongIdentifierFormat() {
+    @Test
+    void constructorNoSql() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Statement(this.client, null))
+            .withMessage("sql must not be null");
+    }
 
-		assertThatIllegalArgumentException().isThrownBy(() -> {
-			this.statement.bind("foo", Integer.class);
-		}).withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*\\$([\\d]+).*'.");
-	}
+    @Test
+    void execute() {
+        when(this.client.query("test-query-$1", Arrays.asList(
+            new Binding().add(0, ValueInt.get(100)),
+            new Binding().add(0, ValueInt.get(200))
+        ))).thenReturn(Flux.just(
+            new LocalResult(),
+            new LocalResult()
+        ));
 
-	@Test
-	void bindWrongIdentifierType() {
-		assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind(new Object(), ""))
-			.withMessage("identifier must be a String");
-	}
+        new H2Statement(this.client, "test-query-$1")
+            .bind("$1", 100)
+            .add()
+            .bind("$1", 200)
+            .add()
+            .execute()
+            .as(StepVerifier::create)
+            .expectNextCount(2)
+            .verifyComplete();
+    }
 
-	@Test
-	void bind() {
 
-		assertThat(this.statement.bind("$1", 100).getCurrentBinding())
-			.isEqualTo(new Binding().add(0, 100));
-	}
+    @Test
+    void executeReturningGeneratedKeys() {
+        when(this.client.update("insert test-query-$1", Arrays.asList(
+            new Binding().add(0, ValueInt.get(100))
+        ))).thenReturn(Flux.just(
+            new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())
+        ));
 
-	@Test
-	void bindNullNoIdentifier() {
+        new H2Statement(this.client, "insert test-query-$1")
+            .bind("$1", 100)
+            .add()
+            .executeReturningGeneratedKeys()
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
+    }
 
-		assertThatNullPointerException().isThrownBy(() -> {
-			this.statement.bindNull(null, Integer.class);
-		}).withMessage("identifier must not be null");
-	}
+    @Test
+    void executeWithoutAdd() {
+        when(this.client.update("insert test-query-$1", Arrays.asList(
+            new Binding().add(0, ValueInt.get(100))
+        ))).thenReturn(Flux.just(
+            new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())
+        ));
 
-	@Test
-	void bindNullNoType() {
+        new H2Statement(this.client, "insert test-query-$1")
+            .bind("$1", 100)
+            .execute()
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
+    }
 
-		assertThatNullPointerException().isThrownBy(() -> {
-			this.statement.bindNull("$1", null);
-		}).withMessage("type must not be null");
-	}
-
-	@Test
-	void bindNullWrongIdentifierFormat() {
-
-		assertThatIllegalArgumentException().isThrownBy(() -> {
-			this.statement.bindNull("foo", Integer.class);
-		}).withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*\\$([\\d]+).*'.");
-	}
-
-	@Test
-	void bindNull() {
-
-		assertThat(this.statement.bindNull("$1", Integer.class).getCurrentBinding())
-			.isEqualTo(new Binding().add(0, ValueNull.INSTANCE));
-	}
-
-	@Test
-	void execute() {
-
-		when(this.mockSession.prepareCommand(any(), anyInt())).thenReturn(mockCommand);
-		when(this.mockCommand.executeQuery(anyInt(), anyBoolean())).thenReturn(mockResult);
-		when(this.mockResult.getRowCount()).thenReturn(42);
-
-		this.statement
-			.execute()
-			.flatMap(H2Result::getRowsUpdated)
-			.as(StepVerifier::create)
-			.expectNextCount(1)
-			.verifyComplete();
-	}
-
-	@Test
-	void executeReturningGeneratedKeys() {
-
-		List<Parameter> parameters = new ArrayList<>();
-		parameters.add(new Parameter(0));
-
-		ResultWithGeneratedKeys resultWithGeneratedKeys = mock(ResultWithGeneratedKeys.class);
-
-		when(this.mockSession.prepareCommand(any(), anyInt())).thenReturn(mockCommand);
-		when(this.mockCommand.executeUpdate(any())).thenReturn(resultWithGeneratedKeys);
-		doReturn(parameters).when(this.mockCommand).getParameters();
-		when(resultWithGeneratedKeys.getGeneratedKeys()).thenReturn(this.mockResult);
-		when(this.mockResult.getRowCount()).thenReturn(42);
-
-		new H2Statement(this.mockSession, "INSERT INTO test VALUES ($1)")
-			.bind("$1", 100)
-			.executeReturningGeneratedKeys()
-			.as(StepVerifier::create)
-			.expectNextCount(1)
-			.verifyComplete();
-	}
 }

@@ -23,12 +23,10 @@
         </encoder>
     </appender>
 
-    <logger name="io.r2dbc.h2"               level="TRACE"/>
-    <logger name="h2database"                level="TRACE"/>
-    <logger name="stream"                    level="INFO"/>
-    <logger name="test"                      level="INFO"/>
-    <logger name="org.springframework.jdbc"  level="TRACE"/>
-    <logger name="com.zaxxer.hikari"         level="INFO"/>
+    <logger name="h2database"  level="WARN"/>
+    <logger name="io.r2dbc.h2" level="INFO"/>
+    <logger name="stream"      level="INFO"/>
+    <logger name="test"        level="INFO"/>
 
     <root level="WARN">
         <appender-ref ref="STDOUT"/>

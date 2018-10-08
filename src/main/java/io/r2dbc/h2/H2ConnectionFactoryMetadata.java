@@ -13,21 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.r2dbc.h2;
 
-import lombok.Getter;
+package io.r2dbc.h2;
 
 import io.r2dbc.spi.ConnectionFactoryMetadata;
 
 /**
- * @author Greg Turnquist
+ * An implementation of {@link ConnectionFactoryMetadata} for an H2 database.
  */
 public final class H2ConnectionFactoryMetadata implements ConnectionFactoryMetadata {
 
-	private final @Getter String name = "H2";
+    /**
+     * The name of the H2 database product.
+     */
+    public static final String NAME = "H2";
 
-	static final H2ConnectionFactoryMetadata INSTANCE  = new H2ConnectionFactoryMetadata();
+    static final H2ConnectionFactoryMetadata INSTANCE = new H2ConnectionFactoryMetadata();
 
-	private H2ConnectionFactoryMetadata() {
-	}
+    private H2ConnectionFactoryMetadata() {
+    }
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
 }

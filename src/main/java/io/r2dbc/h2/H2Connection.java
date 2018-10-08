@@ -13,275 +13,177 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.r2dbc.h2;
 
-import static org.h2.engine.Constants.*;
-import static org.h2.util.StringUtils.*;
-
-import lombok.extern.slf4j.Slf4j;
+import io.r2dbc.h2.client.Client;
+import io.r2dbc.spi.Connection;
+import io.r2dbc.spi.IsolationLevel;
+import io.r2dbc.spi.Mutability;
+import org.h2.message.DbException;
+import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 import java.util.function.Function;
 
-import io.r2dbc.spi.Connection;
-import io.r2dbc.spi.IsolationLevel;
-import io.r2dbc.spi.Mutability;
-import org.h2.api.ErrorCode;
-import org.h2.engine.ConnectionInfo;
-import org.h2.engine.SessionInterface;
-import org.h2.engine.SessionRemote;
-import org.h2.engine.SysProperties;
-import org.h2.message.DbException;
-import org.h2.util.CloseWatcher;
-import org.reactivestreams.Publisher;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
+import static io.r2dbc.spi.IsolationLevel.READ_UNCOMMITTED;
+import static io.r2dbc.spi.IsolationLevel.REPEATABLE_READ;
+import static io.r2dbc.spi.IsolationLevel.SERIALIZABLE;
+import static org.h2.engine.Constants.LOCK_MODE_OFF;
+import static org.h2.engine.Constants.LOCK_MODE_READ_COMMITTED;
+import static org.h2.engine.Constants.LOCK_MODE_TABLE;
 
 /**
- * @author Greg Turnquist
+ * An implementation of {@link Connection} for connecting to an H2 database.
  */
-@Slf4j
 public final class H2Connection implements Connection {
 
-	private final SessionInterface session;
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-	private final String url;
-	private final String user;
-	private final boolean scopeGeneratedKeys;
-	private final CloseWatcher watcher;
+    private final Client client;
 
-	public H2Connection(String connectionUrl) {
-		this(createConnectionInfo(connectionUrl, "sa", ""), true);
-	}
+    H2Connection(Client client) {
+        this.client = Objects.requireNonNull(client, "client must not be null");
+    }
 
-	public H2Connection(ConnectionInfo ci, boolean useBaseDirectory) {
+    @Override
+    public Mono<Void> beginTransaction() {
+        return useTransactionStatus(inTransaction -> {
+            if (!inTransaction) {
+                return this.client.disableAutoCommit();
+            } else {
+                this.logger.debug("Skipping begin transaction because already in one");
+                return Mono.empty();
+            }
+        })
+            .onErrorMap(DbException.class, H2DatabaseException::new);
+    }
 
-		if (useBaseDirectory) {
-			String baseDir = SysProperties.getBaseDir();
-			if (baseDir != null) {
-				ci.setBaseDir(baseDir);
-			}
-		}
+    @Override
+    public Mono<Void> close() {
+        return this.client.close();
+    }
 
-		// this will return an embedded or server connection
-		session = new SessionRemote(ci).connectEmbeddedOrServer(false);
-		session.setAutoCommit(false);
-		this.user = ci.getUserName();
-		if (log.isTraceEnabled()) {
-			log.trace("Connection = DriverManager.getConnection("
-				+ quoteJavaString(ci.getURL()) + ", " + quoteJavaString(user)
-				+ ", \"\");");
-		}
-		this.url = ci.getURL();
-		scopeGeneratedKeys = ci.getProperty("SCOPE_GENERATED_KEYS", false);
-		closeOld();
-		watcher = CloseWatcher.register(this, session, true);
-	}
+    @Override
+    public Mono<Void> commitTransaction() {
+        return useTransactionStatus(inTransaction -> {
+            if (inTransaction) {
+                return this.client.execute("COMMIT")
+                    .thenEmpty(this.client.enableAutoCommit())
+                    .onErrorResume(t -> this.client.enableAutoCommit().then(Mono.error(t)));
+            } else {
+                this.logger.debug("Skipping commit transaction because no transaction in progress.");
+                return Mono.empty();
+            }
+        })
+            .onErrorMap(DbException.class, H2DatabaseException::new);
+    }
 
-	private static ConnectionInfo createConnectionInfo(String connectionUrl, String user, String password) {
+    @Override
+    public H2Batch createBatch() {
+        return new H2Batch(this.client);
+    }
 
-		ConnectionInfo connectionInfo = new ConnectionInfo(connectionUrl);
-		connectionInfo.setUserName(user);
-		connectionInfo.setUserPasswordHash(password.getBytes());
+    @Override
+    public Mono<Void> createSavepoint(String name) {
+        Objects.requireNonNull(name, "name must not be null");
 
-		return connectionInfo;
-	}
+        return useTransactionStatus(inTransaction -> {
+            if (inTransaction) {
+                return this.client.execute(String.format("SAVEPOINT %s", name));
+            } else {
+                this.logger.debug("Skipping savepoint because no transaction in progress.");
+                return Mono.empty();
+            }
+        })
+            .onErrorMap(DbException.class, H2DatabaseException::new);
+    }
 
-	private void closeOld() {
-		
-		while (true) {
-			CloseWatcher w = CloseWatcher.pollUnclosed();
-			if (w == null) {
-				break;
-			}
-			try {
-				w.getCloseable().close();
-			} catch (Exception e) {
-				log.error(e.getMessage());
-			}
-			Exception ex = DbException.get(ErrorCode.TRACE_CONNECTION_NOT_CLOSED);
-			log.error(w.getOpenStackTrace());
-			log.error(ex.getMessage());
-		}
-	}
+    @Override
+    public H2Statement createStatement(String sql) {
+        return new H2Statement(this.client, sql);
+    }
 
+    @Override
+    public Mono<Void> releaseSavepoint(String name) {
+        Objects.requireNonNull(name, "name must not be null");
 
-	@Override
-	public Mono<Void> beginTransaction() {
+        return useTransactionStatus(inTransaction -> {
+            if (inTransaction) {
+                return this.client.execute(String.format("RELEASE SAVEPOINT %s", name));
+            } else {
+                this.logger.debug("Skipping release savepoint because no transaction in progress.");
+                return Mono.empty();
+            }
+        })
+            .onErrorMap(DbException.class, H2DatabaseException::new);
+    }
 
-		return useTransactionStatus(inTransaction -> {
-			if (!inTransaction) {
-				this.session.setAutoCommit(false);
-				return Mono.empty();
-			} else {
-				log.debug("Skipping begin transaction because already in one");
-				return Mono.empty();
-			}
-		});
-	}
+    @Override
+    public Mono<Void> rollbackTransaction() {
+        return useTransactionStatus(inTransaction -> {
+            if (inTransaction) {
+                return this.client.execute("ROLLBACK")
+                    .thenEmpty(this.client.enableAutoCommit())
+                    .onErrorResume(t -> this.client.enableAutoCommit().then(Mono.error(t)));
+            } else {
+                this.logger.debug("Skipping rollback because no transaction in progress.");
+                return Mono.empty();
+            }
+        })
+            .onErrorMap(DbException.class, H2DatabaseException::new);
+    }
 
-	@Override
-	public Mono<Void> close() {
+    @Override
+    public Mono<Void> rollbackTransactionToSavepoint(String name) {
+        Objects.requireNonNull(name, "name must not be null");
 
-		if (this.session == null) {
-			return Mono.empty();
-		}
+        return useTransactionStatus(inTransaction -> {
+            if (inTransaction) {
+                return this.client.execute(String.format("ROLLBACK TO SAVEPOINT %s", name));
+            } else {
+                this.logger.debug("Skipping rollback to savepoint because no transaction in progress.");
+                return Mono.empty();
+            }
+        })
+            .onErrorMap(DbException.class, H2DatabaseException::new);
+    }
 
-		return Mono.defer(() -> {
-			CloseWatcher.unregister(this.watcher);
-			this.session.cancel();
-			this.session.close();
-			return Mono.empty();
-		})
-		.then();
-	}
+    @Override
+    public Mono<Void> setTransactionIsolationLevel(IsolationLevel isolationLevel) {
+        Objects.requireNonNull(isolationLevel, "isolationLevel must not be null");
 
-	@Override
-	public Mono<Void> commitTransaction() {
+        return this.client.execute(getTransactionIsolationLevelQuery(isolationLevel))
+            .onErrorMap(DbException.class, H2DatabaseException::new);
+    }
 
-		return withTransactionStatus(inTransaction -> {
-				if (inTransaction) {
-					return H2Utils.update(this.session, "COMMIT").then();
-				} else {
-					log.debug("Skipping commit transaction because no transaction in progress.");
-					return Mono.empty();
-				}
-		}).then();
-	}
+    @Override
+    public Mono<Void> setTransactionMutability(Mutability mutability) {
+        Objects.requireNonNull(mutability, "mutability must not be null");
 
-	@Override
-	public H2Batch createBatch() {
-		return new H2Batch(this.session);
-	}
+        // TODO: Implement transaction mutability
+        return Mono.error(new UnsupportedOperationException("Transaction mutability not supported"));
+    }
 
-	@Override
-	public Mono<Void> createSavepoint(String name) {
+    private static String getTransactionIsolationLevelQuery(IsolationLevel isolationLevel) {
+        if (READ_COMMITTED == isolationLevel) {
+            return String.format("SET LOCK_MODE %d", LOCK_MODE_READ_COMMITTED);
+        } else if (READ_UNCOMMITTED == isolationLevel) {
+            return String.format("SET LOCK_MODE %d", LOCK_MODE_OFF);
+        } else if (REPEATABLE_READ == isolationLevel || SERIALIZABLE == isolationLevel) {
+            return String.format("SET LOCK_MODE %d", LOCK_MODE_TABLE);
+        } else {
+            throw new IllegalArgumentException(String.format("Invalid isolation level %s", isolationLevel));
+        }
+    }
 
-		Objects.requireNonNull(name, "name must not be null");
+    private Mono<Void> useTransactionStatus(Function<Boolean, Publisher<?>> f) {
+        return Flux.defer(() -> f.apply(this.client.inTransaction())).then();
+    }
 
-		return useTransactionStatus(inTransaction -> {
-			if (inTransaction) {
-				return H2Utils.update(this.session, String.format("SAVEPOINT %s", name));
-			} else {
-				log.debug("Skipping savepoint because no transaction in progress.");
-				return Mono.empty();
-			}
-		});
-	}
-
-	@Override
-	public H2Statement createStatement(String sql) {
-
-		Objects.requireNonNull(sql, "sql must not be null");
-
-		return new H2Statement(this.session, sql);
-	}
-
-	@Override
-	public Mono<Void> releaseSavepoint(String name) {
-
-		Objects.requireNonNull(name, "name must not be null");
-
-		return useTransactionStatus(inTransaction -> {
-			if (inTransaction) {
-				return H2Utils.update(this.session, String.format("RELEASE SAVEPOINT %s", name));
-			} else {
-				log.debug("Skipping release savepoint because no transaction in progress.");
-				return Mono.empty();
-			}
-		});
-	}
-
-	@Override
-	public Mono<Void> rollbackTransaction() {
-
-		return useTransactionStatus(inTransaction -> {
-			if (inTransaction) {
-				return H2Utils.update(this.session, "ROLLBACK");
-			} else {
-				log.debug("Skipping rollback because no transaction in progress.");
-				return Mono.empty();
-			}
-		});
-	}
-
-	@Override
-	public Mono<Void> rollbackTransactionToSavepoint(String name) {
-
-		Objects.requireNonNull(name, "name must not be null");
-
-		return useTransactionStatus(inTransaction -> {
-			if (inTransaction) {
-				return H2Utils.update(this.session, String.format("ROLLBACK TO SAVEPOINT %s", name));
-			} else {
-				log.debug("Skipping rollback to savepoint because no transaction in progress.");
-				return Mono.empty();
-			}
-		});
-	}
-
-	@Override
-	public Mono<Void> setTransactionIsolationLevel(IsolationLevel isolationLevel) {
-
-		Objects.requireNonNull(isolationLevel, "isolationLevel must not be null");
-
-		return H2Utils.update(this.session, getTransactionIsolationLevelQuery(isolationLevel))
-			.then();
-	}
-
-	@Override
-	public Mono<Void> setTransactionMutability(Mutability mutability) {
-
-		log.info("setTransactionMutability: Transaction mutability not yet supported.");
-		return Mono.empty();
-	}
-
-	private Mono<Void> useTransactionStatus(Function<Boolean, Publisher<?>> f) {
-		return Flux.defer(() -> f.apply(inTransaction(this.session))).then();
-	}
-
-	private <T> Mono<T> withTransactionStatus(Function<Boolean, T> f) {
-		return Mono.defer(() -> Mono.just(f.apply(inTransaction(session))));
-	}
-
-	/**
-	 * Is this {@link SessionInterface} in the middle of a transaction?
-	 * 
-	 * @param session
-	 * @return
-	 */
-	private static boolean inTransaction(SessionInterface session) {
-		return !session.getAutoCommit();
-	}
-
-	private static String getTransactionIsolationLevelQuery(IsolationLevel isolationLevel) {
-
-		switch (isolationLevel) {
-			case READ_COMMITTED: 	return "SET LOCK_MODE " + LOCK_MODE_READ_COMMITTED;
-			case READ_UNCOMMITTED: 	return "SET LOCK_MODE " + LOCK_MODE_OFF;
-			case REPEATABLE_READ:
-			case SERIALIZABLE: 		return "SET LOCK_MODE " + LOCK_MODE_TABLE;
-			default: 				throw DbException.getInvalidValueException("level", isolationLevel);
-		}
-	}
-
-//	private Mono<IsolationLevel> getTransactionIsolationLevel() {
-//
-//		return H2Utils.query(this.session, "CALL LOCK_MODE()", this.bindings, 0)
-//			.map(resultInterface -> {
-//				resultInterface.next();
-//				int lockMode = resultInterface.currentRow()[0].getInt();
-//				resultInterface.close();;
-//				return lockMode;
-//			})
-//			.map(lockMode -> {
-//				switch(lockMode) {
-//					case LOCK_MODE_READ_COMMITTED: 	return READ_COMMITTED;
-//					case LOCK_MODE_OFF: 			return READ_UNCOMMITTED;
-//					case LOCK_MODE_TABLE:
-//					case LOCK_MODE_TABLE_GC:		return SERIALIZABLE;
-//					default:    					throw DbException.getInvalidValueException("level", lockMode);
-//				}
-//			});
-//	}
 }

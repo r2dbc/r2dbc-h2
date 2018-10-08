@@ -13,106 +13,71 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.r2dbc.h2;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.*;
-
-import org.h2.command.CommandInterface;
-import org.h2.engine.SessionInterface;
-import org.h2.result.ResultInterface;
-import org.h2.result.ResultWithGeneratedKeys;
-import org.junit.jupiter.api.BeforeEach;
+import io.r2dbc.h2.client.Client;
+import org.h2.message.DbException;
+import org.h2.result.LocalResult;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
-/**
- * @author Greg Turnquist
- */
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.mockito.Mockito.RETURNS_SMART_NULLS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 final class H2BatchTest {
 
-	private SessionInterface mockSession;
-	private CommandInterface mockCommand;
-	private ResultWithGeneratedKeys mockResultWithGeneratedKeys;
-	private ResultInterface mockResult;
+    private final Client client = mock(Client.class, RETURNS_SMART_NULLS);
 
-	@BeforeEach
-	void setUp() {
+    @Test
+    void addNoSql() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Batch(this.client).add(null))
+            .withMessage("sql must not be null");
+    }
 
-		this.mockSession = mock(SessionInterface.class);
-		this.mockCommand = mock(CommandInterface.class);
-		this.mockResultWithGeneratedKeys = mock(ResultWithGeneratedKeys.class);
-		this.mockResult = mock(ResultInterface.class);
-	}
+    @Disabled("Not yet implemented")
+    @Test
+    void addWithParameter() {
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Batch(this.client).add("test-query-$1"))
+            .withMessage("Statement 'test-query-$1' is not supported.  This is often due to the presence of parameters.");
+    }
 
-	@Test
-	void constructorWithNullSessionShouldFail() {
+    @Test
+    void constructorNoClient() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Batch(null))
+            .withMessage("client must not be null");
+    }
 
-		assertThatNullPointerException().isThrownBy(() -> {
-			new H2Batch(null);
-		}).withMessage("session must not be null");
-	}
+    @Test
+    void execute() {
+        when(this.client.query("test-query-1", Collections.emptyList())).thenReturn(Flux.just(new LocalResult()));
+        when(this.client.query("test-query-2", Collections.emptyList())).thenReturn(Flux.just(new LocalResult()));
 
-	@Test
-	void constructor() {
+        new H2Batch(this.client)
+            .add("test-query-1")
+            .add("test-query-2")
+            .execute()
+            .as(StepVerifier::create)
+            .expectNextCount(2)
+            .verifyComplete();
+    }
 
-		H2Batch batch = new H2Batch(mockSession);
+    @Test
+    void executeErrorResponse() {
+        when(this.client.query("test-query", Collections.emptyList())).thenReturn(Flux.error(DbException.get(0)));
 
-		assertThat(batch.getSession()).isEqualTo(mockSession);
-	}
-
-
-	@Test
-	void add() {
-
-		H2Batch batch = new H2Batch(mockSession)
-			.add("test-query")
-			.add("another-test-query");
-
-		assertThat(batch.getStatements()).containsExactly("test-query", "another-test-query");
-	}
-
-	@Test
-	void addWithNullSqlShouldFail() {
-
-		assertThatNullPointerException().isThrownBy(() -> {
-			new H2Batch(mockSession).add(null);
-		}).withMessage("sql must not be null");
-	}
-
-	@Test
-	void executeWithOneStatement() {
-
-		when(this.mockSession.prepareCommand(any(), anyInt())).thenReturn(mockCommand);
-		when(this.mockCommand.executeUpdate(any())).thenReturn(this.mockResultWithGeneratedKeys);
-		when(this.mockResultWithGeneratedKeys.getGeneratedKeys()).thenReturn(this.mockResult);
-		when(this.mockResult.getRowCount()).thenReturn(42);
-
-		new H2Batch(mockSession)
-			.add("test-query")
-			.execute()
-			.as(StepVerifier::create)
-			.expectNextCount(1)
-			.verifyComplete();
-	}
-
-	@Test
-	void executeWithMultipleStatements() {
-
-		when(this.mockSession.prepareCommand(any(), anyInt())).thenReturn(mockCommand);
-		when(this.mockCommand.executeUpdate(any())).thenReturn(this.mockResultWithGeneratedKeys);
-		when(this.mockResultWithGeneratedKeys.getGeneratedKeys()).thenReturn(this.mockResult);
-		when(this.mockResult.getRowCount()).thenReturn(42);
-
-		new H2Batch(mockSession)
-			.add("test-query")
-			.add("another-test-query")
-			.execute()
-			.as(StepVerifier::create)
- 			.expectNextCount(2)
-			.verifyComplete();
-	}
+        new H2Batch(this.client)
+            .add("test-query")
+            .execute()
+            .as(StepVerifier::create)
+            .verifyError(H2DatabaseException.class);
+    }
 
 }

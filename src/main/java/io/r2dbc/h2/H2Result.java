@@ -13,82 +13,82 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.r2dbc.h2;
 
-import static reactor.function.TupleUtils.*;
-
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
+import io.r2dbc.spi.Result;
+import io.r2dbc.spi.Row;
+import io.r2dbc.spi.RowMetadata;
+import org.h2.message.DbException;
+import org.h2.result.ResultInterface;
+import org.h2.value.Value;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.SynchronousSink;
+import reactor.util.annotation.Nullable;
 
 import java.util.Objects;
 import java.util.function.BiFunction;
 
-import io.r2dbc.h2.helper.ValueIterable;
-import io.r2dbc.spi.Result;
-import io.r2dbc.spi.Row;
-import io.r2dbc.spi.RowMetadata;
-import org.h2.result.ResultInterface;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import static reactor.function.TupleUtils.function;
 
 /**
- * @author Greg Turnquist
+ * An implementation of {@link Result} representing the results of a query against an H2 database.
  */
-@ToString
-@EqualsAndHashCode
 public final class H2Result implements Result {
 
-	private final Mono<H2RowMetadata> rowMetadata;
+    private final Mono<H2RowMetadata> rowMetadata;
 
-	private final Flux<H2Row> rows;
+    private final Flux<H2Row> rows;
 
-	private final @Getter Mono<Integer> rowsUpdated;
-	
-	H2Result(Mono<H2RowMetadata> rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated) {
+    private final Mono<Integer> rowsUpdated;
 
-		this.rowMetadata = rowMetadata;
-		this.rows = rows;
-		this.rowsUpdated = rowsUpdated;
-	}
+    H2Result(Mono<H2RowMetadata> rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated) {
+        this.rowMetadata = Objects.requireNonNull(rowMetadata, "rowMetadata must not be null");
+        this.rows = Objects.requireNonNull(rows, "rows must not be null");
+        this.rowsUpdated = Objects.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
+    }
 
-	@Override
-	public <T> Flux<T> map(BiFunction<Row, RowMetadata, ? extends T> f) {
+    @Override
+    public Mono<Integer> getRowsUpdated() {
+        return this.rowsUpdated;
+    }
 
-		Objects.requireNonNull(f, "f must not be null");
+    @Override
+    public <T> Flux<T> map(BiFunction<Row, RowMetadata, ? extends T> f) {
+        Objects.requireNonNull(f, "f must not be null");
 
-		return this.rows
-			.zipWith(this.rowMetadata.repeat())
-			.map(function((row, rowMetadata) -> {
-				try {
-					return f.apply(row, rowMetadata);
-				} finally {
-					// nothing
-				}
-			}));
-	}
+        return this.rows
+            .zipWith(this.rowMetadata.repeat())
+            .map(function(f::apply));
+    }
 
-	static H2Result toResult(ResultInterface result) {
+    @Override
+    public String toString() {
+        return "H2Result{" +
+            ", rowMetadata=" + this.rowMetadata +
+            ", rows=" + this.rows +
+            ", rowsUpdated=" + this.rowsUpdated +
+            '}';
+    }
 
-		Mono<H2RowMetadata> rowMetadata = Mono.just(H2RowMetadata.toRowMetadata(result));
+    static H2Result toResult(ResultInterface result, @Nullable Integer rowsUpdated) {
+        Objects.requireNonNull(result, "result must not be null");
 
-		Flux<H2Row> rows = Flux.fromIterable(new ValueIterable(result))
-			.zipWith(rowMetadata.repeat())
-			.map(function((row, metadata) -> new H2Row(metadata, row)));
+        Mono<H2RowMetadata> rowMetadata = Mono.just(H2RowMetadata.toRowMetadata(result));
 
-		Mono<Integer> rowsUpdated = Mono.just(result.getRowCount());
+        Flux<H2Row> rows = Flux
+            .generate((SynchronousSink<Value[]> sink) -> {
+                if (result.next()) {
+                    sink.next(result.currentRow());
+                } else {
+                    result.close();
+                    sink.complete();
+                }
+            })
+            .map(values -> H2Row.toRow(values, result))
+            .onErrorMap(DbException.class, H2DatabaseException::new);
 
-		return new H2Result(rowMetadata, rows, rowsUpdated);
-	}
-
-	static H2Result toResult(ResultInterface result, Integer rowsUpdated) {
-
-		Mono<H2RowMetadata> rowMetadata = Mono.just(H2RowMetadata.toRowMetadata(result));
-
-		Flux<H2Row> rows = Flux.fromIterable(new ValueIterable(result))
-			.zipWith(rowMetadata.repeat())
-			.map(function((row, metadata) -> new H2Row(metadata, row)));
-
-		return new H2Result(rowMetadata, rows, Mono.just(rowsUpdated));
-	}
+        return new H2Result(rowMetadata, rows, Mono.justOrEmpty(rowsUpdated));
+    }
 }
