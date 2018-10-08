@@ -17,8 +17,10 @@ package io.r2dbc.h2;
 
 import static reactor.function.TupleUtils.*;
 
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.util.Objects;
@@ -35,6 +37,7 @@ import reactor.core.publisher.Mono;
 /**
  * @author Greg Turnquist
  */
+@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 @ToString
 @EqualsAndHashCode
 public final class H2Result implements Result {
@@ -45,13 +48,6 @@ public final class H2Result implements Result {
 
 	private final @Getter Mono<Integer> rowsUpdated;
 	
-	H2Result(Mono<H2RowMetadata> rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated) {
-
-		this.rowMetadata = rowMetadata;
-		this.rows = rows;
-		this.rowsUpdated = rowsUpdated;
-	}
-
 	@Override
 	public <T> Flux<T> map(BiFunction<Row, RowMetadata, ? extends T> f) {
 
@@ -69,16 +65,7 @@ public final class H2Result implements Result {
 	}
 
 	static H2Result toResult(ResultInterface result) {
-
-		Mono<H2RowMetadata> rowMetadata = Mono.just(H2RowMetadata.toRowMetadata(result));
-
-		Flux<H2Row> rows = Flux.fromIterable(new ValueIterable(result))
-			.zipWith(rowMetadata.repeat())
-			.map(function((row, metadata) -> new H2Row(metadata, row)));
-
-		Mono<Integer> rowsUpdated = Mono.just(result.getRowCount());
-
-		return new H2Result(rowMetadata, rows, rowsUpdated);
+		return toResult(result, result.getRowCount());
 	}
 
 	static H2Result toResult(ResultInterface result, Integer rowsUpdated) {

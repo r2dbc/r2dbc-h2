@@ -15,6 +15,8 @@
  */
 package io.r2dbc.h2;
 
+import static io.r2dbc.h2.helper.ValueUtils.*;
+
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collections;
@@ -23,13 +25,9 @@ import java.util.Objects;
 
 import org.h2.command.CommandInterface;
 import org.h2.engine.SessionInterface;
+import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
-import org.h2.value.Value;
-import org.h2.value.ValueDouble;
-import org.h2.value.ValueInt;
-import org.h2.value.ValueNull;
-import org.h2.value.ValueString;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -74,8 +72,20 @@ final class H2Utils {
 
 		return Flux.fromIterable(bindings)
 			.filter(binding -> !binding.getParameters().isEmpty())
-			.flatMap(binding -> updateWithBinding(session, sql, binding))
-			.switchIfEmpty(Flux.defer(() -> updateWithoutBinding(session, sql)));
+			.flatMap(binding -> {
+				try {
+					return updateWithBinding(session, sql, binding);
+				} catch (DbException e) {
+					return Mono.error(() -> new H2ServerException(e));
+				}
+			})
+			.switchIfEmpty(Flux.defer(() -> {
+				try {
+					return updateWithoutBinding(session, sql);
+				} catch (DbException e) {
+					return Mono.error(() -> new H2ServerException(e));
+				}
+			}));
 	}
 
 	static Flux<Tuple2<ResultInterface, Integer>> update(SessionInterface session, String sql) {
@@ -139,21 +149,5 @@ final class H2Utils {
 		binding.getParameters().forEach(entry -> {
 			command.getParameters().get(entry.getKey()).setValue(toValue(entry.getValue()), false);
 		});
-
-	}
-
-	private static Value toValue(Object object) {
-
-		if (object == String.class) {
-			return ValueString.get((String) object);
-		} else if (object instanceof Integer) {
-			return ValueInt.get((Integer) object);
-		} else if (object == Double.class) {
-			return ValueDouble.get((Double) object);
-		} else if (object == ValueNull.INSTANCE) {
-			return ValueNull.INSTANCE;
-		}
-
-		throw new UnsupportedOperationException(String.format("Can't handle '%s' types", object.getClass()));
 	}
 }

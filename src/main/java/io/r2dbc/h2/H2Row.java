@@ -18,6 +18,7 @@ package io.r2dbc.h2;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import io.r2dbc.h2.helper.ValueUtils;
 import io.r2dbc.spi.Row;
 import org.h2.value.Value;
 
@@ -38,18 +39,11 @@ public final class H2Row implements Row {
 		this.value = value;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T get(Object identifier, Class<T> type) {
 
 		int columnIndex = this.rowMetadata.getColumnMetadata(identifier).getColumnIndex();
 
-		Value value = this.value[columnIndex];
-
-		if (type.isInstance(Integer.class)) {
-			return (T) Integer.valueOf(value.getInt());
-		}
-
-		return (T) value.getObject();
+		return ValueUtils.toObject(type, this.value[columnIndex]);
 	}
 }

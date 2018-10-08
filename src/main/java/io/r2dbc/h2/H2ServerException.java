@@ -15,28 +15,19 @@
  */
 package io.r2dbc.h2;
 
-import io.r2dbc.spi.ConnectionFactory;
-import reactor.core.publisher.Mono;
+import io.r2dbc.spi.R2dbcException;
 
 /**
  * @author Greg Turnquist
  */
-public final class H2ConnectionFactory implements ConnectionFactory {
+public class H2ServerException extends R2dbcException {
 
-	private final Mono<String> clientFactory;
-
-	public H2ConnectionFactory(Mono<String> clientFactory) {
-		this.clientFactory = clientFactory;
-	}
-
-	@Override
-	public Mono<H2Connection> create() {
-		
-		return this.clientFactory.map(H2Connection::new);
-	}
-
-	@Override
-	public H2ConnectionFactoryMetadata getMetadata() {
-		return H2ConnectionFactoryMetadata.INSTANCE;
+	/**
+	 * Creates a new exception.
+	 *
+	 * @param cause the cause
+	 */
+	public H2ServerException(Throwable cause) {
+		super(cause);
 	}
 }
