@@ -24,7 +24,6 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
-import static io.r2dbc.spi.Mutability.READ_ONLY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
@@ -309,60 +308,6 @@ final class H2ConnectionTest {
     void setTransactionIsolationLevelNoIsolationLevel() {
         assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).setTransactionIsolationLevel(null))
             .withMessage("isolationLevel must not be null");
-    }
-
-    @Disabled("Not yet implemented")
-    @Test
-    void setTransactionIsolationLevelNonOpen() {
-        when(this.client.inTransaction()).thenReturn(false);
-        verifyNoMoreInteractions(this.client);
-
-        new H2Connection(this.client)
-            .setTransactionIsolationLevel(READ_COMMITTED)
-            .as(StepVerifier::create)
-            .verifyComplete();
-    }
-
-    @Disabled("Not yet implemented")
-    @Test
-    void setTransactionMutability() {
-        when(this.client.inTransaction()).thenReturn(true);
-        when(this.client.execute("SET TRANSACTION READ ONLY")).thenReturn(Mono.empty());
-
-        new H2Connection(this.client)
-            .setTransactionMutability(READ_ONLY)
-            .as(StepVerifier::create)
-            .verifyComplete();
-    }
-
-    @Disabled("Not yet implemented")
-    @Test
-    void setTransactionMutabilityErrorResponse() {
-        when(this.client.inTransaction()).thenReturn(true);
-        when(this.client.execute("SET TRANSACTION READ ONLY")).thenThrow(DbException.get(0));
-
-        new H2Connection(this.client)
-            .setTransactionIsolationLevel(READ_COMMITTED)
-            .as(StepVerifier::create)
-            .verifyErrorMatches(H2DatabaseException.class::isInstance);
-    }
-
-    @Test
-    void setTransactionMutabilityNoMutability() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).setTransactionMutability(null))
-            .withMessage("mutability must not be null");
-    }
-
-    @Disabled("Not yet implemented")
-    @Test
-    void setTransactionMutabilityNonOpen() {
-        when(this.client.inTransaction()).thenReturn(false);
-        verifyNoMoreInteractions(this.client);
-
-        new H2Connection(this.client)
-            .setTransactionMutability(READ_ONLY)
-            .as(StepVerifier::create)
-            .verifyComplete();
     }
 
 }

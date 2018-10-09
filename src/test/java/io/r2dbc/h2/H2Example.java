@@ -20,7 +20,6 @@ import io.r2dbc.h2.util.H2ServerExtension;
 import io.r2dbc.spi.test.Example;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.jdbc.core.JdbcOperations;
 
@@ -73,13 +72,6 @@ final class H2Example {
     @Nested
     final class PostgresqlStyle implements Example<String> {
 
-        @Disabled("Not yet implemented")
-        @Override
-        @Test
-        public void connectionMutability() {
-            // TODO: Remove once implemented
-        }
-
         @Override
         public H2ConnectionFactory getConnectionFactory() {
             return H2Example.this.connectionFactory;
@@ -106,11 +98,5 @@ final class H2Example {
             return String.format("$%d", index + 1);
         }
 
-        @Disabled("Not yet implemented")
-        @Override
-        @Test
-        public void transactionMutability() {
-            // TODO: Remove once implemented
-        }
     }
 }

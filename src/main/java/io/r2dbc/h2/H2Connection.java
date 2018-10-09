@@ -19,7 +19,6 @@ package io.r2dbc.h2;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.IsolationLevel;
-import io.r2dbc.spi.Mutability;
 import org.h2.message.DbException;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -160,14 +159,6 @@ public final class H2Connection implements Connection {
 
         return this.client.execute(getTransactionIsolationLevelQuery(isolationLevel))
             .onErrorMap(DbException.class, H2DatabaseException::new);
-    }
-
-    @Override
-    public Mono<Void> setTransactionMutability(Mutability mutability) {
-        Objects.requireNonNull(mutability, "mutability must not be null");
-
-        // TODO: Implement transaction mutability
-        return Mono.error(new UnsupportedOperationException("Transaction mutability not supported"));
     }
 
     private static String getTransactionIsolationLevelQuery(IsolationLevel isolationLevel) {
