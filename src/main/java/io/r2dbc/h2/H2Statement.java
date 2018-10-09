@@ -16,6 +16,14 @@
 
 package io.r2dbc.h2;
 
+import static io.r2dbc.h2.client.Client.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.ObjectUtils;
@@ -24,14 +32,6 @@ import org.h2.value.ValueInt;
 import org.h2.value.ValueNull;
 import reactor.core.publisher.Flux;
 import reactor.util.annotation.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static io.r2dbc.h2.client.Client.INSERT;
 
 /**
  * An implementation of {@link Statement} for an H2 database.
@@ -91,24 +91,24 @@ public final class H2Statement implements Statement {
     public Flux<H2Result> execute() {
         return Flux.fromArray(this.sql.split(";"))
             .map(String::trim)
-            .flatMap(this::execute);
+            .flatMap(sql -> execute(this.client, sql, this.bindings));
     }
 
     @Override
     public Flux<H2Result> executeReturningGeneratedKeys() {
-        return this.execute(this.sql);
+        return execute(this.client, this.sql, this.bindings);
     }
 
     Binding getCurrentBinding() {
         return this.bindings.getCurrent();
     }
 
-    private Flux<H2Result> execute(String sql) {
-        if (INSERT.matcher(this.sql).matches()) {
-            return this.client.update(sql, this.bindings.bindings)
+    private static Flux<H2Result> execute(Client client, String sql, Bindings bindings) {
+        if (INSERT.matcher(sql).matches()) {
+            return client.update(sql, bindings.bindings)
                 .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount()));
         } else {
-            return this.client.query(sql, this.bindings.bindings)
+            return client.query(sql, bindings.bindings)
                 .map(result -> H2Result.toResult(result, null));
         }
     }
