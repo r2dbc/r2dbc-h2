@@ -16,27 +16,21 @@
 
 package io.r2dbc.h2;
 
+import static io.r2dbc.spi.IsolationLevel.*;
+import static org.h2.engine.Constants.*;
+
+import java.util.Objects;
+import java.util.function.Function;
+
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.IsolationLevel;
-import io.r2dbc.spi.Mutability;
 import org.h2.message.DbException;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.Objects;
-import java.util.function.Function;
-
-import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
-import static io.r2dbc.spi.IsolationLevel.READ_UNCOMMITTED;
-import static io.r2dbc.spi.IsolationLevel.REPEATABLE_READ;
-import static io.r2dbc.spi.IsolationLevel.SERIALIZABLE;
-import static org.h2.engine.Constants.LOCK_MODE_OFF;
-import static org.h2.engine.Constants.LOCK_MODE_READ_COMMITTED;
-import static org.h2.engine.Constants.LOCK_MODE_TABLE;
 
 /**
  * An implementation of {@link Connection} for connecting to an H2 database.
@@ -160,14 +154,6 @@ public final class H2Connection implements Connection {
 
         return this.client.execute(getTransactionIsolationLevelQuery(isolationLevel))
             .onErrorMap(DbException.class, H2DatabaseException::new);
-    }
-
-    @Override
-    public Mono<Void> setTransactionMutability(Mutability mutability) {
-        Objects.requireNonNull(mutability, "mutability must not be null");
-
-        // TODO: Implement transaction mutability
-        return Mono.error(new UnsupportedOperationException("Transaction mutability not supported"));
     }
 
     private static String getTransactionIsolationLevelQuery(IsolationLevel isolationLevel) {
