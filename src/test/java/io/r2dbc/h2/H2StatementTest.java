@@ -125,12 +125,12 @@ final class H2StatementTest {
 
     @Test
     void execute() {
-        when(this.client.query("test-query-$1", Arrays.asList(
+        when(this.client.update("test-query-$1", Arrays.asList(
             new Binding().add(0, ValueInt.get(100)),
             new Binding().add(0, ValueInt.get(200))
         ))).thenReturn(Flux.just(
-            new LocalResult(),
-            new LocalResult()
+            new ResultWithGeneratedKeys.WithKeys(0, new LocalResult()),
+            new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())
         ));
 
         new H2Statement(this.client, "test-query-$1")

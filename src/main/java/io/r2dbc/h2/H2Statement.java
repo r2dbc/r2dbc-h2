@@ -31,7 +31,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static io.r2dbc.h2.client.Client.INSERT;
+import static io.r2dbc.h2.client.Client.SELECT;
 
 /**
  * An implementation of {@link Statement} for an H2 database.
@@ -104,12 +104,12 @@ public final class H2Statement implements Statement {
     }
 
     private static Flux<H2Result> execute(Client client, String sql, Bindings bindings) {
-        if (INSERT.matcher(sql).matches()) {
-            return client.update(sql, bindings.bindings)
-                .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount()));
-        } else {
+        if (SELECT.matcher(sql).matches()) {
             return client.query(sql, bindings.bindings)
                 .map(result -> H2Result.toResult(result, null));
+        } else {
+            return client.update(sql, bindings.bindings)
+                .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount()));
         }
     }
 

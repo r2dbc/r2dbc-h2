@@ -20,8 +20,10 @@ import io.r2dbc.h2.util.H2ServerExtension;
 import io.r2dbc.spi.test.Example;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.jdbc.core.JdbcOperations;
+import reactor.test.StepVerifier;
 
 final class H2Example {
 
@@ -98,5 +100,14 @@ final class H2Example {
             return String.format("$%d", index + 1);
         }
 
+        @Test
+        void showTables() {
+            getConnectionFactory().create()
+                .flatMapMany(connection ->
+                    connection.createStatement("SHOW TABLES")
+                        .execute())
+                .as(StepVerifier::create)
+                .verifyComplete();
+        }
     }
 }

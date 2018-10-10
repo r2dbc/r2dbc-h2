@@ -19,6 +19,7 @@ package io.r2dbc.h2;
 import io.r2dbc.h2.client.Client;
 import org.h2.message.DbException;
 import org.h2.result.LocalResult;
+import org.h2.result.ResultWithGeneratedKeys;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -57,8 +58,8 @@ final class H2BatchTest {
 
     @Test
     void execute() {
-        when(this.client.query("test-query-1", Collections.emptyList())).thenReturn(Flux.just(new LocalResult()));
-        when(this.client.query("test-query-2", Collections.emptyList())).thenReturn(Flux.just(new LocalResult()));
+        when(this.client.update("test-query-1", Collections.emptyList())).thenReturn(Flux.just(new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())));
+        when(this.client.update("test-query-2", Collections.emptyList())).thenReturn(Flux.just(new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())));
 
         new H2Batch(this.client)
             .add("test-query-1")
@@ -71,7 +72,7 @@ final class H2BatchTest {
 
     @Test
     void executeErrorResponse() {
-        when(this.client.query("test-query", Collections.emptyList())).thenReturn(Flux.error(DbException.get(0)));
+        when(this.client.update("test-query", Collections.emptyList())).thenReturn(Flux.error(DbException.get(0)));
 
         new H2Batch(this.client)
             .add("test-query")

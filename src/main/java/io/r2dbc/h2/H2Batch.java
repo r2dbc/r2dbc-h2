@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import static io.r2dbc.h2.client.Client.INSERT;
+import static io.r2dbc.h2.client.Client.SELECT;
 
 /**
  * An implementation of {@link Batch} for executing a collection of statements in a batch against an H2 database.
@@ -53,12 +53,12 @@ public final class H2Batch implements Batch {
     public Flux<H2Result> execute() {
         return Flux.fromIterable(this.statements)
             .flatMap(statement -> {
-                if (INSERT.matcher(statement).matches()) {
-                    return this.client.update(statement, Collections.emptyList())
-                        .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount()));
-                } else {
+                if (SELECT.matcher(statement).matches()) {
                     return this.client.query(statement, Collections.emptyList())
                         .map(result -> H2Result.toResult(result, null));
+                } else {
+                    return this.client.update(statement, Collections.emptyList())
+                        .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount()));
                 }
             })
             .onErrorMap(DbException.class, H2DatabaseException::new);
