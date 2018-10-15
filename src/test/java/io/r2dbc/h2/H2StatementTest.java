@@ -52,12 +52,6 @@ final class H2StatementTest {
     }
 
     @Test
-    void bindIndexNoIndex() {
-        assertThatNullPointerException().isThrownBy(() -> this.statement.bind(null, ""))
-            .withMessage("index must not be null");
-    }
-
-    @Test
     void bindIndexNoValue() {
         assertThatNullPointerException().isThrownBy(() -> this.statement.bind(1, null))
             .withMessage("value must not be null");
@@ -65,7 +59,7 @@ final class H2StatementTest {
 
     @Test
     void bindNoIdentifier() {
-        assertThatNullPointerException().isThrownBy(() -> this.statement.bind((String) null, ""))
+        assertThatNullPointerException().isThrownBy(() -> this.statement.bind(null, ""))
             .withMessage("identifier must not be null");
     }
 

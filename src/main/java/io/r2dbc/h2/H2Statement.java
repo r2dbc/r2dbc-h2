@@ -36,7 +36,7 @@ import static io.r2dbc.h2.client.Client.INSERT;
 /**
  * An implementation of {@link Statement} for an H2 database.
  */
-public final class H2Statement implements Statement {
+public final class H2Statement implements Statement<H2Statement> {
 
     private static final Pattern PARAMETER_SYMBOL = Pattern.compile(".*\\$([\\d]+).*");
 
@@ -67,8 +67,7 @@ public final class H2Statement implements Statement {
     }
 
     @Override
-    public H2Statement bind(Integer index, Object value) {
-        Objects.requireNonNull(index, "index must not be null");
+    public H2Statement bind(int index, Object value) {
         Objects.requireNonNull(value, "value must not be null");
 
         // TODO: Support codecs
@@ -113,7 +112,7 @@ public final class H2Statement implements Statement {
         }
     }
 
-    private Integer getIndex(String identifier) {
+    private int getIndex(String identifier) {
         Matcher matcher = PARAMETER_SYMBOL.matcher(identifier);
 
         if (!matcher.find()) {
