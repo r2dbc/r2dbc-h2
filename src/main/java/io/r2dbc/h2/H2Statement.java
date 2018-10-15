@@ -81,7 +81,14 @@ public final class H2Statement implements Statement<H2Statement> {
         Objects.requireNonNull(identifier, "identifier must not be null");
         ObjectUtils.requireType(identifier, String.class, "identifier must be a String");
 
-        this.bindings.getCurrent().add(getIndex((String) identifier), ValueNull.INSTANCE);
+        bindNull(getIndex((String) identifier), type);
+
+        return this;
+    }
+
+    @Override
+    public H2Statement bindNull(int index, @Nullable Class<?> type) {
+        this.bindings.getCurrent().add(index, ValueNull.INSTANCE);
 
         return this;
     }
