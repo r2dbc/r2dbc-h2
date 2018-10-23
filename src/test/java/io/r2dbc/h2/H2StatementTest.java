@@ -138,24 +138,6 @@ final class H2StatementTest {
             .verifyComplete();
     }
 
-
-    @Test
-    void executeReturningGeneratedKeys() {
-        when(this.client.update("insert test-query-$1", Arrays.asList(
-            new Binding().add(0, ValueInt.get(100))
-        ))).thenReturn(Flux.just(
-            new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())
-        ));
-
-        new H2Statement(this.client, "insert test-query-$1")
-            .bind("$1", 100)
-            .add()
-            .executeReturningGeneratedKeys()
-            .as(StepVerifier::create)
-            .expectNextCount(1)
-            .verifyComplete();
-    }
-
     @Test
     void executeWithoutAdd() {
         when(this.client.update("insert test-query-$1", Arrays.asList(

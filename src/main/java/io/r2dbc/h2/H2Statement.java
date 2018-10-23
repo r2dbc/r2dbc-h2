@@ -100,11 +100,6 @@ public final class H2Statement implements Statement<H2Statement> {
             .flatMap(sql -> execute(this.client, sql, this.bindings));
     }
 
-    @Override
-    public Flux<H2Result> executeReturningGeneratedKeys() {
-        return execute(this.client, this.sql, this.bindings);
-    }
-
     Binding getCurrentBinding() {
         return this.bindings.getCurrent();
     }
