@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.spi.Row;
 import org.h2.result.ResultInterface;
 import org.h2.value.Value;
@@ -32,12 +33,15 @@ import java.util.Objects;
  */
 public final class H2Row implements Row {
 
+    private final Codecs codecs;
+
     private final List<Column> columns;
 
     private final Map<String, Column> nameKeyedColumns;
 
-    H2Row(List<Column> columns) {
+    H2Row(List<Column> columns, Codecs codecs) {
         this.columns = Objects.requireNonNull(columns, "columns must not be null");
+        this.codecs = Objects.requireNonNull(codecs, "codecs must not be null");
 
         this.nameKeyedColumns = getNameKeyedColumns(this.columns);
     }
@@ -70,8 +74,7 @@ public final class H2Row implements Row {
             throw new IllegalArgumentException(String.format("Identifier '%s' is not a valid identifier. Should either be an Integer index or a String column name.", identifier));
         }
 
-        // TODO: Support codecs
-        return (T) column.getValue().getObject();
+        return this.codecs.decode(column.getValue(), column.getDataType(), type);
     }
 
     @Override
@@ -87,13 +90,14 @@ public final class H2Row implements Row {
             '}';
     }
 
-    static H2Row toRow(Value[] values, ResultInterface result) {
+    static H2Row toRow(Value[] values, ResultInterface result, Codecs codecs) {
         Objects.requireNonNull(values, "values must not be null");
         Objects.requireNonNull(result, "result must not be null");
+        Objects.requireNonNull(codecs, "codecs must not null");
 
         List<Column> columns = getColumns(values, result);
 
-        return new H2Row(columns);
+        return new H2Row(columns, codecs);
     }
 
     private static List<Column> getColumns(Value[] values, ResultInterface result) {

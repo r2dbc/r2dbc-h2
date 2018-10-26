@@ -17,6 +17,7 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Client;
+import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.IsolationLevel;
 import org.h2.message.DbException;
@@ -46,8 +47,11 @@ public final class H2Connection implements Connection {
 
     private final Client client;
 
-    H2Connection(Client client) {
+    private final Codecs codecs;
+
+    H2Connection(Client client, Codecs codecs) {
         this.client = Objects.requireNonNull(client, "client must not be null");
+        this.codecs = Objects.requireNonNull(codecs, "codecs must not be null");
     }
 
     @Override
@@ -85,7 +89,7 @@ public final class H2Connection implements Connection {
 
     @Override
     public H2Batch createBatch() {
-        return new H2Batch(this.client);
+        return new H2Batch(this.client, this.codecs);
     }
 
     @Override
@@ -105,7 +109,7 @@ public final class H2Connection implements Connection {
 
     @Override
     public H2Statement createStatement(String sql) {
-        return new H2Statement(this.client, sql);
+        return new H2Statement(this.client, this.codecs, sql);
     }
 
     @Override
