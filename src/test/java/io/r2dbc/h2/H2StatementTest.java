@@ -18,8 +18,10 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
+import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.result.LocalResult;
 import org.h2.result.ResultWithGeneratedKeys;
+import org.h2.value.Value;
 import org.h2.value.ValueInt;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
@@ -39,7 +41,11 @@ final class H2StatementTest {
 
     private final Client client = mock(Client.class, RETURNS_SMART_NULLS);
 
-    private final H2Statement statement = new H2Statement(this.client, "test-query-$1");
+    private final Value parameter = ValueInt.get(100);
+
+    private final MockCodecs codecs = MockCodecs.builder().encoding(100, this.parameter).build();
+
+    private final H2Statement statement = new H2Statement(this.client, this.codecs, "test-query-$1");
 
     @Test
     void bind() {
@@ -71,6 +77,12 @@ final class H2StatementTest {
 
     @Test
     void bindNull() {
+        MockCodecs codecs = MockCodecs.builder()
+            .encoding(Integer.class, ValueNull.INSTANCE)
+            .build();
+
+        H2Statement statement = new H2Statement(this.client, codecs, "test-query-$1");
+
         assertThat(statement.bindNull("$1", Integer.class).getCurrentBinding())
             .isEqualTo(new Binding().add(0, ValueNull.INSTANCE));
     }
@@ -107,19 +119,19 @@ final class H2StatementTest {
 
     @Test
     void constructorNoClient() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Statement(null, "test-query"))
+        assertThatNullPointerException().isThrownBy(() -> new H2Statement(null, this.codecs, "test-query"))
             .withMessage("client must not be null");
     }
 
     @Test
     void constructorNoSql() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Statement(this.client, null))
+        assertThatNullPointerException().isThrownBy(() -> new H2Statement(this.client, this.codecs, null))
             .withMessage("sql must not be null");
     }
 
     @Test
     void execute() {
-        when(this.client.query("test-query-$1", Arrays.asList(
+        when(this.client.query("select test-query-$1", Arrays.asList(
             new Binding().add(0, ValueInt.get(100)),
             new Binding().add(0, ValueInt.get(200))
         ))).thenReturn(Flux.just(
@@ -127,7 +139,12 @@ final class H2StatementTest {
             new LocalResult()
         ));
 
-        new H2Statement(this.client, "test-query-$1")
+        MockCodecs codecs = MockCodecs.builder()
+            .encoding(100, ValueInt.get(100))
+            .encoding(200, ValueInt.get(200))
+            .build();
+
+        new H2Statement(this.client, codecs, "select test-query-$1")
             .bind("$1", 100)
             .add()
             .bind("$1", 200)
@@ -146,7 +163,7 @@ final class H2StatementTest {
             new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())
         ));
 
-        new H2Statement(this.client, "insert test-query-$1")
+        new H2Statement(this.client, this.codecs, "insert test-query-$1")
             .bind("$1", 100)
             .execute()
             .as(StepVerifier::create)

@@ -17,6 +17,7 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Client;
+import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.spi.Batch;
 import org.h2.message.DbException;
 import reactor.core.publisher.Flux;
@@ -35,10 +36,13 @@ public final class H2Batch implements Batch<H2Batch> {
 
     private final Client client;
 
+    private final Codecs codecs;
+
     private final List<String> statements = new ArrayList<>();
 
-    H2Batch(Client client) {
+    H2Batch(Client client, Codecs codecs) {
         this.client = Objects.requireNonNull(client, "client must not be null");
+        this.codecs = Objects.requireNonNull(codecs, "codecs must not be null");
     }
 
     @Override
@@ -55,10 +59,10 @@ public final class H2Batch implements Batch<H2Batch> {
             .flatMap(statement -> {
                 if (INSERT.matcher(statement).matches()) {
                     return this.client.update(statement, Collections.emptyList())
-                        .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount()));
+                        .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount(), this.codecs));
                 } else {
                     return this.client.query(statement, Collections.emptyList())
-                        .map(result -> H2Result.toResult(result, null));
+                        .map(result -> H2Result.toResult(result, null, this.codecs));
                 }
             })
             .onErrorMap(DbException.class, H2DatabaseException::new);

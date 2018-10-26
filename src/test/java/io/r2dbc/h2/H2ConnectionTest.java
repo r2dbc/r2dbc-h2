@@ -17,6 +17,7 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Client;
+import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.message.DbException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(false);
         when(this.client.disableAutoCommit()).thenReturn(Mono.empty());
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .beginTransaction()
             .as(StepVerifier::create)
             .verifyComplete();
@@ -51,7 +52,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(false);
         when(this.client.disableAutoCommit()).thenThrow(DbException.get(0));
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .beginTransaction()
             .as(StepVerifier::create)
             .verifyErrorMatches(H2DatabaseException.class::isInstance);
@@ -62,7 +63,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(true);
         verifyNoMoreInteractions(this.client);
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .beginTransaction()
             .as(StepVerifier::create)
             .verifyComplete();
@@ -72,7 +73,7 @@ final class H2ConnectionTest {
     void close() {
         when(this.client.close()).thenReturn(Mono.empty());
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .close()
             .as(StepVerifier::create)
             .verifyComplete();
@@ -84,7 +85,7 @@ final class H2ConnectionTest {
         when(this.client.execute("COMMIT")).thenReturn(Mono.empty());
         when(this.client.enableAutoCommit()).thenReturn(Mono.empty());
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .commitTransaction()
             .as(StepVerifier::create)
             .verifyComplete();
@@ -96,7 +97,7 @@ final class H2ConnectionTest {
         when(this.client.execute("COMMIT")).thenThrow(DbException.get(0));
         when(this.client.enableAutoCommit()).thenReturn(Mono.empty());
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .commitTransaction()
             .as(StepVerifier::create)
             .verifyErrorMatches(H2DatabaseException.class::isInstance);
@@ -107,7 +108,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(false);
         verifyNoMoreInteractions(this.client);
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .commitTransaction()
             .as(StepVerifier::create)
             .verifyComplete();
@@ -115,13 +116,19 @@ final class H2ConnectionTest {
 
     @Test
     void constructorNoClient() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(null))
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(null, MockCodecs.empty()))
             .withMessage("client must not be null");
     }
 
     @Test
+    void constructorNoCodecs() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client, null))
+            .withMessage("codecs must not be null");
+    }
+
+    @Test
     void createBatch() {
-        assertThat(new H2Connection(this.client).createBatch()).isInstanceOf(H2Batch.class);
+        assertThat(new H2Connection(this.client, MockCodecs.empty()).createBatch()).isInstanceOf(H2Batch.class);
     }
 
     @Test
@@ -129,7 +136,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(true);
         when(this.client.execute("SAVEPOINT test-name")).thenReturn(Mono.empty());
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .createSavepoint("test-name")
             .as(StepVerifier::create)
             .verifyComplete();
@@ -140,7 +147,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(true);
         when(this.client.execute("SAVEPOINT test-name")).thenThrow(DbException.get(0));
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .createSavepoint("test-name")
             .as(StepVerifier::create)
             .verifyErrorMatches(H2DatabaseException.class::isInstance);
@@ -148,7 +155,7 @@ final class H2ConnectionTest {
 
     @Test
     void createSavepointNoName() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).createSavepoint(null))
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).createSavepoint(null))
             .withMessage("name must not be null");
     }
 
@@ -157,7 +164,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(false);
         verifyNoMoreInteractions(this.client);
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .createSavepoint("test-name")
             .as(StepVerifier::create)
             .verifyComplete();
@@ -165,7 +172,7 @@ final class H2ConnectionTest {
 
     @Test
     void createStatement() {
-        assertThat(new H2Connection(this.client).createStatement("test-query-?")).isInstanceOf(H2Statement.class);
+        assertThat(new H2Connection(this.client, MockCodecs.empty()).createStatement("test-query-?")).isInstanceOf(H2Statement.class);
     }
 
     @Test
@@ -173,7 +180,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(true);
         when(this.client.execute("RELEASE SAVEPOINT test-name")).thenReturn(Mono.empty());
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .releaseSavepoint("test-name")
             .as(StepVerifier::create)
             .verifyComplete();
@@ -184,7 +191,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(true);
         when(this.client.execute("RELEASE SAVEPOINT test-name")).thenThrow(DbException.get(0));
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .releaseSavepoint("test-name")
             .as(StepVerifier::create)
             .verifyErrorMatches(H2DatabaseException.class::isInstance);
@@ -192,7 +199,7 @@ final class H2ConnectionTest {
 
     @Test
     void releaseSavepointNoName() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).releaseSavepoint(null))
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).releaseSavepoint(null))
             .withMessage("name must not be null");
     }
 
@@ -201,7 +208,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(false);
         verifyNoMoreInteractions(this.client);
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .releaseSavepoint("test-name")
             .as(StepVerifier::create)
             .verifyComplete();
@@ -213,7 +220,7 @@ final class H2ConnectionTest {
         when(this.client.execute("ROLLBACK")).thenReturn(Mono.empty());
         when(this.client.enableAutoCommit()).thenReturn(Mono.empty());
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransaction()
             .as(StepVerifier::create)
             .verifyComplete();
@@ -225,7 +232,7 @@ final class H2ConnectionTest {
         when(this.client.execute("ROLLBACK")).thenThrow(DbException.get(0));
         when(this.client.enableAutoCommit()).thenReturn(Mono.empty());
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransaction()
             .as(StepVerifier::create)
             .verifyErrorMatches(H2DatabaseException.class::isInstance);
@@ -236,7 +243,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(false);
         verifyNoMoreInteractions(this.client);
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransaction()
             .as(StepVerifier::create)
             .verifyComplete();
@@ -247,7 +254,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(true);
         when(this.client.execute("ROLLBACK TO SAVEPOINT test-name")).thenReturn(Mono.empty());
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransactionToSavepoint("test-name")
             .as(StepVerifier::create)
             .verifyComplete();
@@ -258,7 +265,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(true);
         when(this.client.execute("ROLLBACK TO SAVEPOINT test-name")).thenThrow(DbException.get(0));
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransactionToSavepoint("test-name")
             .as(StepVerifier::create)
             .verifyErrorMatches(H2DatabaseException.class::isInstance);
@@ -266,7 +273,7 @@ final class H2ConnectionTest {
 
     @Test
     void rollbackTransactionToSavepointNoName() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).rollbackTransactionToSavepoint(null))
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).rollbackTransactionToSavepoint(null))
             .withMessage("name must not be null");
     }
 
@@ -275,7 +282,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(false);
         verifyNoMoreInteractions(this.client);
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransactionToSavepoint("test-name")
             .as(StepVerifier::create)
             .verifyComplete();
@@ -286,7 +293,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(true);
         when(this.client.execute("SET LOCK_MODE 3")).thenReturn(Mono.empty());
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .setTransactionIsolationLevel(READ_COMMITTED)
             .as(StepVerifier::create)
             .verifyComplete();
@@ -298,7 +305,7 @@ final class H2ConnectionTest {
         when(this.client.inTransaction()).thenReturn(true);
         when(this.client.execute("SET LOCK_MODE 3")).thenThrow(DbException.get(0));
 
-        new H2Connection(this.client)
+        new H2Connection(this.client, MockCodecs.empty())
             .setTransactionIsolationLevel(READ_COMMITTED)
             .as(StepVerifier::create)
             .verifyErrorMatches(H2DatabaseException.class::isInstance);
@@ -306,7 +313,7 @@ final class H2ConnectionTest {
 
     @Test
     void setTransactionIsolationLevelNoIsolationLevel() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client).setTransactionIsolationLevel(null))
+        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).setTransactionIsolationLevel(null))
             .withMessage("isolationLevel must not be null");
     }
 

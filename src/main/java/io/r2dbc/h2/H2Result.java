@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Row;
 import io.r2dbc.spi.RowMetadata;
@@ -72,8 +73,9 @@ public final class H2Result implements Result {
             '}';
     }
 
-    static H2Result toResult(ResultInterface result, @Nullable Integer rowsUpdated) {
+    static H2Result toResult(ResultInterface result, @Nullable Integer rowsUpdated, Codecs codecs) {
         Objects.requireNonNull(result, "result must not be null");
+        Objects.requireNonNull(codecs, "codecs must not be null");
 
         Mono<H2RowMetadata> rowMetadata = Mono.just(H2RowMetadata.toRowMetadata(result));
 
@@ -86,7 +88,7 @@ public final class H2Result implements Result {
                     sink.complete();
                 }
             })
-            .map(values -> H2Row.toRow(values, result))
+            .map(values -> H2Row.toRow(values, result, codecs))
             .onErrorMap(DbException.class, H2DatabaseException::new);
 
         return new H2Result(rowMetadata, rows, Mono.justOrEmpty(rowsUpdated));

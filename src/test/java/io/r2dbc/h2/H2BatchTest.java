@@ -17,6 +17,7 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Client;
+import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.message.DbException;
 import org.h2.result.LocalResult;
 import org.junit.jupiter.api.Disabled;
@@ -38,21 +39,27 @@ final class H2BatchTest {
 
     @Test
     void addNoSql() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Batch(this.client).add(null))
+        assertThatNullPointerException().isThrownBy(() -> new H2Batch(this.client, MockCodecs.empty()).add(null))
             .withMessage("sql must not be null");
     }
 
     @Disabled("Not yet implemented")
     @Test
     void addWithParameter() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2Batch(this.client).add("test-query-$1"))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Batch(this.client, MockCodecs.empty()).add("test-query-$1"))
             .withMessage("Statement 'test-query-$1' is not supported.  This is often due to the presence of parameters.");
     }
 
     @Test
     void constructorNoClient() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Batch(null))
+        assertThatNullPointerException().isThrownBy(() -> new H2Batch(null, MockCodecs.empty()))
             .withMessage("client must not be null");
+    }
+
+    @Test
+    void constructorNoCodecs() {
+        assertThatNullPointerException().isThrownBy(() -> new H2Batch(this.client, null))
+            .withMessage("codecs must not be null");
     }
 
     @Test
@@ -60,7 +67,7 @@ final class H2BatchTest {
         when(this.client.query("test-query-1", Collections.emptyList())).thenReturn(Flux.just(new LocalResult()));
         when(this.client.query("test-query-2", Collections.emptyList())).thenReturn(Flux.just(new LocalResult()));
 
-        new H2Batch(this.client)
+        new H2Batch(this.client, MockCodecs.empty())
             .add("test-query-1")
             .add("test-query-2")
             .execute()
@@ -73,7 +80,7 @@ final class H2BatchTest {
     void executeErrorResponse() {
         when(this.client.query("test-query", Collections.emptyList())).thenReturn(Flux.error(DbException.get(0)));
 
-        new H2Batch(this.client)
+        new H2Batch(this.client, MockCodecs.empty())
             .add("test-query")
             .execute()
             .as(StepVerifier::create)
