@@ -18,10 +18,9 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
+import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.ObjectUtils;
 import io.r2dbc.spi.Statement;
-import org.h2.value.ValueInt;
-import org.h2.value.ValueNull;
 import reactor.core.publisher.Flux;
 import reactor.util.annotation.Nullable;
 
@@ -31,7 +30,7 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static io.r2dbc.h2.client.Client.INSERT;
+import static io.r2dbc.h2.client.Client.SELECT;
 
 /**
  * An implementation of {@link Statement} for an H2 database.
@@ -44,11 +43,14 @@ public final class H2Statement implements Statement<H2Statement> {
 
     private final Client client;
 
+    private final Codecs codecs;
+
     private final String sql;
 
 
-    H2Statement(Client client, String sql) {
+    H2Statement(Client client, Codecs codecs, String sql) {
         this.client = Objects.requireNonNull(client, "client must not be null");
+        this.codecs = Objects.requireNonNull(codecs, "codecs must not be null");
         this.sql = Objects.requireNonNull(sql, "sql must not be null");
     }
 
@@ -70,8 +72,7 @@ public final class H2Statement implements Statement<H2Statement> {
     public H2Statement bind(int index, Object value) {
         Objects.requireNonNull(value, "value must not be null");
 
-        // TODO: Support codecs
-        this.bindings.getCurrent().add(index, ValueInt.get((Integer) value));
+        this.bindings.getCurrent().add(index, this.codecs.encode(value));
 
         return this;
     }
@@ -88,7 +89,7 @@ public final class H2Statement implements Statement<H2Statement> {
 
     @Override
     public H2Statement bindNull(int index, @Nullable Class<?> type) {
-        this.bindings.getCurrent().add(index, ValueNull.INSTANCE);
+        this.bindings.getCurrent().add(index, this.codecs.encodeNull(type));
 
         return this;
     }
@@ -97,20 +98,20 @@ public final class H2Statement implements Statement<H2Statement> {
     public Flux<H2Result> execute() {
         return Flux.fromArray(this.sql.split(";"))
             .map(String::trim)
-            .flatMap(sql -> execute(this.client, sql, this.bindings));
+            .flatMap(sql -> execute(this.client, sql, this.bindings, this.codecs));
     }
 
     Binding getCurrentBinding() {
         return this.bindings.getCurrent();
     }
 
-    private static Flux<H2Result> execute(Client client, String sql, Bindings bindings) {
-        if (INSERT.matcher(sql).matches()) {
+    private static Flux<H2Result> execute(Client client, String sql, Bindings bindings, Codecs codecs) {
+        if (!SELECT.matcher(sql).matches()) {
             return client.update(sql, bindings.bindings)
-                .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount()));
+                .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount(), codecs));
         } else {
             return client.query(sql, bindings.bindings)
-                .map(result -> H2Result.toResult(result, null));
+                .map(result -> H2Result.toResult(result, null, codecs));
         }
     }
 

@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.value.Value;
@@ -56,7 +57,7 @@ final class H2ResultTest {
     void toResultErrorResponse() {
         when(this.result.next()).thenThrow(DbException.get(0));
 
-        H2Result result = H2Result.toResult(this.result, null);
+        H2Result result = H2Result.toResult(this.result, null, MockCodecs.empty());
 
         result.map((row, rowMetadata) -> row)
             .as(StepVerifier::create)
@@ -69,7 +70,7 @@ final class H2ResultTest {
 
     @Test
     void toResultNoResult() {
-        assertThatNullPointerException().isThrownBy(() -> H2Result.toResult(null, 0))
+        assertThatNullPointerException().isThrownBy(() -> H2Result.toResult(null, 0, null))
             .withMessage("result must not be null");
     }
 
@@ -78,7 +79,7 @@ final class H2ResultTest {
         when(this.result.next()).thenReturn(true, true, false);
         when(this.result.currentRow()).thenReturn(new Value[]{ValueInt.get(100)}, new Value[]{ValueInt.get(200)});
 
-        H2Result result = H2Result.toResult(this.result, Integer.MAX_VALUE);
+        H2Result result = H2Result.toResult(this.result, Integer.MAX_VALUE, MockCodecs.empty());
 
         result.map((row, rowMetadata) -> row)
             .as(StepVerifier::create)

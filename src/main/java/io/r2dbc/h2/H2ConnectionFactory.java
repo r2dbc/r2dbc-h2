@@ -18,6 +18,7 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.client.SessionClient;
+import io.r2dbc.h2.codecs.DefaultCodecs;
 import io.r2dbc.spi.ConnectionFactory;
 import org.h2.engine.ConnectionInfo;
 import reactor.core.publisher.Mono;
@@ -55,7 +56,7 @@ public final class H2ConnectionFactory implements ConnectionFactory {
     @Override
     public Mono<H2Connection> create() {
         return this.clientFactory
-            .map(H2Connection::new);
+            .map(client -> new H2Connection(client, new DefaultCodecs()));
     }
 
     @Override

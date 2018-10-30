@@ -35,6 +35,8 @@ public interface Client {
 
     Pattern INSERT = Pattern.compile(".*INSERT.*", CASE_INSENSITIVE);
 
+    Pattern SELECT = Pattern.compile(".*SELECT.*", CASE_INSENSITIVE);
+
     /**
      * Release any resources held by the {@link Client}.
      *
