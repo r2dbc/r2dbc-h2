@@ -29,11 +29,9 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 
 public final class H2ServerExtension implements BeforeAllCallback, AfterAllCallback {
 
-    private final String database = randomAlphanumeric(8);
-
     private final String password = randomAlphanumeric(16);
 
-    private final String url = "mem";
+    private final String url = String.format("mem:%s", randomAlphanumeric(8));
 
     private final String username = randomAlphanumeric(16);
 
@@ -50,16 +48,12 @@ public final class H2ServerExtension implements BeforeAllCallback, AfterAllCallb
     public void beforeAll(ExtensionContext context) throws Exception {
         this.dataSource = DataSourceBuilder.create()
             .type(HikariDataSource.class)
-            .url(String.format("jdbc:h2:%s:%s;USER=%s;PASSWORD=%s;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=4", this.url, this.database, this.username, this.password))
+            .url(String.format("jdbc:h2:%s;USER=%s;PASSWORD=%s;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=4", this.url, this.username, this.password))
             .build();
 
         this.dataSource.setMaximumPoolSize(1);
 
         this.jdbcOperations = new JdbcTemplate(this.dataSource);
-    }
-
-    public String getDatabase() {
-        return this.database;
     }
 
     @Nullable

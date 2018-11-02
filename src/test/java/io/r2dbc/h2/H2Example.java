@@ -29,7 +29,6 @@ final class H2Example {
     static final H2ServerExtension SERVER = new H2ServerExtension();
 
     private final H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-        .database(SERVER.getDatabase())
         .password(SERVER.getPassword())
         .url(SERVER.getUrl())
         .username(SERVER.getUsername())

@@ -35,7 +35,35 @@ final class H2ConnectionFactoryTest {
     @Test
     void create() {
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .url("mem")
+            .url("mem:foo")
+            .username("sa")
+            .password("")
+            .build();
+
+        new H2ConnectionFactory(configuration).create()
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
+    }
+
+    @Test
+    void createFileBasedDatabase() {
+        H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
+            .file("~/test")
+            .username("sa")
+            .password("")
+            .build();
+
+        new H2ConnectionFactory(configuration).create()
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
+    }
+
+    @Test
+    void createInMemoryDatabase() {
+        H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
+            .inMemory("in-memory-named-database")
             .username("sa")
             .password("")
             .build();
