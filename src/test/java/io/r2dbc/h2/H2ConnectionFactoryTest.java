@@ -47,9 +47,9 @@ final class H2ConnectionFactoryTest {
     }
 
     @Test
-    void createInMemoryDatabase() {
+    void createFileBasedDatabase() {
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .inMemory("in-memory-named-database")
+            .file("~/test")
             .username("sa")
             .password("")
             .build();
@@ -61,9 +61,9 @@ final class H2ConnectionFactoryTest {
     }
 
     @Test
-    void createFileBasedDatabase() {
+    void createInMemoryDatabase() {
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .file("~/test")
+            .inMemory("in-memory-named-database")
             .username("sa")
             .password("")
             .build();

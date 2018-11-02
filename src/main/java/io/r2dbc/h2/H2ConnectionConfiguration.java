@@ -91,9 +91,9 @@ public final class H2ConnectionConfiguration {
         }
 
         /**
-         * Configure a file-based database, e.g. {@literal ~/my-database} or {@literal /path/to/my/database.db}.
+         * Configure a file-based database, e.g. {@code ~/my-database} or {@code /path/to/my/database.db}.
          *
-         * @param path of the database file (automatically prefixed with {@literal "file:"})
+         * @param path of the database file (automatically prefixed with {@code file:})
          * @return this {@link Builder}
          */
         public Builder file(String path) {
@@ -101,14 +101,15 @@ public final class H2ConnectionConfiguration {
         }
 
         /**
-         * Configure an in-memory database, e.g. {@literal my-test-database}.
+         * Configure an in-memory database, e.g. {@code my-test-database}.
          *
-         * @param name of a private, in-memory database (automatically prefixed with {@literal "mem:"})
+         * @param name of a private, in-memory database (automatically prefixed with {@code mem:})
          * @return this {@link Builder}
          */
         public Builder inMemory(String name) {
             return url(String.format("mem:%s", name));
         }
+
         /**
          * Configure the password.
          *
@@ -130,12 +131,10 @@ public final class H2ConnectionConfiguration {
         }
 
         /**
-         * Configure the database url. Includes everything between the "jdbc:h2:" prefix and any ";" options on the end.
-         * For in-memory and file-based databases, must include the proper prefix (e.g. {@literal file:} or {@literal mem:}).
-         * <br>
-         * Does NOT include the H2 {@literal "jdbc:h2"} connection designator.
-         * <br>
-         * See http://www.h2database.com/html/features.html#database_url for more details.
+         * Configure the database url. Includes everything after the {@code jdbc:h2:} prefix. For in-memory and file-based databases, must include the proper prefix (e.g. {@code file:} or {@code
+         * mem:}).
+         * <p>
+         * See <a href="http://www.h2database.com/html/features.html#database_url">http://www.h2database.com/html/features.html#database_url</a> for more details.
          *
          * @param url the url
          * @return this {@link Builder}

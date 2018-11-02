@@ -29,11 +29,9 @@ import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
 
 public final class H2ServerExtension implements BeforeAllCallback, AfterAllCallback {
 
-    private final String database = randomAlphanumeric(8);
-
     private final String password = randomAlphanumeric(16);
 
-    private final String url = "mem:" + database;
+    private final String url = String.format("mem:%s", randomAlphanumeric(8));
 
     private final String username = randomAlphanumeric(16);
 
