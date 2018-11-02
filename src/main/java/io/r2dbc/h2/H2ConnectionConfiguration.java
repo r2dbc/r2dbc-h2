@@ -26,16 +26,13 @@ import java.util.Optional;
  */
 public final class H2ConnectionConfiguration {
 
-    private final String database;
-
     private final String password;
 
     private final String url;
 
     private final String username;
 
-    private H2ConnectionConfiguration(@Nullable String database, @Nullable String password, String url, @Nullable String username) {
-        this.database = database;
+    private H2ConnectionConfiguration(@Nullable String password, String url, @Nullable String username) {
         this.password = password;
         this.url = Objects.requireNonNull(url, "url must not be null");
         this.username = username;
@@ -53,15 +50,10 @@ public final class H2ConnectionConfiguration {
     @Override
     public String toString() {
         return "H2ConnectionConfiguration{" +
-            "database='" + this.database + '\'' +
-            ", password='" + this.password + '\'' +
+            "password='" + this.password + '\'' +
             ", url='" + this.url + '\'' +
             ", username='" + this.username + '\'' +
             '}';
-    }
-
-    Optional<String> getDatabase() {
-        return Optional.ofNullable(this.database);
     }
 
     Optional<String> getPassword() {
@@ -83,8 +75,6 @@ public final class H2ConnectionConfiguration {
      */
     public static final class Builder {
 
-        private String database;
-
         private String password;
 
         private String url;
@@ -97,20 +87,28 @@ public final class H2ConnectionConfiguration {
          * @return a configured {@link H2ConnectionConfiguration}
          */
         public H2ConnectionConfiguration build() {
-            return new H2ConnectionConfiguration(this.database, this.password, this.url, this.username);
+            return new H2ConnectionConfiguration(this.password, this.url, this.username);
         }
 
         /**
-         * Configure the database.
+         * Configure a file-based database, e.g. {@literal ~/my-database} or {@literal /path/to/my/database.db}.
          *
-         * @param database the database
+         * @param path of the database file (automatically prefixed with {@literal "file:"})
          * @return this {@link Builder}
          */
-        public Builder database(@Nullable String database) {
-            this.database = database;
-            return this;
+        public Builder file(String path) {
+            return url(String.format("file:%s", path));
         }
 
+        /**
+         * Configure an in-memory database, e.g. {@literal my-test-database}.
+         *
+         * @param name of a private, in-memory database (automatically prefixed with {@literal "mem:"})
+         * @return this {@link Builder}
+         */
+        public Builder inMemory(String name) {
+            return url(String.format("mem:%s", name));
+        }
         /**
          * Configure the password.
          *
@@ -125,15 +123,19 @@ public final class H2ConnectionConfiguration {
         @Override
         public String toString() {
             return "Builder{" +
-                "database='" + this.database + '\'' +
-                ", password='" + this.password + '\'' +
+                "password='" + this.password + '\'' +
                 ", url='" + this.url + '\'' +
                 ", username='" + this.username + '\'' +
                 '}';
         }
 
         /**
-         * Configure the url.
+         * Configure the database url. Includes everything between the "jdbc:h2:" prefix and any ";" options on the end.
+         * For in-memory and file-based databases, must include the proper prefix (e.g. {@literal file:} or {@literal mem:}).
+         * <br>
+         * Does NOT include the H2 {@literal "jdbc:h2"} connection designator.
+         * <br>
+         * See http://www.h2database.com/html/features.html#database_url for more details.
          *
          * @param url the url
          * @return this {@link Builder}

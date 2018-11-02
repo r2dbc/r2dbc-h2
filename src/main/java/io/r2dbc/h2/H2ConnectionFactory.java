@@ -72,8 +72,7 @@ public final class H2ConnectionFactory implements ConnectionFactory {
     }
 
     private static ConnectionInfo getConnectionInfo(H2ConnectionConfiguration configuration) {
-        StringBuilder sb = new StringBuilder(START_URL).append(configuration.getUrl()).append(":");
-        configuration.getDatabase().ifPresent(sb::append);
+        StringBuilder sb = new StringBuilder(START_URL).append(configuration.getUrl());
         configuration.getUsername().ifPresent(username -> sb.append(";USER=").append(username));
         configuration.getPassword().ifPresent(password -> sb.append(";PASSWORD=").append(password));
 
