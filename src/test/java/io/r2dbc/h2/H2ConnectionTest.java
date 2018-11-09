@@ -25,6 +25,9 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
+import static io.r2dbc.spi.IsolationLevel.READ_UNCOMMITTED;
+import static io.r2dbc.spi.IsolationLevel.REPEATABLE_READ;
+import static io.r2dbc.spi.IsolationLevel.SERIALIZABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
@@ -295,6 +298,39 @@ final class H2ConnectionTest {
 
         new H2Connection(this.client, MockCodecs.empty())
             .setTransactionIsolationLevel(READ_COMMITTED)
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void setTransactionIsolationLevelReadUncommitted() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("SET LOCK_MODE 0")).thenReturn(Mono.empty());
+
+        new H2Connection(this.client, MockCodecs.empty())
+            .setTransactionIsolationLevel(READ_UNCOMMITTED)
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void setTransactionIsolationLevelRepeatableRead() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("SET LOCK_MODE 1")).thenReturn(Mono.empty());
+
+        new H2Connection(this.client, MockCodecs.empty())
+            .setTransactionIsolationLevel(REPEATABLE_READ)
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void setTransactionIsolationLevelSerializable() {
+        when(this.client.inTransaction()).thenReturn(true);
+        when(this.client.execute("SET LOCK_MODE 1")).thenReturn(Mono.empty());
+
+        new H2Connection(this.client, MockCodecs.empty())
+            .setTransactionIsolationLevel(SERIALIZABLE)
             .as(StepVerifier::create)
             .verifyComplete();
     }
