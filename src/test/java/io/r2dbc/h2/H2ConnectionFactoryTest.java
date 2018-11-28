@@ -82,4 +82,14 @@ final class H2ConnectionFactoryTest {
 
         assertThat(new H2ConnectionFactory(configuration).getMetadata()).isNotNull();
     }
+
+    @Test
+    void options() {
+        H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
+            .inMemory("in-memory-db")
+            .option("DB_CLOSE_DELAY=10")
+            .build();
+
+        assertThat(configuration.getUrl()).isEqualTo("mem:in-memory-db;DB_CLOSE_DELAY=10");
+    }
 }
