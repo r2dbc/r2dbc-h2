@@ -18,6 +18,8 @@ package io.r2dbc.h2;
 
 import reactor.util.annotation.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -75,6 +77,8 @@ public final class H2ConnectionConfiguration {
      */
     public static final class Builder {
 
+        private List<String> options = new ArrayList<>();
+        
         private String password;
 
         private String url;
@@ -87,7 +91,14 @@ public final class H2ConnectionConfiguration {
          * @return a configured {@link H2ConnectionConfiguration}
          */
         public H2ConnectionConfiguration build() {
-            return new H2ConnectionConfiguration(this.password, this.url, this.username);
+            if (this.options.isEmpty()) {
+                return new H2ConnectionConfiguration(this.password, this.url, this.username);
+            }
+
+            String urlWithOptions = this.options.stream()
+                .reduce(this.url, (url, option) -> url += ";" + option);
+
+            return new H2ConnectionConfiguration(this.password, urlWithOptions, this.username);
         }
 
         /**
@@ -108,6 +119,17 @@ public final class H2ConnectionConfiguration {
          */
         public Builder inMemory(String name) {
             return url(String.format("mem:%s", name));
+        }
+
+        /**
+         * Configure an option that is appended at the end, e.g. {@code DB_CLOSE_DELAY=10}, prefixed with ";".
+         *
+         * @param option to append at the end using a {@code ;} prefix.
+         * @return this (@link Builder)
+         */
+        public Builder option(String option) {
+            this.options.add(option);
+            return this;
         }
 
         /**
