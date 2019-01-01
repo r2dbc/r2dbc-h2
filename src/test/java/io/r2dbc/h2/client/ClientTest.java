@@ -18,6 +18,7 @@ package io.r2dbc.h2.client;
 
 import org.h2.value.ValueInt;
 import org.junit.jupiter.api.Test;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,13 +26,28 @@ final class ClientTest {
 
     @Test
     void parseMultilineSelect() {
-        String sql = "SELECT\n\t1\n\tFROM\n\tDUAL";
-        assertTrue(Client.SELECT.matcher(sql).matches());
+        Vector<String> sqls = new Vector<String>();
+        sqls.add("SELECT 1 FROM DUAL"); 
+        sqls.add("SELECT\n\t1\n\tFROM\n\tDUAL"); 
+        sqls.add("\nSELECT * FROM DUAL\n");
+        sqls.add(" SELECT\n* FROM DUAL");
+        sqls.add("  SELECT * FROM DUAL");
+        for(String sql : sqls) {
+          assertTrue(Client.SELECT.matcher(sql).matches());
+        }
     }
 
     @Test
     void parseMultilineInsert() {
-        String sql = "INSERT INTO table (id, name, age)\nVALUES(1, 'billy', 28)";
-        assertTrue(Client.INSERT.matcher(sql).matches());
+        Vector<String> sqls = new Vector<String>();
+        sqls.add("INSERT INTO table (id, name, age)\nVALUES(1, 'billy', 28)");
+        sqls.add("INSERT INTO TABLE (id, name, age) VALUES(1,2,3)"); 
+        sqls.add("INSERT\n\tINTO TABLE (id, name, age)\n\t VALUES(1,2,3)"); 
+        sqls.add(" INSERT\n\tINTO TABLE\n\t(id, anme)\n\tVALUES(1, 'bob')"); 
+        sqls.add("\nINSERT\n\tINTO TABLE\n\t(id, anme)\n\tVALUES(1, 'bob')"); 
+        sqls.add(" \n INSERT\n\tINTO TABLE\n\t(id, anme)\n\tVALUES(1, 'bob')"); 
+        for(String sql : sqls) {
+          assertTrue(Client.INSERT.matcher(sql).matches());
+        }
     }
 }
