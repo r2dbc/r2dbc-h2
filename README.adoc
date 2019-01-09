@@ -2,8 +2,6 @@
 
 This project contains the https://www.h2database.com/html/main.html[H2] implementation of the https://github.com/r2dbc/r2dbc-spi[R2DBC SPI]. This implementation is not inteded to be used directly, but rather to be used as the backing implementation for a humane client library to delegate to
 
-*THIS IS ONLY AN EXPERIMENT AND NOT SUPPORTED SOFTWARE*
-
 == Maven
 
 Both milestone and snapshot artifacts (library, source, and javadoc) can be found in Maven repositories.
