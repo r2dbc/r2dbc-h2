@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,15 +27,17 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static java.util.regex.Pattern.DOTALL;
+
 
 /**
  * An abstraction that wraps interaction with the H2 Database APIs.
  */
 public interface Client {
 
-    Pattern INSERT = Pattern.compile(".*INSERT.*", CASE_INSENSITIVE);
+    Pattern INSERT = Pattern.compile("[\\s]*INSERT.*", CASE_INSENSITIVE | DOTALL);
 
-    Pattern SELECT = Pattern.compile(".*SELECT.*", CASE_INSENSITIVE);
+    Pattern SELECT = Pattern.compile("[\\s]*SELECT.*", CASE_INSENSITIVE | DOTALL);
 
     /**
      * Release any resources held by the {@link Client}.
