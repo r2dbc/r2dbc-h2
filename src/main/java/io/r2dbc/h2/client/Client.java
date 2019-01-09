@@ -26,16 +26,18 @@ import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-import static java.util.regex.Pattern.*;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static java.util.regex.Pattern.DOTALL;
+
 
 /**
  * An abstraction that wraps interaction with the H2 Database APIs.
  */
 public interface Client {
 
-    Pattern INSERT = Pattern.compile("\\s*INSERT.*", CASE_INSENSITIVE | DOTALL);
+    Pattern INSERT = Pattern.compile("[\\s]*INSERT.*", CASE_INSENSITIVE | DOTALL);
 
-    Pattern SELECT = Pattern.compile("\\s*SELECT.*", CASE_INSENSITIVE | DOTALL);
+    Pattern SELECT = Pattern.compile("[\\s]*SELECT.*", CASE_INSENSITIVE | DOTALL);
 
     /**
      * Release any resources held by the {@link Client}.
