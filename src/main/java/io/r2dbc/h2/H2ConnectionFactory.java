@@ -19,11 +19,11 @@ package io.r2dbc.h2;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.client.SessionClient;
 import io.r2dbc.h2.codecs.DefaultCodecs;
+import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.ConnectionFactory;
 import org.h2.engine.ConnectionInfo;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
 import java.util.Properties;
 
 import static org.h2.engine.Constants.START_URL;
@@ -43,14 +43,14 @@ public final class H2ConnectionFactory implements ConnectionFactory {
      */
     public H2ConnectionFactory(H2ConnectionConfiguration configuration) {
         this(Mono.defer(() -> {
-            Objects.requireNonNull(configuration, "configuration must not be null");
+            Assert.requireNonNull(configuration, "configuration must not be null");
 
             return Mono.just(new SessionClient(getConnectionInfo(configuration)));
         }));
     }
 
     H2ConnectionFactory(Mono<? extends Client> clientFactory) {
-        this.clientFactory = Objects.requireNonNull(clientFactory, "clientFactory must not be null");
+        this.clientFactory = Assert.requireNonNull(clientFactory, "clientFactory must not be null");
     }
 
     @Override

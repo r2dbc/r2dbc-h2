@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueByte;
 
@@ -42,6 +43,6 @@ final class ByteCodec extends AbstractCodec<Byte> {
 
     @Override
     Value doEncode(Byte value) {
-        return ValueByte.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueByte.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

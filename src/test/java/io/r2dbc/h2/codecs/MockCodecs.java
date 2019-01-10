@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import reactor.util.annotation.Nullable;
 
@@ -30,8 +31,8 @@ public final class MockCodecs implements Codecs {
     private final Map<Object, Value> encodings;
 
     private MockCodecs(Map<Decoding, Object> decodings, Map<Object, Value> encodings) {
-        this.decodings = Objects.requireNonNull(decodings);
-        this.encodings = Objects.requireNonNull(encodings);
+        this.decodings = Assert.requireNonNull(decodings, "decodings must not be null!");
+        this.encodings = Assert.requireNonNull(encodings, "encodings must not be null!");
     }
 
     public static Builder builder() {
@@ -46,7 +47,7 @@ public final class MockCodecs implements Codecs {
     @Nullable
     @SuppressWarnings("unchecked")
     public <T> T decode(Value value, int dataType, Class<? extends T> type) {
-        Objects.requireNonNull(type);
+        Assert.requireNonNull(type, "type must not be null!");
 
         Decoding decoding = new Decoding(value, dataType, type);
 
@@ -59,7 +60,7 @@ public final class MockCodecs implements Codecs {
 
     @Override
     public Value encode(Object value) {
-        Objects.requireNonNull(value);
+        Assert.requireNonNull(value, "value must not be null!");
 
         if (!this.encodings.containsKey(value)) {
             throw new AssertionError(String.format("Unexpected call to encode(Object) with value '%s'", value));
@@ -70,7 +71,7 @@ public final class MockCodecs implements Codecs {
 
     @Override
     public Value encodeNull(Class<?> type) {
-        Objects.requireNonNull(type);
+        Assert.requireNonNull(type, "type must not be null!");
 
         if (!this.encodings.containsKey(type)) {
             throw new AssertionError(String.format("Unexpected call to encodeNull(Class<?>) with value '%s'", type));
@@ -93,14 +94,14 @@ public final class MockCodecs implements Codecs {
         }
 
         public <T> Builder decoding(@Nullable Value encodedValue, int dataType, Class<T> type, T value) {
-            Objects.requireNonNull(type);
+            Assert.requireNonNull(type, "type must not be null!");
 
             this.decodings.put(new Decoding(encodedValue, dataType, type), value);
             return this;
         }
 
         public Builder encoding(@Nullable Object value, Value parameter) {
-            Objects.requireNonNull(parameter);
+            Assert.requireNonNull(parameter, "parameter must not be null!");
 
             this.encodings.put(value, parameter);
             return this;
@@ -126,7 +127,7 @@ public final class MockCodecs implements Codecs {
         private Decoding(@Nullable Value value, int dataType, Class<?> type) {
             this.value = value;
             this.dataType = dataType;
-            this.type = Objects.requireNonNull(type);
+            this.type = Assert.requireNonNull(type, "type must not be null!");
         }
 
         @Override

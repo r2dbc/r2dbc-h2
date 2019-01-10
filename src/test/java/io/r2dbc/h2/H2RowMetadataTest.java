@@ -24,7 +24,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,7 +39,7 @@ final class H2RowMetadataTest {
 
     @Test
     void constructorNoColumnMetadata() {
-        assertThatNullPointerException().isThrownBy(() -> new H2RowMetadata(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2RowMetadata(null))
             .withMessage("columnMetadatas must not be null");
     }
 
@@ -70,7 +69,7 @@ final class H2RowMetadataTest {
 
     @Test
     void getColumnMetadataNoIdentifier() {
-        assertThatNullPointerException().isThrownBy(() -> new H2RowMetadata(this.columnMetadatas).getColumnMetadata(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2RowMetadata(this.columnMetadatas).getColumnMetadata(null))
             .withMessage("identifier must not be null");
     }
 
@@ -101,7 +100,7 @@ final class H2RowMetadataTest {
 
     @Test
     void toRowMetadataNoResult() {
-        assertThatNullPointerException().isThrownBy(() -> H2RowMetadata.toRowMetadata(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> H2RowMetadata.toRowMetadata(null))
             .withMessage("result must not be null");
     }
 }

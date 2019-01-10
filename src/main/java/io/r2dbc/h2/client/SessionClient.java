@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2.client;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.command.CommandInterface;
 import org.h2.engine.ConnectionInfo;
 import org.h2.engine.SessionInterface;
@@ -31,7 +32,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * An implementation of {@link Client} that wraps an H2 {@link SessionInterface}.
@@ -49,7 +49,7 @@ public final class SessionClient implements Client {
      * @throws NullPointerException if {@code connectionInfo} is {@code null}
      */
     public SessionClient(ConnectionInfo connectionInfo) {
-        Objects.requireNonNull(connectionInfo, "connectionInfo must not be null");
+        Assert.requireNonNull(connectionInfo, "connectionInfo must not be null");
 
         this.session = new SessionRemote(connectionInfo).connectEmbeddedOrServer(false);
     }
@@ -85,8 +85,8 @@ public final class SessionClient implements Client {
 
     @Override
     public Flux<ResultInterface> query(String sql, List<Binding> bindings) {
-        Objects.requireNonNull(sql, "sql must not be null");
-        Objects.requireNonNull(bindings, "bindings must not be null");
+        Assert.requireNonNull(sql, "sql must not be null");
+        Assert.requireNonNull(bindings, "bindings must not be null");
 
         return Flux.fromIterable(bindings)
             .defaultIfEmpty(Binding.EMPTY)
@@ -98,8 +98,8 @@ public final class SessionClient implements Client {
 
     @Override
     public Flux<ResultWithGeneratedKeys> update(String sql, List<Binding> bindings) {
-        Objects.requireNonNull(sql, "sql must not be null");
-        Objects.requireNonNull(bindings, "bindings must not be null");
+        Assert.requireNonNull(sql, "sql must not be null");
+        Assert.requireNonNull(bindings, "bindings must not be null");
 
         return Flux.fromIterable(bindings)
             .defaultIfEmpty(Binding.EMPTY)

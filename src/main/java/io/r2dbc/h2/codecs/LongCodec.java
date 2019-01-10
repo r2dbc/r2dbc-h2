@@ -16,10 +16,9 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueLong;
-
-import java.util.Objects;
 
 /**
  * @author Greg Turnquist
@@ -42,6 +41,6 @@ final class LongCodec extends AbstractCodec<Long> {
 
     @Override
     Value doEncode(Long value) {
-        return ValueLong.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueLong.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

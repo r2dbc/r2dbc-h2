@@ -29,7 +29,7 @@ import static io.r2dbc.spi.IsolationLevel.READ_UNCOMMITTED;
 import static io.r2dbc.spi.IsolationLevel.REPEATABLE_READ;
 import static io.r2dbc.spi.IsolationLevel.SERIALIZABLE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -119,13 +119,13 @@ final class H2ConnectionTest {
 
     @Test
     void constructorNoClient() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(null, MockCodecs.empty()))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Connection(null, MockCodecs.empty()))
             .withMessage("client must not be null");
     }
 
     @Test
     void constructorNoCodecs() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Connection(this.client, null))
             .withMessage("codecs must not be null");
     }
 
@@ -158,7 +158,7 @@ final class H2ConnectionTest {
 
     @Test
     void createSavepointNoName() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).createSavepoint(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).createSavepoint(null))
             .withMessage("name must not be null");
     }
 
@@ -202,7 +202,7 @@ final class H2ConnectionTest {
 
     @Test
     void releaseSavepointNoName() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).releaseSavepoint(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).releaseSavepoint(null))
             .withMessage("name must not be null");
     }
 
@@ -276,7 +276,7 @@ final class H2ConnectionTest {
 
     @Test
     void rollbackTransactionToSavepointNoName() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).rollbackTransactionToSavepoint(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).rollbackTransactionToSavepoint(null))
             .withMessage("name must not be null");
     }
 
@@ -349,7 +349,7 @@ final class H2ConnectionTest {
 
     @Test
     void setTransactionIsolationLevelNoIsolationLevel() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).setTransactionIsolationLevel(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Connection(this.client, MockCodecs.empty()).setTransactionIsolationLevel(null))
             .withMessage("isolationLevel must not be null");
     }
 

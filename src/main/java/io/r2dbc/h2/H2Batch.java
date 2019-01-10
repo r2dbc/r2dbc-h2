@@ -18,6 +18,7 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
+import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Batch;
 import org.h2.message.DbException;
 import reactor.core.publisher.Flux;
@@ -25,7 +26,6 @@ import reactor.core.publisher.Flux;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import static io.r2dbc.h2.client.Client.INSERT;
 
@@ -41,13 +41,13 @@ public final class H2Batch implements Batch<H2Batch> {
     private final List<String> statements = new ArrayList<>();
 
     H2Batch(Client client, Codecs codecs) {
-        this.client = Objects.requireNonNull(client, "client must not be null");
-        this.codecs = Objects.requireNonNull(codecs, "codecs must not be null");
+        this.client = Assert.requireNonNull(client, "client must not be null");
+        this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
     }
 
     @Override
     public H2Batch add(String sql) {
-        Objects.requireNonNull(sql, "sql must not be null");
+        Assert.requireNonNull(sql, "sql must not be null");
 
         this.statements.add(sql);
         return this;

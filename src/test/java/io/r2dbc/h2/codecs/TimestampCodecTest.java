@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.Timestamp;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 final class TimestampCodecTest {
 
@@ -51,7 +51,7 @@ final class TimestampCodecTest {
 
     @Test
     void doEncodeNoValue() {
-        assertThatNullPointerException().isThrownBy(() -> new TimestampCodec().doEncode(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new TimestampCodec().doEncode(null))
             .withMessage("value must not be null");
     }
 

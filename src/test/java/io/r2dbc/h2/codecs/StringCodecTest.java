@@ -22,7 +22,7 @@ import org.h2.value.ValueString;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 final class StringCodecTest {
 
@@ -53,7 +53,7 @@ final class StringCodecTest {
 
     @Test
     void doEncodeNoValue() {
-        assertThatNullPointerException().isThrownBy(() -> new StringCodec().doEncode(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new StringCodec().doEncode(null))
             .withMessage("value must not be null");
     }
 

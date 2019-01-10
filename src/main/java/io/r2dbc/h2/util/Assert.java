@@ -16,14 +16,33 @@
 
 package io.r2dbc.h2.util;
 
+import reactor.util.annotation.Nullable;
+
 import java.util.Objects;
 
 /**
  * Utilities for working with {@link Objects}s.
  */
-public final class ObjectUtils {
+public final class Assert {
 
-    private ObjectUtils() {
+    private Assert() {
+    }
+
+    /**
+     * Checks that a specified object reference is not {@code null} and throws a customized {@link IllegalArgumentException} if it is.
+     *
+     * @param t       the object reference to check for nullity
+     * @param message the detail message to be used in the event that an {@link IllegalArgumentException} is thrown
+     * @param <T>     the type of the reference
+     * @return {@code t} if not {@code null}
+     * @throws IllegalArgumentException if {@code t} is {code null}
+     */
+    public static <T> T requireNonNull(@Nullable T t, String message) {
+        if (t == null) {
+            throw new IllegalArgumentException(message);
+        }
+
+        return t;
     }
 
     /**
@@ -39,9 +58,9 @@ public final class ObjectUtils {
      */
     @SuppressWarnings("unchecked")
     public static <T> T requireType(Object value, Class<T> type, String message) {
-        Objects.requireNonNull(value, "value must not be null");
-        Objects.requireNonNull(type, "type must not be null");
-        Objects.requireNonNull(message, "message must not be null");
+        requireNonNull(value, "value must not be null");
+        requireNonNull(type, "type must not be null");
+        requireNonNull(message, "message must not be null");
 
         if (!type.isInstance(value)) {
             throw new IllegalArgumentException(message);

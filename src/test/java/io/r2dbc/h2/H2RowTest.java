@@ -29,13 +29,13 @@ final class H2RowTest {
 //
 //    @Test
 //    void constructorNoCodecs() {
-//        assertThatNullPointerException().isThrownBy(() -> new H2Row(null, Collections.emptyList()))
+//        assertThatIllegalArgumentException().isThrownBy(() -> new H2Row(null, Collections.emptyList()))
 //            .withMessage("codecs must not be null");
 //    }
 //
 //    @Test
 //    void constructorNoColumns() {
-//        assertThatNullPointerException().isThrownBy(() -> new H2Row(MockCodecs.empty(), null))
+//        assertThatIllegalArgumentException().isThrownBy(() -> new H2Row(MockCodecs.empty(), null))
 //            .withMessage("columns must not be null");
 //    }
 //
@@ -101,13 +101,13 @@ final class H2RowTest {
 //
 //    @Test
 //    void getNoIdentifier() {
-//        assertThatNullPointerException().isThrownBy(() -> new H2Row(MockCodecs.empty(), this.columns).get(null, Object.class))
+//        assertThatIllegalArgumentException().isThrownBy(() -> new H2Row(MockCodecs.empty(), this.columns).get(null, Object.class))
 //            .withMessage("identifier must not be null");
 //    }
 //
 //    @Test
 //    void getNoType() {
-//        assertThatNullPointerException().isThrownBy(() -> new H2Row(MockCodecs.empty(), this.columns).get(new Object(), null))
+//        assertThatIllegalArgumentException().isThrownBy(() -> new H2Row(MockCodecs.empty(), this.columns).get(new Object(), null))
 //            .withMessage("type must not be null");
 //    }
 //
@@ -144,20 +144,20 @@ final class H2RowTest {
 //
 //    @Test
 //    void toRowNoCodecs() {
-//        assertThatNullPointerException().isThrownBy(() -> H2Row.toRow(null, new DataRow(Collections.singletonList(TEST.buffer(4).writeInt(100))),
+//        assertThatIllegalArgumentException().isThrownBy(() -> H2Row.toRow(null, new DataRow(Collections.singletonList(TEST.buffer(4).writeInt(100))),
 //            new RowDescription(Collections.emptyList())))
 //            .withMessage("codecs must not be null");
 //    }
 //
 //    @Test
 //    void toRowNoDataRow() {
-//        assertThatNullPointerException().isThrownBy(() -> H2Row.toRow(MockCodecs.empty(), null, new RowDescription(Collections.emptyList())))
+//        assertThatIllegalArgumentException().isThrownBy(() -> H2Row.toRow(MockCodecs.empty(), null, new RowDescription(Collections.emptyList())))
 //            .withMessage("dataRow must not be null");
 //    }
 //
 //    @Test
 //    void toRowNoRowDescription() {
-//        assertThatNullPointerException().isThrownBy(() -> H2Row.toRow(MockCodecs.empty(), new DataRow(Collections.singletonList(TEST.buffer(4).writeInt(100))), null))
+//        assertThatIllegalArgumentException().isThrownBy(() -> H2Row.toRow(MockCodecs.empty(), new DataRow(Collections.singletonList(TEST.buffer(4).writeInt(100))), null))
 //            .withMessage("rowDescription must not be null");
 //    }
 }

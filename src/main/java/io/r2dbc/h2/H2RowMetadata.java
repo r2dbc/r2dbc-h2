@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.ColumnMetadata;
 import io.r2dbc.spi.RowMetadata;
 import org.h2.result.ResultInterface;
@@ -37,7 +38,7 @@ public final class H2RowMetadata implements RowMetadata {
     private final Map<String, H2ColumnMetadata> nameKeyedColumnMetadatas;
 
     H2RowMetadata(List<H2ColumnMetadata> columnMetadatas) {
-        this.columnMetadatas = Objects.requireNonNull(columnMetadatas, "columnMetadatas must not be null");
+        this.columnMetadatas = Assert.requireNonNull(columnMetadatas, "columnMetadatas must not be null");
 
         this.nameKeyedColumnMetadatas = getNameKeyedColumnMetadatas(columnMetadatas);
     }
@@ -61,7 +62,7 @@ public final class H2RowMetadata implements RowMetadata {
      */
     @Override
     public ColumnMetadata getColumnMetadata(Object identifier) {
-        Objects.requireNonNull(identifier, "identifier must not be null");
+        Assert.requireNonNull(identifier, "identifier must not be null");
 
         if (identifier instanceof Integer) {
             return getColumnMetadata((Integer) identifier);
@@ -91,7 +92,7 @@ public final class H2RowMetadata implements RowMetadata {
     }
 
     static H2RowMetadata toRowMetadata(ResultInterface result) {
-        Objects.requireNonNull(result, "result must not be null");
+        Assert.requireNonNull(result, "result must not be null");
 
         return new H2RowMetadata(getColumnMetadatas(result));
     }

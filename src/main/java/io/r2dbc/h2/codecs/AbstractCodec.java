@@ -16,37 +16,36 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueNull;
 import reactor.util.annotation.Nullable;
-
-import java.util.Objects;
 
 abstract class AbstractCodec<T> implements Codec<T> {
 
     private final Class<T> type;
 
     AbstractCodec(Class<T> type) {
-        this.type = Objects.requireNonNull(type, "type must not be null");
+        this.type = Assert.requireNonNull(type, "type must not be null");
     }
 
     @Override
     public boolean canDecode(int dataType, Class<?> type) {
-        Objects.requireNonNull(type, "type must not be null");
+        Assert.requireNonNull(type, "type must not be null");
 
         return type.isAssignableFrom(this.type) && doCanDecode(dataType);
     }
 
     @Override
     public boolean canEncode(Object value) {
-        Objects.requireNonNull(value, "value must not be null");
+        Assert.requireNonNull(value, "value must not be null");
 
         return this.type.isInstance(value);
     }
 
     @Override
     public boolean canEncodeNull(Class<?> type) {
-        Objects.requireNonNull(type, "type must not be null");
+        Assert.requireNonNull(type, "type must not be null");
 
         return this.type.isAssignableFrom(type);
     }
@@ -64,7 +63,7 @@ abstract class AbstractCodec<T> implements Codec<T> {
     @Override
     @SuppressWarnings("unchecked")
     public Value encode(Object value) {
-        Objects.requireNonNull(value, "value must not be null");
+        Assert.requireNonNull(value, "value must not be null");
 
         return doEncode((T) value);
     }

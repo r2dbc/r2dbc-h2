@@ -16,11 +16,10 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueFloat;
 import org.h2.value.ValueInt;
-
-import java.util.Objects;
 
 /**
  * @author Greg Turnquist
@@ -43,6 +42,6 @@ final class FloatCodec extends AbstractCodec<Float> {
 
     @Override
     Value doEncode(Float value) {
-        return ValueFloat.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueFloat.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

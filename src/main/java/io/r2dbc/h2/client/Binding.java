@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2.client;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 
 import java.util.Objects;
@@ -40,8 +41,8 @@ public final class Binding {
      * @throws NullPointerException if {@code index} or {@code parameter} is {@code null}
      */
     public Binding add(Integer index, Value value) {
-        Objects.requireNonNull(index, "index must not be null");
-        Objects.requireNonNull(value, "value must not be null");
+        Assert.requireNonNull(index, "index must not be null");
+        Assert.requireNonNull(value, "value must not be null");
 
         this.parameters.put(index, value);
 

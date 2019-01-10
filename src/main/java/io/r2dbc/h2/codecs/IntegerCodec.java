@@ -16,10 +16,9 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueInt;
-
-import java.util.Objects;
 
 /**
  * @author Greg Turnquist
@@ -42,6 +41,6 @@ final class IntegerCodec extends AbstractCodec<Integer> {
 
     @Override
     Value doEncode(Integer value) {
-        return ValueInt.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueInt.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

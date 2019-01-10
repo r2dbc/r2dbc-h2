@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueDouble;
 
@@ -42,6 +43,6 @@ final class DoubleCodec extends AbstractCodec<Double> {
 
     @Override
     Value doEncode(Double value) {
-        return ValueDouble.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueDouble.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }
