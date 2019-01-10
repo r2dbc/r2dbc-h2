@@ -18,6 +18,7 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
+import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.IsolationLevel;
 import org.h2.message.DbException;
@@ -27,7 +28,6 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Objects;
 import java.util.function.Function;
 
 import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
@@ -50,8 +50,8 @@ public final class H2Connection implements Connection {
     private final Codecs codecs;
 
     H2Connection(Client client, Codecs codecs) {
-        this.client = Objects.requireNonNull(client, "client must not be null");
-        this.codecs = Objects.requireNonNull(codecs, "codecs must not be null");
+        this.client = Assert.requireNonNull(client, "client must not be null");
+        this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
     }
 
     @Override
@@ -94,7 +94,7 @@ public final class H2Connection implements Connection {
 
     @Override
     public Mono<Void> createSavepoint(String name) {
-        Objects.requireNonNull(name, "name must not be null");
+        Assert.requireNonNull(name, "name must not be null");
 
         return useTransactionStatus(inTransaction -> {
             if (inTransaction) {
@@ -114,7 +114,7 @@ public final class H2Connection implements Connection {
 
     @Override
     public Mono<Void> releaseSavepoint(String name) {
-        Objects.requireNonNull(name, "name must not be null");
+        Assert.requireNonNull(name, "name must not be null");
 
         return useTransactionStatus(inTransaction -> {
             if (inTransaction) {
@@ -144,7 +144,7 @@ public final class H2Connection implements Connection {
 
     @Override
     public Mono<Void> rollbackTransactionToSavepoint(String name) {
-        Objects.requireNonNull(name, "name must not be null");
+        Assert.requireNonNull(name, "name must not be null");
 
         return useTransactionStatus(inTransaction -> {
             if (inTransaction) {
@@ -159,7 +159,7 @@ public final class H2Connection implements Connection {
 
     @Override
     public Mono<Void> setTransactionIsolationLevel(IsolationLevel isolationLevel) {
-        Objects.requireNonNull(isolationLevel, "isolationLevel must not be null");
+        Assert.requireNonNull(isolationLevel, "isolationLevel must not be null");
 
         return this.client.execute(getTransactionIsolationLevelQuery(isolationLevel))
             .onErrorMap(DbException.class, H2DatabaseException::new);

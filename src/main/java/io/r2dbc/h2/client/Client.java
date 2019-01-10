@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2.client;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
 import reactor.core.publisher.Flux;
@@ -23,7 +24,6 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
@@ -66,7 +66,7 @@ public interface Client {
      * @throws NullPointerException if {@code sql} is {@code null}
      */
     default Mono<Void> execute(String sql) {
-        Objects.requireNonNull(sql, "sql must not be null");
+        Assert.requireNonNull(sql, "sql must not be null");
 
         return update(sql, Collections.emptyList())
             .then();

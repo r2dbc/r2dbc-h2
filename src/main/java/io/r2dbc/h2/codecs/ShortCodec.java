@@ -16,10 +16,9 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueShort;
-
-import java.util.Objects;
 
 /**
  * @author Greg Turnquist
@@ -42,6 +41,6 @@ final class ShortCodec extends AbstractCodec<Short> {
 
     @Override
     Value doEncode(Short value) {
-        return ValueShort.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueShort.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.ColumnMetadata;
 import org.h2.result.ResultInterface;
 
@@ -34,9 +35,9 @@ public final class H2ColumnMetadata implements ColumnMetadata {
     private final Integer type;
 
     H2ColumnMetadata(String name, Long precision, Integer type) {
-        this.name = Objects.requireNonNull(name, "name must not be null");
-        this.precision = Objects.requireNonNull(precision, "precision must not be null");
-        this.type = Objects.requireNonNull(type, "type must not be null");
+        this.name = Assert.requireNonNull(name, "name must not be null");
+        this.precision = Assert.requireNonNull(precision, "precision must not be null");
+        this.type = Assert.requireNonNull(type, "type must not be null");
     }
 
     @Override
@@ -84,7 +85,7 @@ public final class H2ColumnMetadata implements ColumnMetadata {
     }
 
     static H2ColumnMetadata toColumnMetadata(ResultInterface result, int index) {
-        Objects.requireNonNull(result, "result must not be null");
+        Assert.requireNonNull(result, "result must not be null");
 
         return new H2ColumnMetadata(result.getColumnName(index), result.getColumnPrecision(index), result.getColumnType(index));
     }

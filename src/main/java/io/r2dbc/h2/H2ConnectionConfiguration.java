@@ -16,11 +16,11 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.util.Assert;
 import reactor.util.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -36,7 +36,7 @@ public final class H2ConnectionConfiguration {
 
     private H2ConnectionConfiguration(@Nullable String password, String url, @Nullable String username) {
         this.password = password;
-        this.url = Objects.requireNonNull(url, "url must not be null");
+        this.url = Assert.requireNonNull(url, "url must not be null");
         this.username = username;
     }
 
@@ -163,7 +163,7 @@ public final class H2ConnectionConfiguration {
          * @throws NullPointerException if {@code url} is {@code null}
          */
         public Builder url(String url) {
-            this.url = Objects.requireNonNull(url, "url must not be null");
+            this.url = Assert.requireNonNull(url, "url must not be null");
             return this;
         }
 

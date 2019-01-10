@@ -16,11 +16,11 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueTime;
 
 import java.sql.Time;
-import java.util.Objects;
 
 /**
  * @author Greg Turnquist
@@ -43,6 +43,6 @@ final class TimeCodec extends AbstractCodec<Time> {
 
     @Override
     Value doEncode(Time value) {
-        return ValueTime.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueTime.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

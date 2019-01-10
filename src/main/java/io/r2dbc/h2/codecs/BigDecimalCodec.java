@@ -16,11 +16,11 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueDecimal;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 /**
  * @author Greg Turnquist
@@ -43,6 +43,6 @@ final class BigDecimalCodec extends AbstractCodec<BigDecimal> {
 
     @Override
     Value doEncode(BigDecimal value) {
-        return ValueDecimal.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueDecimal.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

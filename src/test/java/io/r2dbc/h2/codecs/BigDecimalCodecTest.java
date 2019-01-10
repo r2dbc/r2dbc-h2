@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 final class BigDecimalCodecTest {
 
@@ -53,7 +53,7 @@ final class BigDecimalCodecTest {
 
     @Test
     void doEncodeNoValue() {
-        assertThatNullPointerException().isThrownBy(() -> new BigDecimalCodec().doEncode(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new BigDecimalCodec().doEncode(null))
             .withMessage("value must not be null");
     }
 

@@ -28,7 +28,6 @@ import reactor.test.StepVerifier;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -39,7 +38,7 @@ final class H2BatchTest {
 
     @Test
     void addNoSql() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Batch(this.client, MockCodecs.empty()).add(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Batch(this.client, MockCodecs.empty()).add(null))
             .withMessage("sql must not be null");
     }
 
@@ -52,13 +51,13 @@ final class H2BatchTest {
 
     @Test
     void constructorNoClient() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Batch(null, MockCodecs.empty()))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Batch(null, MockCodecs.empty()))
             .withMessage("client must not be null");
     }
 
     @Test
     void constructorNoCodecs() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Batch(this.client, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Batch(this.client, null))
             .withMessage("codecs must not be null");
     }
 

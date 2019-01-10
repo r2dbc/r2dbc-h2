@@ -26,7 +26,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -37,19 +37,19 @@ final class H2ResultTest {
 
     @Test
     void constructorNoRowMetadata() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Result(null, Flux.empty(), Mono.empty()))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(null, Flux.empty(), Mono.empty()))
             .withMessage("rowMetadata must not be null");
     }
 
     @Test
     void constructorNoRows() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Result(Mono.empty(), null, Mono.empty()))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(Mono.empty(), null, Mono.empty()))
             .withMessage("rows must not be null");
     }
 
     @Test
     void constructorNoRowsUpdated() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Result(Mono.empty(), Flux.empty(), null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(Mono.empty(), Flux.empty(), null))
             .withMessage("rowsUpdated must not be null");
     }
 
@@ -70,7 +70,7 @@ final class H2ResultTest {
 
     @Test
     void toResultNoResult() {
-        assertThatNullPointerException().isThrownBy(() -> H2Result.toResult(null, 0, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> H2Result.toResult(null, 0, null))
             .withMessage("result must not be null");
     }
 

@@ -17,6 +17,7 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.h2.codecs.Codecs;
+import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Row;
 import org.h2.result.ResultInterface;
 import org.h2.value.Value;
@@ -40,8 +41,8 @@ public final class H2Row implements Row {
     private final Map<String, Column> nameKeyedColumns;
 
     H2Row(List<Column> columns, Codecs codecs) {
-        this.columns = Objects.requireNonNull(columns, "columns must not be null");
-        this.codecs = Objects.requireNonNull(codecs, "codecs must not be null");
+        this.columns = Assert.requireNonNull(columns, "columns must not be null");
+        this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
 
         this.nameKeyedColumns = getNameKeyedColumns(this.columns);
     }
@@ -62,8 +63,8 @@ public final class H2Row implements Row {
     @Nullable
     @Override
     public <T> T get(Object identifier, Class<T> type) {
-        Objects.requireNonNull(identifier, "identifier must not be null");
-        Objects.requireNonNull(type, "type must not be null");
+        Assert.requireNonNull(identifier, "identifier must not be null");
+        Assert.requireNonNull(type, "type must not be null");
 
         Column column;
         if (identifier instanceof Integer) {
@@ -91,9 +92,9 @@ public final class H2Row implements Row {
     }
 
     static H2Row toRow(Value[] values, ResultInterface result, Codecs codecs) {
-        Objects.requireNonNull(values, "values must not be null");
-        Objects.requireNonNull(result, "result must not be null");
-        Objects.requireNonNull(codecs, "codecs must not null");
+        Assert.requireNonNull(values, "values must not be null");
+        Assert.requireNonNull(result, "result must not be null");
+        Assert.requireNonNull(codecs, "codecs must not null");
 
         List<Column> columns = getColumns(values, result);
 
@@ -147,8 +148,8 @@ public final class H2Row implements Row {
         private final Value value;
 
         Column(Integer dataType, String name, Value value) {
-            this.dataType = Objects.requireNonNull(dataType, "dataType must not be null");
-            this.name = Objects.requireNonNull(name, "name must not be null");
+            this.dataType = Assert.requireNonNull(dataType, "dataType must not be null");
+            this.name = Assert.requireNonNull(name, "name must not be null");
             this.value = value;
         }
 

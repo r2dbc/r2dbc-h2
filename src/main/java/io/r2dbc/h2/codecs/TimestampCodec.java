@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueTimestamp;
 
@@ -43,6 +44,6 @@ final class TimestampCodec extends AbstractCodec<Timestamp> {
 
     @Override
     Value doEncode(Timestamp value) {
-        return ValueTimestamp.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueTimestamp.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

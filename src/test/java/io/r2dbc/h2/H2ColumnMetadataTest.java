@@ -20,7 +20,7 @@ import org.h2.result.ResultInterface;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,19 +31,19 @@ final class H2ColumnMetadataTest {
 
     @Test
     void constructorNoName() {
-        assertThatNullPointerException().isThrownBy(() -> new H2ColumnMetadata(null, (long) 100, 200))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(null, (long) 100, 200))
             .withMessage("name must not be null");
     }
 
     @Test
     void constructorNoPrecision() {
-        assertThatNullPointerException().isThrownBy(() -> new H2ColumnMetadata("test-name", null, 200))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata("test-name", null, 200))
             .withMessage("precision must not be null");
     }
 
     @Test
     void constructorNoType() {
-        assertThatNullPointerException().isThrownBy(() -> new H2ColumnMetadata("test-name", (long) 100, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata("test-name", (long) 100, null))
             .withMessage("type must not be null");
     }
 
@@ -62,7 +62,7 @@ final class H2ColumnMetadataTest {
 
     @Test
     void toColumnMetadataNoResult() {
-        assertThatNullPointerException().isThrownBy(() -> H2ColumnMetadata.toColumnMetadata(null, 0))
+        assertThatIllegalArgumentException().isThrownBy(() -> H2ColumnMetadata.toColumnMetadata(null, 0))
             .withMessage("result must not be null");
     }
 }

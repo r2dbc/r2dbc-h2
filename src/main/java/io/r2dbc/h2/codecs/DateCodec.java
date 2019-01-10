@@ -16,11 +16,11 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueDate;
 
 import java.sql.Date;
-import java.util.Objects;
 
 /**
  * @author Greg Turnquist
@@ -43,6 +43,6 @@ final class DateCodec extends AbstractCodec<Date> {
 
     @Override
     Value doEncode(Date value) {
-        return ValueDate.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueDate.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

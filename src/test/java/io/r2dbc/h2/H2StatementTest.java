@@ -32,7 +32,6 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -59,19 +58,19 @@ final class H2StatementTest {
 
     @Test
     void bindIndexNoValue() {
-        assertThatNullPointerException().isThrownBy(() -> this.statement.bind(1, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind(1, null))
             .withMessage("value must not be null");
     }
 
     @Test
     void bindNoIdentifier() {
-        assertThatNullPointerException().isThrownBy(() -> this.statement.bind(null, ""))
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind(null, ""))
             .withMessage("identifier must not be null");
     }
 
     @Test
     void bindNoValue() {
-        assertThatNullPointerException().isThrownBy(() -> this.statement.bind("$1", null))
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("$1", null))
             .withMessage("value must not be null");
     }
 
@@ -89,7 +88,7 @@ final class H2StatementTest {
 
     @Test
     void bindNullNoIdentifier() {
-        assertThatNullPointerException().isThrownBy(() -> this.statement.bindNull(null, Integer.class))
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bindNull(null, Integer.class))
             .withMessage("identifier must not be null");
     }
 
@@ -119,13 +118,13 @@ final class H2StatementTest {
 
     @Test
     void constructorNoClient() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Statement(null, this.codecs, "test-query"))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Statement(null, this.codecs, "test-query"))
             .withMessage("client must not be null");
     }
 
     @Test
     void constructorNoSql() {
-        assertThatNullPointerException().isThrownBy(() -> new H2Statement(this.client, this.codecs, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Statement(this.client, this.codecs, null))
             .withMessage("sql must not be null");
     }
 

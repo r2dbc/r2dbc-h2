@@ -19,14 +19,13 @@ package io.r2dbc.h2;
 import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
-import io.r2dbc.h2.util.ObjectUtils;
+import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Statement;
 import reactor.core.publisher.Flux;
 import reactor.util.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,9 +48,9 @@ public final class H2Statement implements Statement<H2Statement> {
 
 
     H2Statement(Client client, Codecs codecs, String sql) {
-        this.client = Objects.requireNonNull(client, "client must not be null");
-        this.codecs = Objects.requireNonNull(codecs, "codecs must not be null");
-        this.sql = Objects.requireNonNull(sql, "sql must not be null");
+        this.client = Assert.requireNonNull(client, "client must not be null");
+        this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
+        this.sql = Assert.requireNonNull(sql, "sql must not be null");
     }
 
     @Override
@@ -62,15 +61,15 @@ public final class H2Statement implements Statement<H2Statement> {
 
     @Override
     public H2Statement bind(Object identifier, Object value) {
-        Objects.requireNonNull(identifier, "identifier must not be null");
-        ObjectUtils.requireType(identifier, String.class, "identifier must be a String");
+        Assert.requireNonNull(identifier, "identifier must not be null");
+        Assert.requireType(identifier, String.class, "identifier must be a String");
 
         return bind(getIndex((String) identifier), value);
     }
 
     @Override
     public H2Statement bind(int index, Object value) {
-        Objects.requireNonNull(value, "value must not be null");
+        Assert.requireNonNull(value, "value must not be null");
 
         this.bindings.getCurrent().add(index, this.codecs.encode(value));
 
@@ -79,8 +78,8 @@ public final class H2Statement implements Statement<H2Statement> {
 
     @Override
     public H2Statement bindNull(Object identifier, @Nullable Class<?> type) {
-        Objects.requireNonNull(identifier, "identifier must not be null");
-        ObjectUtils.requireType(identifier, String.class, "identifier must be a String");
+        Assert.requireNonNull(identifier, "identifier must not be null");
+        Assert.requireType(identifier, String.class, "identifier must be a String");
 
         bindNull(getIndex((String) identifier), type);
 

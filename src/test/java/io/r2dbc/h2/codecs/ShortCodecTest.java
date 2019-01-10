@@ -17,12 +17,12 @@
 package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
-import org.h2.value.ValueShort;
 import org.h2.value.ValueNull;
+import org.h2.value.ValueShort;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 final class ShortCodecTest {
 
@@ -48,7 +48,7 @@ final class ShortCodecTest {
 
     @Test
     void doEncodeNoValue() {
-        assertThatNullPointerException().isThrownBy(() -> new ShortCodec().doEncode(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new ShortCodec().doEncode(null))
             .withMessage("value must not be null");
     }
 

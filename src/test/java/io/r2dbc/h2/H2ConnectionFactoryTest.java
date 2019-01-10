@@ -22,13 +22,13 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 final class H2ConnectionFactoryTest {
 
     @Test
     void constructorNoClientFactory() {
-        assertThatNullPointerException().isThrownBy(() -> new H2ConnectionFactory((Mono<? extends Client>) null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ConnectionFactory((Mono<? extends Client>) null))
             .withMessage("clientFactory must not be null");
     }
 

@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 /**
  * @author Greg Turnquist
@@ -44,7 +43,7 @@ final class DefaultCodecsTest {
 
     @Test
     void decodeNoType() {
-        assertThatNullPointerException().isThrownBy(() -> new DefaultCodecs().decode(ValueInt.get(100), ValueInt.INT, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new DefaultCodecs().decode(ValueInt.get(100), ValueInt.INT, null))
             .withMessage("type must not be null");
     }
 
@@ -69,7 +68,7 @@ final class DefaultCodecsTest {
 
     @Test
     void encodeNoValue() {
-        assertThatNullPointerException().isThrownBy(() -> new DefaultCodecs().encode(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new DefaultCodecs().encode(null))
             .withMessage("value must not be null");
     }
 
@@ -82,7 +81,7 @@ final class DefaultCodecsTest {
 
     @Test
     void encodeNullNoType() {
-        assertThatNullPointerException().isThrownBy(() -> new DefaultCodecs().encodeNull(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new DefaultCodecs().encodeNull(null))
             .withMessage("type must not be null");
     }
 

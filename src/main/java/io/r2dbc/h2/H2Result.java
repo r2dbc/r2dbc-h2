@@ -17,6 +17,7 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.h2.codecs.Codecs;
+import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Row;
 import io.r2dbc.spi.RowMetadata;
@@ -28,7 +29,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
 import reactor.util.annotation.Nullable;
 
-import java.util.Objects;
 import java.util.function.BiFunction;
 
 import static reactor.function.TupleUtils.function;
@@ -45,9 +45,9 @@ public final class H2Result implements Result {
     private final Mono<Integer> rowsUpdated;
 
     H2Result(Mono<H2RowMetadata> rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated) {
-        this.rowMetadata = Objects.requireNonNull(rowMetadata, "rowMetadata must not be null");
-        this.rows = Objects.requireNonNull(rows, "rows must not be null");
-        this.rowsUpdated = Objects.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
+        this.rowMetadata = Assert.requireNonNull(rowMetadata, "rowMetadata must not be null");
+        this.rows = Assert.requireNonNull(rows, "rows must not be null");
+        this.rowsUpdated = Assert.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
     }
 
     @Override
@@ -57,7 +57,7 @@ public final class H2Result implements Result {
 
     @Override
     public <T> Flux<T> map(BiFunction<Row, RowMetadata, ? extends T> f) {
-        Objects.requireNonNull(f, "f must not be null");
+        Assert.requireNonNull(f, "f must not be null");
 
         return this.rows
             .zipWith(this.rowMetadata.repeat())
@@ -74,8 +74,8 @@ public final class H2Result implements Result {
     }
 
     static H2Result toResult(ResultInterface result, @Nullable Integer rowsUpdated, Codecs codecs) {
-        Objects.requireNonNull(result, "result must not be null");
-        Objects.requireNonNull(codecs, "codecs must not be null");
+        Assert.requireNonNull(result, "result must not be null");
+        Assert.requireNonNull(codecs, "codecs must not be null");
 
         Mono<H2RowMetadata> rowMetadata = Mono.just(H2RowMetadata.toRowMetadata(result));
 

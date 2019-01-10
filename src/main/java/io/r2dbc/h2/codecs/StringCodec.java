@@ -16,10 +16,9 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueString;
-
-import java.util.Objects;
 
 /**
  * @author Greg Turnquist
@@ -44,6 +43,6 @@ final class StringCodec extends AbstractCodec<String> {
 
     @Override
     Value doEncode(String value) {
-        return ValueString.get(Objects.requireNonNull(value, "value must not be null"));
+        return ValueString.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

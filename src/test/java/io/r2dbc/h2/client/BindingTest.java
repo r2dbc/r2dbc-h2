@@ -19,19 +19,19 @@ package io.r2dbc.h2.client;
 import org.h2.value.ValueInt;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 final class BindingTest {
 
     @Test
     void addNoIndex() {
-        assertThatNullPointerException().isThrownBy(() -> new Binding().add(null, ValueInt.get(0)))
+        assertThatIllegalArgumentException().isThrownBy(() -> new Binding().add(null, ValueInt.get(0)))
             .withMessage("index must not be null");
     }
 
     @Test
     void addNoValue() {
-        assertThatNullPointerException().isThrownBy(() -> new Binding().add(1, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new Binding().add(1, null))
             .withMessage("value must not be null");
     }
 
