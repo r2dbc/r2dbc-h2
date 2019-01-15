@@ -53,7 +53,7 @@ final class H2StatementTest {
 
     @Test
     void bindIndex() {
-        assertThat(this.statement.bind(0, 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
+        assertThat(((H2Statement) this.statement.bind(0, 100)).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
     }
 
     @Test

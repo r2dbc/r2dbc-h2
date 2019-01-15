@@ -32,7 +32,7 @@ import static io.r2dbc.h2.client.Client.INSERT;
 /**
  * An implementation of {@link Batch} for executing a collection of statements in a batch against an H2 database.
  */
-public final class H2Batch implements Batch<H2Batch> {
+public final class H2Batch implements Batch {
 
     private final Client client;
 

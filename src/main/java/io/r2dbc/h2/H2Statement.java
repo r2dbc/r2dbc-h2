@@ -34,7 +34,7 @@ import static io.r2dbc.h2.client.Client.SELECT;
 /**
  * An implementation of {@link Statement} for an H2 database.
  */
-public final class H2Statement implements Statement<H2Statement> {
+public final class H2Statement implements Statement {
 
     private static final Pattern PARAMETER_SYMBOL = Pattern.compile(".*\\$([\\d]+).*");
 
