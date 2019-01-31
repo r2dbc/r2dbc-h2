@@ -30,9 +30,12 @@ public final class MockCodecs implements Codecs {
 
     private final Map<Object, Value> encodings;
 
-    private MockCodecs(Map<Decoding, Object> decodings, Map<Object, Value> encodings) {
-        this.decodings = Assert.requireNonNull(decodings, "decodings must not be null!");
-        this.encodings = Assert.requireNonNull(encodings, "encodings must not be null!");
+    private final Map<Integer, Class<?>> preferredTypes;
+
+    private MockCodecs(Map<Decoding, Object> decodings, Map<Object, Value> encodings, Map<Integer, Class<?>> preferredTypes) {
+        this.decodings = Assert.requireNonNull(decodings, "decodings must not be null");
+        this.encodings = Assert.requireNonNull(encodings, "encodings must not be null");
+        this.preferredTypes = Assert.requireNonNull(preferredTypes, "preferredTypes must not be null");
     }
 
     public static Builder builder() {
@@ -47,7 +50,7 @@ public final class MockCodecs implements Codecs {
     @Nullable
     @SuppressWarnings("unchecked")
     public <T> T decode(Value value, int dataType, Class<? extends T> type) {
-        Assert.requireNonNull(type, "type must not be null!");
+        Assert.requireNonNull(type, "type must not be null");
 
         Decoding decoding = new Decoding(value, dataType, type);
 
@@ -60,7 +63,7 @@ public final class MockCodecs implements Codecs {
 
     @Override
     public Value encode(Object value) {
-        Assert.requireNonNull(value, "value must not be null!");
+        Assert.requireNonNull(value, "value must not be null");
 
         if (!this.encodings.containsKey(value)) {
             throw new AssertionError(String.format("Unexpected call to encode(Object) with value '%s'", value));
@@ -71,7 +74,7 @@ public final class MockCodecs implements Codecs {
 
     @Override
     public Value encodeNull(Class<?> type) {
-        Assert.requireNonNull(type, "type must not be null!");
+        Assert.requireNonNull(type, "type must not be null");
 
         if (!this.encodings.containsKey(type)) {
             throw new AssertionError(String.format("Unexpected call to encodeNull(Class<?>) with value '%s'", type));
@@ -80,38 +83,66 @@ public final class MockCodecs implements Codecs {
         return this.encodings.get(type);
     }
 
+    @Override
+    public Class<?> preferredType(int dataType) {
+        if (!this.preferredTypes.containsKey(dataType)) {
+            throw new AssertionError(String.format("Unexpected call to preferredType(int) with value '%d'", dataType));
+        }
+
+        return this.preferredTypes.get(dataType);
+    }
+
+    @Override
+    public String toString() {
+        return "MockCodecs{" +
+            "decodings=" + this.decodings +
+            ", encodings=" + this.encodings +
+            ", preferredTypes=" + this.preferredTypes +
+            '}';
+    }
+
     public static final class Builder {
 
         private final Map<Decoding, Object> decodings = new HashMap<>();
 
         private final Map<Object, Value> encodings = new HashMap<>();
 
+        private final Map<Integer, Class<?>> preferredTypes = new HashMap<>();
+
         private Builder() {
         }
 
         public MockCodecs build() {
-            return new MockCodecs(this.decodings, this.encodings);
+            return new MockCodecs(this.decodings, this.encodings, this.preferredTypes);
         }
 
         public <T> Builder decoding(@Nullable Value encodedValue, int dataType, Class<T> type, T value) {
-            Assert.requireNonNull(type, "type must not be null!");
+            Assert.requireNonNull(type, "type must not be null");
 
             this.decodings.put(new Decoding(encodedValue, dataType, type), value);
             return this;
         }
 
         public Builder encoding(@Nullable Object value, Value parameter) {
-            Assert.requireNonNull(parameter, "parameter must not be null!");
+            Assert.requireNonNull(parameter, "parameter must not be null");
 
             this.encodings.put(value, parameter);
+            return this;
+        }
+
+        public Builder preferredType(int dataType, Class<?> type) {
+            Assert.requireNonNull(type, "type must not be null");
+
+            this.preferredTypes.put(dataType, type);
             return this;
         }
 
         @Override
         public String toString() {
             return "Builder{" +
-                "decodings=" + decodings +
-                ", encodings=" + encodings +
+                "decodings=" + this.decodings +
+                ", encodings=" + this.encodings +
+                ", preferredTypes=" + this.preferredTypes +
                 '}';
         }
     }
@@ -127,7 +158,7 @@ public final class MockCodecs implements Codecs {
         private Decoding(@Nullable Value value, int dataType, Class<?> type) {
             this.value = value;
             this.dataType = dataType;
-            this.type = Assert.requireNonNull(type, "type must not be null!");
+            this.type = Assert.requireNonNull(type, "type must not be null");
         }
 
         @Override
@@ -139,23 +170,22 @@ public final class MockCodecs implements Codecs {
                 return false;
             }
             Decoding decoding = (Decoding) o;
-            return dataType == decoding.dataType &&
-                Objects.equals(value, decoding.value) &&
-                Objects.equals(type, decoding.type);
+            return this.dataType == decoding.dataType &&
+                Objects.equals(this.value, decoding.value) &&
+                Objects.equals(this.type, decoding.type);
         }
 
         @Override
         public int hashCode() {
-
-            return Objects.hash(value, dataType, type);
+            return Objects.hash(this.value, this.dataType, this.type);
         }
 
         @Override
         public String toString() {
             return "Decoding{" +
-                "value=" + value +
-                ", dataType=" + dataType +
-                ", type=" + type +
+                "value=" + this.value +
+                ", dataType=" + this.dataType +
+                ", type=" + this.type +
                 '}';
         }
     }

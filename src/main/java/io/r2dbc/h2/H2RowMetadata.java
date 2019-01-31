@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.ColumnMetadata;
 import io.r2dbc.spi.RowMetadata;
@@ -91,17 +92,18 @@ public final class H2RowMetadata implements RowMetadata {
             '}';
     }
 
-    static H2RowMetadata toRowMetadata(ResultInterface result) {
+    static H2RowMetadata toRowMetadata(Codecs codecs, ResultInterface result) {
+        Assert.requireNonNull(codecs, "codecs must not be null");
         Assert.requireNonNull(result, "result must not be null");
 
-        return new H2RowMetadata(getColumnMetadatas(result));
+        return new H2RowMetadata(getColumnMetadatas(codecs, result));
     }
 
-    private static List<H2ColumnMetadata> getColumnMetadatas(ResultInterface result) {
+    private static List<H2ColumnMetadata> getColumnMetadatas(Codecs codecs, ResultInterface result) {
         List<H2ColumnMetadata> columnMetadatas = new ArrayList<>(result.getVisibleColumnCount());
 
         for (int i = 0; i < result.getVisibleColumnCount(); i++) {
-            columnMetadatas.add(H2ColumnMetadata.toColumnMetadata(result, i));
+            columnMetadatas.add(H2ColumnMetadata.toColumnMetadata(codecs, result, i));
         }
 
         return columnMetadatas;

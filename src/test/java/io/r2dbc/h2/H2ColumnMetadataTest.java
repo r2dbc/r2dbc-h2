@@ -16,9 +16,12 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.result.ResultInterface;
+import org.h2.table.Column;
 import org.junit.jupiter.api.Test;
 
+import static io.r2dbc.spi.Nullability.NULLABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
@@ -31,38 +34,65 @@ final class H2ColumnMetadataTest {
 
     @Test
     void constructorNoName() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(null, (long) 100, 200))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(String.class, null, 200, NULLABLE, 100L, 500))
             .withMessage("name must not be null");
     }
 
     @Test
+    void constructorNoNativeType() {
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(String.class, "test-name", null, NULLABLE, 100L, 500))
+            .withMessage("nativeType must not be null");
+    }
+
+    @Test
+    void constructorNoNullability() {
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(String.class, "test-name", 200, null, 100L, 500))
+            .withMessage("nullability must not be null");
+    }
+
+    @Test
     void constructorNoPrecision() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata("test-name", null, 200))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(String.class, "test-name", 200, NULLABLE, null, 500))
             .withMessage("precision must not be null");
     }
 
     @Test
-    void constructorNoType() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata("test-name", (long) 100, null))
-            .withMessage("type must not be null");
+    void constructorNoScale() {
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(String.class, "test-name", 200, NULLABLE, 100L, null))
+            .withMessage("scale must not be null");
     }
 
     @Test
     void toColumnMetadata() {
         when(this.result.getColumnName(0)).thenReturn("test-name");
         when(this.result.getColumnPrecision(0)).thenReturn(400L);
+        when(this.result.getColumnScale(0)).thenReturn(500);
         when(this.result.getColumnType(0)).thenReturn(200);
+        when(this.result.getNullable(0)).thenReturn(Column.NULLABLE);
 
-        H2ColumnMetadata columnMetadata = H2ColumnMetadata.toColumnMetadata(this.result, 0);
+        MockCodecs codecs = MockCodecs.builder()
+            .preferredType(200, String.class)
+            .build();
 
+        H2ColumnMetadata columnMetadata = H2ColumnMetadata.toColumnMetadata(codecs, this.result, 0);
+
+        assertThat(columnMetadata.getJavaType()).isEqualTo(String.class);
         assertThat(columnMetadata.getName()).isEqualTo("test-name");
-        assertThat(columnMetadata.getPrecision()).hasValue(400);
-        assertThat(columnMetadata.getType()).isEqualTo(200);
+        assertThat(columnMetadata.getNativeTypeMetadata()).isEqualTo(200);
+        assertThat(columnMetadata.getNullability()).isEqualTo(NULLABLE);
+        assertThat(columnMetadata.getPrecision()).isEqualTo(400);
+        assertThat(columnMetadata.getScale()).isEqualTo(500);
+    }
+
+    @Test
+    void toColumnMetadataNoCodecs() {
+        assertThatIllegalArgumentException().isThrownBy(() -> H2ColumnMetadata.toColumnMetadata(null, this.result, 0))
+            .withMessage("codecs must not be null");
     }
 
     @Test
     void toColumnMetadataNoResult() {
-        assertThatIllegalArgumentException().isThrownBy(() -> H2ColumnMetadata.toColumnMetadata(null, 0))
+        assertThatIllegalArgumentException().isThrownBy(() -> H2ColumnMetadata.toColumnMetadata(MockCodecs.empty(), null, 0))
             .withMessage("result must not be null");
     }
 }

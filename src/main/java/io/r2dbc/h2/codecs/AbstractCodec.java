@@ -73,6 +73,11 @@ abstract class AbstractCodec<T> implements Codec<T> {
         return ValueNull.INSTANCE;
     }
 
+    @Override
+    public Class<?> type() {
+        return this.type;
+    }
+
     abstract boolean doCanDecode(int dataType);
 
     abstract T doDecode(Value value, Class<? extends T> type);
