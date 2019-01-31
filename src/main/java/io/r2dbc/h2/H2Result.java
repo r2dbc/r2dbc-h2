@@ -73,11 +73,11 @@ public final class H2Result implements Result {
             '}';
     }
 
-    static H2Result toResult(ResultInterface result, @Nullable Integer rowsUpdated, Codecs codecs) {
-        Assert.requireNonNull(result, "result must not be null");
+    static H2Result toResult(Codecs codecs, ResultInterface result, @Nullable Integer rowsUpdated) {
         Assert.requireNonNull(codecs, "codecs must not be null");
+        Assert.requireNonNull(result, "result must not be null");
 
-        Mono<H2RowMetadata> rowMetadata = Mono.just(H2RowMetadata.toRowMetadata(result));
+        Mono<H2RowMetadata> rowMetadata = Mono.just(H2RowMetadata.toRowMetadata(codecs, result));
 
         Flux<H2Row> rows = Flux
             .generate((SynchronousSink<Value[]> sink) -> {

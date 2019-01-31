@@ -107,10 +107,10 @@ public final class H2Statement implements Statement {
     private static Flux<H2Result> execute(Client client, String sql, Bindings bindings, Codecs codecs) {
         if (!SELECT.matcher(sql).matches()) {
             return client.update(sql, bindings.bindings)
-                .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount(), codecs));
+                .map(result -> H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount()));
         } else {
             return client.query(sql, bindings.bindings)
-                .map(result -> H2Result.toResult(result, null, codecs));
+                .map(result -> H2Result.toResult(codecs, result, null));
         }
     }
 

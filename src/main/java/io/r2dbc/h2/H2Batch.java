@@ -59,10 +59,10 @@ public final class H2Batch implements Batch {
             .flatMap(statement -> {
                 if (INSERT.matcher(statement).matches()) {
                     return this.client.update(statement, Collections.emptyList())
-                        .map(result -> H2Result.toResult(result.getGeneratedKeys(), result.getUpdateCount(), this.codecs));
+                        .map(result -> H2Result.toResult(this.codecs, result.getGeneratedKeys(), result.getUpdateCount()));
                 } else {
                     return this.client.query(statement, Collections.emptyList())
-                        .map(result -> H2Result.toResult(result, null, this.codecs));
+                        .map(result -> H2Result.toResult(this.codecs, result, null));
                 }
             })
             .onErrorMap(DbException.class, H2DatabaseException::new);
