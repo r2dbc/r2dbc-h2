@@ -21,6 +21,7 @@ import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Statement;
+import org.h2.engine.GeneratedKeysMode;
 import reactor.core.publisher.Flux;
 import reactor.util.annotation.Nullable;
 
@@ -45,6 +46,10 @@ public final class H2Statement implements Statement {
     private final Codecs codecs;
 
     private final String sql;
+
+    private String[] generatedColumns;
+
+    private boolean allGeneratedColumns = false;
 
 
     H2Statement(Client client, Codecs codecs, String sql) {
@@ -97,17 +102,41 @@ public final class H2Statement implements Statement {
     public Flux<H2Result> execute() {
         return Flux.fromArray(this.sql.split(";"))
             .map(String::trim)
-            .flatMap(sql -> execute(this.client, sql, this.bindings, this.codecs));
+            .flatMap(sql -> {
+                if (this.generatedColumns == null) {
+                    return execute(this.client, sql, this.bindings, this.codecs, this.allGeneratedColumns);
+                }
+                return execute(this.client, sql, this.bindings, this.codecs, this.generatedColumns);
+            });
+    }
+
+    @Override
+    public H2Statement returnGeneratedValues(String... columns) {
+        Assert.requireNonNull(columns, "columns must not be null");
+
+        if (columns.length == 0) {
+            this.allGeneratedColumns = true;
+        } else {
+            this.generatedColumns = columns;
+        }
+        
+        return this;
     }
 
     Binding getCurrentBinding() {
         return this.bindings.getCurrent();
     }
 
-    private static Flux<H2Result> execute(Client client, String sql, Bindings bindings, Codecs codecs) {
+    private static Flux<H2Result> execute(Client client, String sql, Bindings bindings, Codecs codecs, Object generatedColumns) {
         if (!SELECT.matcher(sql).matches()) {
-            return client.update(sql, bindings.bindings)
-                .map(result -> H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount()));
+            return client.update(sql, bindings.bindings, generatedColumns)
+                .map(result -> {
+                    if (GeneratedKeysMode.valueOf(generatedColumns) == GeneratedKeysMode.NONE) {
+                        return H2Result.toResult(codecs, result.getUpdateCount());
+                    } else {
+                        return H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount());
+                    }
+                });
         } else {
             return client.query(sql, bindings.bindings)
                 .map(result -> H2Result.toResult(codecs, result, null));

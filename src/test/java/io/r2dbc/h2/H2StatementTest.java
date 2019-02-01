@@ -19,6 +19,10 @@ package io.r2dbc.h2;
 import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.MockCodecs;
+import io.r2dbc.h2.util.H2ServerExtension;
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
+import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.h2.result.LocalResult;
 import org.h2.result.ResultWithGeneratedKeys;
 import org.h2.value.Value;
@@ -26,15 +30,24 @@ import org.h2.value.ValueInt;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import reactor.util.function.Tuples;
 
 import java.util.Arrays;
+import java.util.Collections;
 
+import static io.r2dbc.h2.H2ConnectionFactoryProvider.H2_DRIVER;
+import static io.r2dbc.h2.H2ConnectionFactoryProvider.URL;
+import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
+import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
+import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static reactor.function.TupleUtils.predicate;
 
 final class H2StatementTest {
 
@@ -158,7 +171,7 @@ final class H2StatementTest {
     void executeWithoutAdd() {
         when(this.client.update("insert test-query-$1", Arrays.asList(
             new Binding().add(0, ValueInt.get(100))
-        ))).thenReturn(Flux.just(
+        ), false)).thenReturn(Flux.just(
             new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())
         ));
 
@@ -168,6 +181,128 @@ final class H2StatementTest {
             .as(StepVerifier::create)
             .expectNextCount(1)
             .verifyComplete();
+    }
+
+    @Test
+    void returnGeneratedValues() {
+        when(this.client.update("INSERT test-query", Collections.emptyList(), new String[]{"foo", "bar"}))
+            .thenReturn(Flux.just(
+                new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())
+            ));
+
+        new H2Statement(this.client, MockCodecs.empty(), "INSERT test-query")
+            .returnGeneratedValues("foo", "bar")
+            .execute()
+            .flatMap(result -> result.map((row, rowMetadata) -> row))
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void returnGenerateValuesNoArguments() throws Exception {
+        H2ServerExtension SERVER = new H2ServerExtension();
+
+        ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
+            .option(DRIVER, H2_DRIVER)
+            .option(PASSWORD, SERVER.getPassword())
+            .option(URL, SERVER.getUrl())
+            .option(USER, SERVER.getUsername())
+            .build());
+
+        SERVER.beforeAll(null);
+
+        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, value INTEGER);");
+
+        Mono.from(connectionFactory.create())
+            .flatMapMany(connection -> Flux.from(connection
+
+                    .createStatement(String.format("INSERT INTO test (value) VALUES (200)"))
+                    .returnGeneratedValues()
+                    .execute())
+
+                .concatWith(Mono.from(connection.close()).then(Mono.empty())))
+            .flatMap(result -> ((H2Result) result).map(Tuples::of))
+            .as(StepVerifier::create)
+            .expectNextMatches(predicate((row, rowMetadata) -> {
+                assertThat(row.get("ID")).isEqualTo(1);
+                assertThat(row.get("ID2")).isEqualTo(1);
+                assertThat(rowMetadata.getColumnMetadatas()).hasSize(2);
+                return true;
+            }))
+            .verifyComplete();
+
+        SERVER.getJdbcOperations().execute("DROP TABLE test");
+
+        SERVER.afterAll(null);
+    }
+
+    @Test
+    void returnGeneratedValuesNotUsed() throws Exception {
+        H2ServerExtension SERVER = new H2ServerExtension();
+
+        ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
+            .option(DRIVER, H2_DRIVER)
+            .option(PASSWORD, SERVER.getPassword())
+            .option(URL, SERVER.getUrl())
+            .option(USER, SERVER.getUsername())
+            .build());
+
+        SERVER.beforeAll(null);
+
+        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, value INTEGER);");
+
+        Mono.from(connectionFactory.create())
+            .flatMapMany(connection -> Flux.from(connection
+
+                .createStatement(String.format("INSERT INTO test (value) VALUES (200)"))
+                .execute())
+
+                .concatWith(Mono.from(connection.close()).then(Mono.empty())))
+            .flatMap(result -> ((H2Result) result).map(Tuples::of))
+            .as(StepVerifier::create)
+            .expectNextCount(0)
+            .verifyComplete();
+
+        SERVER.getJdbcOperations().execute("DROP TABLE test");
+
+        SERVER.afterAll(null);
+    }
+
+    @Test
+    void returnGeneratedValuesSpecificColumn() throws Exception {
+        H2ServerExtension SERVER = new H2ServerExtension();
+
+        ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
+            .option(DRIVER, H2_DRIVER)
+            .option(PASSWORD, SERVER.getPassword())
+            .option(URL, SERVER.getUrl())
+            .option(USER, SERVER.getUsername())
+            .build());
+
+        SERVER.beforeAll(null);
+
+        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, value INTEGER);");
+
+        Mono.from(connectionFactory.create())
+            .flatMapMany(connection -> Flux.from(connection
+
+                .createStatement(String.format("INSERT INTO test (value) VALUES (200)"))
+                .returnGeneratedValues("id2")
+                .execute())
+
+                .concatWith(Mono.from(connection.close()).then(Mono.empty())))
+            .flatMap(result -> ((H2Result) result).map(Tuples::of))
+            .as(StepVerifier::create)
+            .expectNextMatches(predicate((row, rowMetadata) -> {
+                assertThat(row.get("ID2")).isEqualTo(1);
+                assertThat(rowMetadata.getColumnMetadatas()).hasSize(1);
+                return true;
+            }))
+            .verifyComplete();
+
+        SERVER.getJdbcOperations().execute("DROP TABLE test");
+
+        SERVER.afterAll(null);
     }
 
 }

@@ -70,7 +70,7 @@ public interface Client {
     default Mono<Void> execute(String sql) {
         Assert.requireNonNull(sql, "sql must not be null");
 
-        return update(sql, Collections.emptyList())
+        return update(sql, Collections.emptyList(), false)
             .then();
     }
 
@@ -96,9 +96,10 @@ public interface Client {
      *
      * @param sql      the SQL of the update
      * @param bindings the parameter bindings to use
+     * @param generatedColumns the parameter to specify what columns to generate
      * @return the result of the update
      * @throws NullPointerException if {@code sql} or {@code bindings} is {@code null}
      */
-    Flux<ResultWithGeneratedKeys> update(String sql, List<Binding> bindings);
+    Flux<ResultWithGeneratedKeys> update(String sql, List<Binding> bindings, Object generatedColumns);
 
 }

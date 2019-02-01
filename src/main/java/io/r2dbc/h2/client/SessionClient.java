@@ -97,7 +97,7 @@ public final class SessionClient implements Client {
     }
 
     @Override
-    public Flux<ResultWithGeneratedKeys> update(String sql, List<Binding> bindings) {
+    public Flux<ResultWithGeneratedKeys> update(String sql, List<Binding> bindings, Object generatedColumns) {
         Assert.requireNonNull(sql, "sql must not be null");
         Assert.requireNonNull(bindings, "bindings must not be null");
 
@@ -105,7 +105,7 @@ public final class SessionClient implements Client {
             .defaultIfEmpty(Binding.EMPTY)
             .map(binding -> createCommand(sql, binding))
             .doOnNext(command -> this.logger.debug("Request: {}", command))
-            .flatMap(command -> Mono.just(command.executeUpdate(true)));
+            .flatMap(command -> Mono.just(command.executeUpdate(generatedColumns)));
     }
 
     private CommandInterface createCommand(String sql, Binding binding) {

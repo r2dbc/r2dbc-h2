@@ -58,8 +58,8 @@ public final class H2Batch implements Batch {
         return Flux.fromIterable(this.statements)
             .flatMap(statement -> {
                 if (INSERT.matcher(statement).matches()) {
-                    return this.client.update(statement, Collections.emptyList())
-                        .map(result -> H2Result.toResult(this.codecs, result.getGeneratedKeys(), result.getUpdateCount()));
+                    return this.client.update(statement, Collections.emptyList(), false)
+                        .map(result -> H2Result.toResult(this.codecs, result.getUpdateCount()));
                 } else {
                     return this.client.query(statement, Collections.emptyList())
                         .map(result -> H2Result.toResult(this.codecs, result, null));
