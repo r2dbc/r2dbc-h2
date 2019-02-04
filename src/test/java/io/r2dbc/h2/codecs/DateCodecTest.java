@@ -21,17 +21,22 @@ import org.h2.value.ValueDate;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
+import static io.r2dbc.h2.codecs.DateCodec.transform;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 final class DateCodecTest {
 
+    public static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
     @Test
-    void decode() {
-        assertThat(new DateCodec().decode(ValueDate.get(Date.valueOf("2018-10-31")), Date.class))
-            .isEqualTo(Date.valueOf("2018-10-31"));
+    void decode() throws ParseException {
+        assertThat(new DateCodec().decode(ValueDate.get(transform(FORMAT.parse("2018-10-31"))), Date.class))
+            .isEqualTo(new SimpleDateFormat("yyyy-MM-dd").parse("2018-10-31"));
     }
 
     @Test
@@ -44,9 +49,9 @@ final class DateCodecTest {
     }
 
     @Test
-    void doEncode() {
-        assertThat(new DateCodec().doEncode(Date.valueOf("2018-10-31")))
-            .isEqualTo(ValueDate.get(Date.valueOf("2018-10-31")));
+    void doEncode() throws ParseException {
+        assertThat(new DateCodec().doEncode(FORMAT.parse("2018-10-31")))
+            .isEqualTo(ValueDate.get(transform(FORMAT.parse("2018-10-31"))));
     }
 
     @Test
