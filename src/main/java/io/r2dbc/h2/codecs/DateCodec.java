@@ -20,7 +20,10 @@ import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueDate;
 
-import java.sql.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
 
 /**
  * @author Greg Turnquist
@@ -38,11 +41,21 @@ final class DateCodec extends AbstractCodec<Date> {
 
     @Override
     Date doDecode(Value value, Class<? extends Date> type) {
-        return value.getDate();
+        return transform(value.getDate());
     }
 
     @Override
     Value doEncode(Date value) {
-        return ValueDate.get(Assert.requireNonNull(value, "value must not be null"));
+        return ValueDate.get(transform(Assert.requireNonNull(value, "value must not be null")));
+    }
+
+    static java.sql.Date transform(Date utilDate) {
+        ZonedDateTime zdt = ZonedDateTime.ofInstant(utilDate.toInstant(), ZoneId.systemDefault());
+        LocalDate localDate = zdt.toLocalDate();
+        return java.sql.Date.valueOf(localDate);
+    }
+
+    static Date transform(java.sql.Date sqlDate) {
+        return new Date(sqlDate.getTime());
     }
 }
