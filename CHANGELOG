@@ -1,0 +1,18 @@
+R2DBC H2 Changelog
+=============================
+
+1.0.0.M7
+------------------
+* Update CHANGELOG for M7 #41
+* DateCodecs return java.util.Data #39
+* Reinstated generated value retrieval #37
+* Add support for ConnectionFactory discovery #36
+* Improved support for column metadata #34
+* Removed recursive generics in Statement and Batch #31
+* Improved documentation #27
+* Nullability enforcement returns accurate exception #29
+* Improve multiline query support #28
+
+1.0.0.M6
+------------------
+* Inception
