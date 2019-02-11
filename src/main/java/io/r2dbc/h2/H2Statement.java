@@ -37,7 +37,11 @@ import static io.r2dbc.h2.client.Client.SELECT;
  */
 public final class H2Statement implements Statement {
 
-    private static final Pattern PARAMETER_SYMBOL = Pattern.compile(".*\\$([\\d]+).*");
+    // search for $ or ? in the statement.
+    private static final Pattern PARAMETER_SYMBOLS = Pattern.compile(".*(\\$|\\?)([\\d]+).*");
+
+    // the value of the binding will be on the second group
+    private static final int BIND_POSITION_NUMBER_GROUP = 2;
 
     private final Bindings bindings = new Bindings();
 
@@ -144,13 +148,13 @@ public final class H2Statement implements Statement {
     }
 
     private int getIndex(String identifier) {
-        Matcher matcher = PARAMETER_SYMBOL.matcher(identifier);
+        Matcher matcher = PARAMETER_SYMBOLS.matcher(identifier);
 
         if (!matcher.find()) {
-            throw new IllegalArgumentException(String.format("Identifier '%s' is not a valid identifier. Should be of the pattern '%s'.", identifier, PARAMETER_SYMBOL.pattern()));
+            throw new IllegalArgumentException(String.format("Identifier '%s' is not a valid identifier. Should be of the pattern '%s'.", identifier, PARAMETER_SYMBOLS.pattern()));
         }
 
-        return Integer.parseInt(matcher.group(1)) - 1;
+        return Integer.parseInt(matcher.group(BIND_POSITION_NUMBER_GROUP)) - 1;
     }
 
     private static final class Bindings {

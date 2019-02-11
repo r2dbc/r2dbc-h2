@@ -65,6 +65,14 @@ final class H2StatementTest {
     }
 
     @Test
+    void bindWithQuestionMark() {
+        H2Statement questionMarkStatement = new H2Statement(this.client, this.codecs, "test-query-?1");
+
+        assertThat(questionMarkStatement.bind("?1", 100).getCurrentBinding())
+            .isEqualTo(new Binding().add(0, ValueInt.get(100)));
+    }
+
+    @Test
     void bindIndex() {
         assertThat(((H2Statement) this.statement.bind(0, 100)).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
     }
@@ -108,7 +116,7 @@ final class H2StatementTest {
     @Test
     void bindNullWrongIdentifierFormat() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bindNull("foo", Integer.class))
-            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*\\$([\\d]+).*'.");
+            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
     }
 
     @Test
@@ -120,7 +128,7 @@ final class H2StatementTest {
     @Test
     void bindWrongIdentifierFormat() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("foo", ""))
-            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*\\$([\\d]+).*'.");
+            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
     }
 
     @Test
