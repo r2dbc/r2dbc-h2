@@ -60,8 +60,28 @@ final class H2StatementTest {
     private final H2Statement statement = new H2Statement(this.client, this.codecs, "test-query-$1");
 
     @Test
+    void shouldNotAcceptQuestionMarkAlone() {
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("?", 100).getCurrentBinding())
+            .withMessage("Identifier '?' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
+    }
+
+    @Test
+    void shouldNotAcceptDollarAlone() {
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("$", 100).getCurrentBinding())
+            .withMessage("Identifier '$' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
+    }
+
+    @Test
     void bind() {
         assertThat(this.statement.bind("$1", 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
+    }
+
+    @Test
+    void bindWithQuestionMark() {
+        H2Statement questionMarkStatement = new H2Statement(this.client, this.codecs, "test-query-?1");
+
+        assertThat(questionMarkStatement.bind("?1", 100).getCurrentBinding())
+            .isEqualTo(new Binding().add(0, ValueInt.get(100)));
     }
 
     @Test
@@ -108,7 +128,7 @@ final class H2StatementTest {
     @Test
     void bindNullWrongIdentifierFormat() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bindNull("foo", Integer.class))
-            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*\\$([\\d]+).*'.");
+            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
     }
 
     @Test
@@ -120,7 +140,7 @@ final class H2StatementTest {
     @Test
     void bindWrongIdentifierFormat() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("foo", ""))
-            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*\\$([\\d]+).*'.");
+            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
     }
 
     @Test
