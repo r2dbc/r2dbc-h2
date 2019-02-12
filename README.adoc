@@ -106,11 +106,11 @@ ConnectionFactory connectionFactory = new H2ConnectionFactory(H2ConnectionConfig
 Mono<Connection> connection = connectionFactory.create();
 ----
 
-H2 uses index parameters that are prefixed with `$`. The following SQL statement makes use of parameters:
+H2 uses index parameters that are prefixed with `?`. The following SQL statement makes use of parameters:
 
 [source,sql]
 ----
-INSERT INTO person (id, first_name, last_name) VALUES ($1, $2, $3)
+INSERT INTO person (id, first_name, last_name) VALUES (?1, ?2, ?3)
 ----
 
 Parameters are referenced using the same identifiers when binding these:
@@ -118,10 +118,10 @@ Parameters are referenced using the same identifiers when binding these:
 [source,java]
 ----
 connection
-    .createStatement("INSERT INTO person (id, first_name, last_name) VALUES ($1, $2, $3)")
-    .bind("$1", 1)
-    .bind("$2", "Walter")
-    .bind("$3", "White")
+    .createStatement("INSERT INTO person (id, first_name, last_name) VALUES (?1, ?2, ?3)")
+    .bind("?1", 1)
+    .bind("?2", "Walter")
+    .bind("?3", "White")
     .execute()
 ----
 
