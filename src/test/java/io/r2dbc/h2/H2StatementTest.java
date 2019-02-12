@@ -60,6 +60,18 @@ final class H2StatementTest {
     private final H2Statement statement = new H2Statement(this.client, this.codecs, "test-query-$1");
 
     @Test
+    void shouldNotAcceptQuestionMarkAlone() {
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("?", 100).getCurrentBinding())
+            .withMessage("Identifier '?' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
+    }
+
+    @Test
+    void shouldNotAcceptDollarAlone() {
+        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("$", 100).getCurrentBinding())
+            .withMessage("Identifier '$' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
+    }
+
+    @Test
     void bind() {
         assertThat(this.statement.bind("$1", 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
     }
