@@ -105,7 +105,7 @@ public final class H2Row implements Row {
         List<Column> columns = new ArrayList<>(values.length);
 
         for (int i = 0; i < values.length; i++) {
-            columns.add(new Column(result.getColumnType(i), result.getColumnName(i).toUpperCase(), values[i]));
+            columns.add(new Column(result.getColumnType(i), result.getAlias(i).toUpperCase(), values[i]));
         }
 
         return columns;

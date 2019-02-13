@@ -16,10 +16,31 @@
 
 package io.r2dbc.h2;
 
-import org.junit.jupiter.api.Disabled;
+import io.r2dbc.h2.codecs.DefaultCodecs;
+import org.h2.result.ResultInterface;
+import org.h2.value.Value;
+import org.h2.value.ValueInt;
+import org.junit.jupiter.api.Test;
 
-@Disabled("Not yet implemented")
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 final class H2RowTest {
+
+    @Test
+    void makeSureThatAliasIsUsedInRow() {
+        Value[] values = {ValueInt.get(1)};
+
+        ResultInterface resultInterface = mock(ResultInterface.class);
+        when(resultInterface.getColumnType(0)).thenReturn(ValueInt.INT);
+        when(resultInterface.getColumnName(0)).thenReturn("MyColumnName");
+        when(resultInterface.getAlias(0)).thenReturn("MyColumnAlias");
+
+        H2Row h2Row = H2Row.toRow(values, resultInterface, new DefaultCodecs());
+
+        assertEquals(1, h2Row.get("MyColumnAlias"));
+    }
 
 //    private final List<Column> columns = Arrays.asList(
 //        new Column(TEST.buffer(4).writeInt(100), 200, BINARY, "test-name-1"),
