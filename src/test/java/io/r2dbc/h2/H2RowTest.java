@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 the original author or authors.
+ * Copyright 2017-2019 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,96 @@
 
 package io.r2dbc.h2;
 
-import org.junit.jupiter.api.Disabled;
+import io.r2dbc.h2.util.H2ServerExtension;
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
+import io.r2dbc.spi.ConnectionFactoryOptions;
+import io.r2dbc.spi.test.Example;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.springframework.jdbc.core.JdbcOperations;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
-@Disabled("Not yet implemented")
+import java.util.Collections;
+
+import static io.r2dbc.h2.H2ConnectionFactoryProvider.H2_DRIVER;
+import static io.r2dbc.h2.H2ConnectionFactoryProvider.URL;
+import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
+import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
+import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
+import static io.r2dbc.spi.test.Example.close;
+
 final class H2RowTest {
+
+    @RegisterExtension
+    static final H2ServerExtension SERVER = new H2ServerExtension();
+
+    private final ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
+        .option(DRIVER, H2_DRIVER)
+        .option(PASSWORD, SERVER.getPassword())
+        .option(URL, SERVER.getUrl())
+        .option(USER, SERVER.getUsername())
+        .build());
+
+    @BeforeEach
+    void createTable() {
+        getJdbcOperations().execute("CREATE TABLE test ( value INTEGER )");
+    }
+
+    @AfterEach
+    void dropTable() {
+        getJdbcOperations().execute("DROP TABLE test");
+    }
+
+    @Test
+    void selectWithAliases() {
+        getJdbcOperations().execute("INSERT INTO test VALUES (100)");
+
+        Mono.from(this.connectionFactory.create())
+            .flatMapMany(connection -> Flux.from(connection
+
+                .createStatement("SELECT value as ALIASED_VALUE FROM test")
+                .execute())
+                .flatMap(result -> Flux.from(result
+                    .map((row, rowMetadata) -> row.get("ALIASED_VALUE", Integer.class)))
+                    .collectList())
+
+                .concatWith(close(connection)))
+            .as(StepVerifier::create)
+            .expectNext(Collections.singletonList(100))
+            .verifyComplete();
+    }
+
+    @Test
+    void selectWithoutAliases() {
+        getJdbcOperations().execute("INSERT INTO test VALUES (100)");
+
+        Mono.from(this.connectionFactory.create())
+            .flatMapMany(connection -> Flux.from(connection
+
+                .createStatement("SELECT value FROM test")
+                .execute())
+                .flatMap(Example::extractColumns)
+
+                .concatWith(close(connection)))
+            .as(StepVerifier::create)
+            .expectNext(Collections.singletonList(100))
+            .verifyComplete();
+    }
+
+    private JdbcOperations getJdbcOperations() {
+        JdbcOperations jdbcOperations = SERVER.getJdbcOperations();
+
+        if (jdbcOperations == null) {
+            throw new IllegalStateException("JdbcOperations not yet initialized");
+        }
+
+        return jdbcOperations;
+    }
 
 //    private final List<Column> columns = Arrays.asList(
 //        new Column(TEST.buffer(4).writeInt(100), 200, BINARY, "test-name-1"),
