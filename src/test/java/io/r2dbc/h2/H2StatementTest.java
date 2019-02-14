@@ -77,6 +77,13 @@ final class H2StatementTest {
     }
 
     @Test
+    void bindWithPositionNumberAsObject() {
+        Object index = Integer.valueOf(0);
+        assertThat(this.statement.bind(index, 100).getCurrentBinding())
+            .isEqualTo(new Binding().add(0, ValueInt.get(100)));
+    }
+
+    @Test
     void bindWithQuestionMark() {
         H2Statement questionMarkStatement = new H2Statement(this.client, this.codecs, "test-query-?1");
 
@@ -134,7 +141,7 @@ final class H2StatementTest {
     @Test
     void bindNullWrongIdentifierType() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bindNull(new Object(), Integer.class))
-            .withMessage("identifier must be a String");
+            .withMessage("identifier must be: String or Integer");
     }
 
     @Test
@@ -146,7 +153,7 @@ final class H2StatementTest {
     @Test
     void bindWrongIdentifierType() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind(new Object(), ""))
-            .withMessage("identifier must be a String");
+            .withMessage("identifier must be: String or Integer");
     }
 
     @Test

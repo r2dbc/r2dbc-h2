@@ -71,28 +71,39 @@ public final class H2Statement implements Statement {
     @Override
     public H2Statement bind(Object identifier, Object value) {
         Assert.requireNonNull(identifier, "identifier must not be null");
-        Assert.requireType(identifier, String.class, "identifier must be a String");
 
-        return bind(getIndex((String) identifier), value);
+        if (identifier instanceof String) {
+            return addIndex(getIndex((String) identifier), value);
+        }
+
+        if (identifier instanceof Integer) {
+            return addIndex((int) identifier, value);
+        }
+
+        throw new IllegalArgumentException("identifier must be: String or Integer");
     }
 
     @Override
     public H2Statement bind(int index, Object value) {
-        Assert.requireNonNull(value, "value must not be null");
-
-        this.bindings.getCurrent().add(index, this.codecs.encode(value));
-
-        return this;
+        return addIndex(index, value);
     }
 
     @Override
     public H2Statement bindNull(Object identifier, @Nullable Class<?> type) {
         Assert.requireNonNull(identifier, "identifier must not be null");
-        Assert.requireType(identifier, String.class, "identifier must be a String");
 
-        bindNull(getIndex((String) identifier), type);
+        if (identifier instanceof String) {
+            int index = getIndex((String) identifier);
+            bindNull(index, type);
+            return this;
+        }
 
-        return this;
+        if (identifier instanceof Integer) {
+            bindNull((int) identifier, type);
+            return this;
+        }
+
+        throw new IllegalArgumentException("identifier must be: String or Integer");
     }
 
     @Override
@@ -129,6 +140,14 @@ public final class H2Statement implements Statement {
 
     Binding getCurrentBinding() {
         return this.bindings.getCurrent();
+    }
+
+    private H2Statement addIndex(int index, Object value) {
+        Assert.requireNonNull(value, "value must not be null");
+
+        this.bindings.getCurrent().add(index, this.codecs.encode(value));
+
+        return this;
     }
 
     private static Flux<H2Result> execute(Client client, String sql, Bindings bindings, Codecs codecs, Object generatedColumns) {
