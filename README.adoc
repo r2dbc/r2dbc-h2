@@ -106,6 +106,7 @@ ConnectionFactory connectionFactory = new H2ConnectionFactory(H2ConnectionConfig
 Mono<Connection> connection = connectionFactory.create();
 ----
 
+==== Setting query params
 H2 uses index parameters that are prefixed with `?`. The following SQL statement makes use of parameters:
 
 [source,sql]
@@ -125,7 +126,11 @@ connection
     .execute()
 ----
 
-Binding also allowed positional index (zero-based) references. The parameter index is derived from the parameter discovery order when parsing the query.
+===== We also support params binding as
+
+* index `bind(1, "Walter")`. Notice that passing an integer means index (zero-based) references.
+* $ symbol `bind("$2", "Walter")`. H2 supports postgres params notation.
+* Object (Integer) `bind(yourIntegerAsObject, "Walter")`. If you index (int) was converted into object by a framework
 
 == License
 
