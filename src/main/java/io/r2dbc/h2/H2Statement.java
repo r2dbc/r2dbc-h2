@@ -38,7 +38,7 @@ import static io.r2dbc.h2.client.Client.SELECT;
 public final class H2Statement implements Statement {
 
     // search for $ or ? in the statement.
-    private static final Pattern PARAMETER_SYMBOLS = Pattern.compile(".*(\\$|\\?)([\\d]+).*");
+    private static final Pattern PARAMETER_SYMBOLS = Pattern.compile(".*([$?])([\\d]+).*");
 
     // the value of the binding will be on the second group
     private static final int BIND_POSITION_NUMBER_GROUP = 2;

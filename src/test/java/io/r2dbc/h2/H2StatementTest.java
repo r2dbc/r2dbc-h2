@@ -62,13 +62,13 @@ final class H2StatementTest {
     @Test
     void shouldNotAcceptQuestionMarkAlone() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("?", 100).getCurrentBinding())
-            .withMessage("Identifier '?' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
+            .withMessage("Identifier '?' is not a valid identifier. Should be of the pattern '.*([$?])([\\d]+).*'.");
     }
 
     @Test
     void shouldNotAcceptDollarAlone() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("$", 100).getCurrentBinding())
-            .withMessage("Identifier '$' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
+            .withMessage("Identifier '$' is not a valid identifier. Should be of the pattern '.*([$?])([\\d]+).*'.");
     }
 
     @Test
@@ -128,7 +128,7 @@ final class H2StatementTest {
     @Test
     void bindNullWrongIdentifierFormat() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bindNull("foo", Integer.class))
-            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
+            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*([$?])([\\d]+).*'.");
     }
 
     @Test
@@ -140,7 +140,7 @@ final class H2StatementTest {
     @Test
     void bindWrongIdentifierFormat() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("foo", ""))
-            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*(\\$|\\?)([\\d]+).*'.");
+            .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*([$?])([\\d]+).*'.");
     }
 
     @Test

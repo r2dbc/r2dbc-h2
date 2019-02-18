@@ -77,6 +77,36 @@ final class H2Example {
     }
 
     @Nested
+    final class NamedParameterStyle implements Example<String> {
+
+        @Override
+        public ConnectionFactory getConnectionFactory() {
+            return H2Example.this.connectionFactory;
+        }
+
+        @Override
+        public String getIdentifier(int index) {
+            return getPlaceholder(index);
+        }
+
+        @Override
+        public JdbcOperations getJdbcOperations() {
+            JdbcOperations jdbcOperations = SERVER.getJdbcOperations();
+
+            if (jdbcOperations == null) {
+                throw new IllegalStateException("JdbcOperations not yet initialized.");
+            }
+
+            return jdbcOperations;
+        }
+
+        @Override
+        public String getPlaceholder(int index) {
+            return String.format("?%d", index + 1);
+        }
+    }
+
+    @Nested
     final class PostgresqlStyle implements Example<String> {
 
         @Override
