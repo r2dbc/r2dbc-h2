@@ -114,4 +114,8 @@ public final class H2ConnectionFactoryProvider implements ConnectionFactoryProvi
         return false;
     }
 
+    @Override
+    public String getDriver() {
+        return H2_DRIVER;
+    }
 }

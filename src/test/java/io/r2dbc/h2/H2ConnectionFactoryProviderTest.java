@@ -69,4 +69,9 @@ final class H2ConnectionFactoryProviderTest {
             .option(URL, "test-url")
             .build())).isTrue();
     }
+
+    @Test
+    void returnsDriverIdentifier() {
+        assertThat(this.provider.getDriver()).isEqualTo(H2_DRIVER);
+    }
 }
