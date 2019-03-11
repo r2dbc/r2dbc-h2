@@ -20,6 +20,7 @@ import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Row;
 import org.h2.result.ResultInterface;
+import org.h2.value.TypeInfo;
 import org.h2.value.Value;
 import reactor.util.annotation.Nullable;
 
@@ -75,7 +76,7 @@ public final class H2Row implements Row {
             throw new IllegalArgumentException(String.format("Identifier '%s' is not a valid identifier. Should either be an Integer index or a String column name.", identifier));
         }
 
-        return this.codecs.decode(column.getValue(), column.getDataType(), type);
+        return this.codecs.decode(column.getValue(), column.getTypeInfo().getValueType(), type);
     }
 
     @Override
@@ -141,14 +142,14 @@ public final class H2Row implements Row {
 
     static final class Column {
 
-        private final Integer dataType;
+        private final TypeInfo typeInfo;
 
         private final String name;
 
         private final Value value;
 
-        Column(Integer dataType, String name, Value value) {
-            this.dataType = Assert.requireNonNull(dataType, "dataType must not be null");
+        Column(TypeInfo typeInfo, String name, Value value) {
+            this.typeInfo = Assert.requireNonNull(typeInfo, "dataType must not be null");
             this.name = Assert.requireNonNull(name, "name must not be null");
             this.value = value;
         }
@@ -162,27 +163,27 @@ public final class H2Row implements Row {
                 return false;
             }
             Column that = (Column) o;
-            return Objects.equals(this.dataType, that.dataType) &&
+            return Objects.equals(this.typeInfo, that.typeInfo) &&
                 Objects.equals(this.name, that.name) &&
                 Objects.equals(this.value, that.value);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(this.dataType, this.name, this.value);
+            return Objects.hash(this.typeInfo, this.name, this.value);
         }
 
         @Override
         public String toString() {
             return "Column{" +
-                "dataType=" + this.dataType +
+                "typeInfo=" + this.typeInfo +
                 ", name='" + this.name + '\'' +
                 ", value=" + this.value +
                 '}';
         }
 
-        private Integer getDataType() {
-            return this.dataType;
+        private TypeInfo getTypeInfo() {
+            return this.typeInfo;
         }
 
         private String getName() {

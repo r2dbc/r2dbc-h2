@@ -19,6 +19,7 @@ package io.r2dbc.h2;
 import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.result.ResultInterface;
 import org.h2.table.Column;
+import org.h2.value.TypeInfo;
 import org.junit.jupiter.api.Test;
 
 import static io.r2dbc.spi.Nullability.NULLABLE;
@@ -64,24 +65,23 @@ final class H2ColumnMetadataTest {
 
     @Test
     void toColumnMetadata() {
+        TypeInfo typeInfo = TypeInfo.TYPE_INT;
         when(this.result.getColumnName(0)).thenReturn("test-name");
-        when(this.result.getColumnPrecision(0)).thenReturn(400L);
-        when(this.result.getColumnScale(0)).thenReturn(500);
-        when(this.result.getColumnType(0)).thenReturn(200);
+        when(this.result.getColumnType(0)).thenReturn(typeInfo);
         when(this.result.getNullable(0)).thenReturn(Column.NULLABLE);
 
         MockCodecs codecs = MockCodecs.builder()
-            .preferredType(200, String.class)
+            .preferredType(4, String.class)
             .build();
 
         H2ColumnMetadata columnMetadata = H2ColumnMetadata.toColumnMetadata(codecs, this.result, 0);
 
         assertThat(columnMetadata.getJavaType()).isEqualTo(String.class);
         assertThat(columnMetadata.getName()).isEqualTo("test-name");
-        assertThat(columnMetadata.getNativeTypeMetadata()).isEqualTo(200);
+        assertThat(columnMetadata.getNativeTypeMetadata()).isEqualTo(4);
         assertThat(columnMetadata.getNullability()).isEqualTo(NULLABLE);
-        assertThat(columnMetadata.getPrecision()).isEqualTo(400);
-        assertThat(columnMetadata.getScale()).isEqualTo(500);
+        assertThat(columnMetadata.getPrecision()).isEqualTo(10);
+        assertThat(columnMetadata.getScale()).isEqualTo(0);
     }
 
     @Test

@@ -19,7 +19,7 @@ package io.r2dbc.h2;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.message.DbException;
-import org.h2.result.LocalResult;
+import org.h2.result.LocalResultImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -63,8 +63,8 @@ final class H2BatchTest {
 
     @Test
     void execute() {
-        when(this.client.query("test-query-1", Collections.emptyList())).thenReturn(Flux.just(new LocalResult()));
-        when(this.client.query("test-query-2", Collections.emptyList())).thenReturn(Flux.just(new LocalResult()));
+        when(this.client.query("test-query-1", Collections.emptyList())).thenReturn(Flux.just(new LocalResultImpl()));
+        when(this.client.query("test-query-2", Collections.emptyList())).thenReturn(Flux.just(new LocalResultImpl()));
 
         new H2Batch(this.client, MockCodecs.empty())
             .add("test-query-1")

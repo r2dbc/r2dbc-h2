@@ -17,9 +17,9 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.h2.codecs.MockCodecs;
-import io.r2dbc.spi.Nullability;
 import org.h2.result.ResultInterface;
 import org.h2.table.Column;
+import org.h2.value.TypeInfo;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -92,15 +92,14 @@ final class H2RowMetadataTest {
 
     @Test
     void toRowMetadata() {
+        TypeInfo typeInfo = TypeInfo.TYPE_FLOAT;
         when(this.result.getVisibleColumnCount()).thenReturn(1);
         when(this.result.getColumnName(0)).thenReturn("test-name");
-        when(this.result.getColumnPrecision(0)).thenReturn(400L);
-        when(this.result.getColumnScale(0)).thenReturn(500);
-        when(this.result.getColumnType(0)).thenReturn(200);
+        when(this.result.getColumnType(0)).thenReturn(typeInfo);
         when(this.result.getNullable(0)).thenReturn(Column.NULLABLE);
 
         MockCodecs codecs = MockCodecs.builder()
-            .preferredType(200, String.class)
+            .preferredType(8, String.class)
             .build();
 
         H2RowMetadata rowMetadata = H2RowMetadata.toRowMetadata(codecs, this.result);

@@ -23,7 +23,7 @@ import io.r2dbc.h2.util.H2ServerExtension;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import org.h2.result.LocalResult;
+import org.h2.result.LocalResultImpl;
 import org.h2.result.ResultWithGeneratedKeys;
 import org.h2.value.Value;
 import org.h2.value.ValueInt;
@@ -174,8 +174,8 @@ final class H2StatementTest {
             new Binding().add(0, ValueInt.get(100)),
             new Binding().add(0, ValueInt.get(200))
         ))).thenReturn(Flux.just(
-            new LocalResult(),
-            new LocalResult()
+            new LocalResultImpl(),
+            new LocalResultImpl()
         ));
 
         MockCodecs codecs = MockCodecs.builder()
@@ -199,7 +199,7 @@ final class H2StatementTest {
         when(this.client.update("insert test-query-$1", Arrays.asList(
             new Binding().add(0, ValueInt.get(100))
         ), false)).thenReturn(Flux.just(
-            new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())
+            new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl())
         ));
 
         new H2Statement(this.client, this.codecs, "insert test-query-$1")
@@ -214,7 +214,7 @@ final class H2StatementTest {
     void returnGeneratedValues() {
         when(this.client.update("INSERT test-query", Collections.emptyList(), new String[]{"foo", "bar"}))
             .thenReturn(Flux.just(
-                new ResultWithGeneratedKeys.WithKeys(0, new LocalResult())
+                new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl())
             ));
 
         new H2Statement(this.client, MockCodecs.empty(), "INSERT test-query")

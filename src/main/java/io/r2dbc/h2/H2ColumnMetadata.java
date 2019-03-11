@@ -22,6 +22,7 @@ import io.r2dbc.spi.ColumnMetadata;
 import io.r2dbc.spi.Nullability;
 import org.h2.result.ResultInterface;
 import org.h2.table.Column;
+import org.h2.value.TypeInfo;
 import reactor.util.annotation.Nullable;
 
 import java.util.Objects;
@@ -124,8 +125,10 @@ public final class H2ColumnMetadata implements ColumnMetadata {
         Assert.requireNonNull(codecs, "codecs must not be null");
         Assert.requireNonNull(result, "result must not be null");
 
-        return new H2ColumnMetadata(codecs.preferredType(result.getColumnType(index)), result.getColumnName(index), result.getColumnType(index), toNullability(result.getNullable(index)),
-            result.getColumnPrecision(index), result.getColumnScale(index));
+        TypeInfo typeInfo = result.getColumnType(index);
+
+        return new H2ColumnMetadata(codecs.preferredType(typeInfo.getValueType()), result.getColumnName(index), typeInfo.getValueType(), toNullability(result.getNullable(index)),
+            typeInfo.getPrecision(), typeInfo.getScale());
     }
 
     private static Nullability toNullability(int n) {
