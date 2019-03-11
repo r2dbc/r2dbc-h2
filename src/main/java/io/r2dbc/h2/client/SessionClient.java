@@ -84,28 +84,25 @@ public final class SessionClient implements Client {
     }
 
     @Override
-    public Flux<ResultInterface> query(String sql, List<Binding> bindings) {
+    public Flux<CommandInterface> prepareCommand(String sql, List<Binding> bindings) {
         Assert.requireNonNull(sql, "sql must not be null");
         Assert.requireNonNull(bindings, "bindings must not be null");
 
         return Flux.fromIterable(bindings)
             .defaultIfEmpty(Binding.EMPTY)
             .map(binding -> createCommand(sql, binding))
-            .doOnNext(command -> this.logger.debug("Request:  {}", command))
-            .flatMap(command -> Mono.just(command.executeQuery(Integer.MAX_VALUE, false)))
+            .doOnNext(command -> this.logger.debug("Request:  {}", command));
+    }
+
+    @Override
+    public Mono<ResultInterface> query(CommandInterface command) {
+        return Mono.just(command.executeQuery(Integer.MAX_VALUE, false))
             .doOnNext(result -> this.logger.debug("Response: {}", result));
     }
 
     @Override
-    public Flux<ResultWithGeneratedKeys> update(String sql, List<Binding> bindings, Object generatedColumns) {
-        Assert.requireNonNull(sql, "sql must not be null");
-        Assert.requireNonNull(bindings, "bindings must not be null");
-
-        return Flux.fromIterable(bindings)
-            .defaultIfEmpty(Binding.EMPTY)
-            .map(binding -> createCommand(sql, binding))
-            .doOnNext(command -> this.logger.debug("Request: {}", command))
-            .flatMap(command -> Mono.just(command.executeUpdate(generatedColumns)));
+    public Mono<ResultWithGeneratedKeys> update(CommandInterface command, Object generatedColumns) {
+        return Mono.just(command.executeUpdate(generatedColumns));
     }
 
     private CommandInterface createCommand(String sql, Binding binding) {

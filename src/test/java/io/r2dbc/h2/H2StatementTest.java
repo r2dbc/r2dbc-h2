@@ -23,6 +23,7 @@ import io.r2dbc.h2.util.H2ServerExtension;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import org.h2.command.CommandInterface;
 import org.h2.result.LocalResultImpl;
 import org.h2.result.ResultWithGeneratedKeys;
 import org.h2.value.Value;
@@ -170,20 +171,25 @@ final class H2StatementTest {
 
     @Test
     void execute() {
-        when(this.client.query("select test-query-$1", Arrays.asList(
+        CommandInterface command1 = mock(CommandInterface.class);
+        CommandInterface command2 = mock(CommandInterface.class);
+        when(this.client.prepareCommand("select test-query-$1 from my_table", Arrays.asList(
             new Binding().add(0, ValueInt.get(100)),
             new Binding().add(0, ValueInt.get(200))
         ))).thenReturn(Flux.just(
-            new LocalResultImpl(),
-            new LocalResultImpl()
+            command1, command2
         ));
+        when(command1.isQuery()).thenReturn(true);
+        when(command2.isQuery()).thenReturn(true);
+        when(this.client.query(command1)).thenReturn(Mono.just(new LocalResultImpl()));
+        when(this.client.query(command2)).thenReturn(Mono.just(new LocalResultImpl()));
 
         MockCodecs codecs = MockCodecs.builder()
             .encoding(100, ValueInt.get(100))
             .encoding(200, ValueInt.get(200))
             .build();
 
-        new H2Statement(this.client, codecs, "select test-query-$1")
+        new H2Statement(this.client, codecs, "select test-query-$1 from my_table")
             .bind("$1", 100)
             .add()
             .bind("$1", 200)
@@ -196,11 +202,13 @@ final class H2StatementTest {
 
     @Test
     void executeWithoutAdd() {
-        when(this.client.update("insert test-query-$1", Arrays.asList(
+        CommandInterface command = mock(CommandInterface.class);
+        when(this.client.prepareCommand("insert test-query-$1", Arrays.asList(
             new Binding().add(0, ValueInt.get(100))
-        ), false)).thenReturn(Flux.just(
-            new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl())
+        ))).thenReturn(Flux.just(
+            command
         ));
+        when(this.client.update(command, false)).thenReturn(Mono.just(new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl())));
 
         new H2Statement(this.client, this.codecs, "insert test-query-$1")
             .bind("$1", 100)
@@ -212,10 +220,11 @@ final class H2StatementTest {
 
     @Test
     void returnGeneratedValues() {
-        when(this.client.update("INSERT test-query", Collections.emptyList(), new String[]{"foo", "bar"}))
-            .thenReturn(Flux.just(
-                new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl())
-            ));
+        CommandInterface command = mock(CommandInterface.class);
+        when(this.client.prepareCommand("INSERT test-query", Collections.emptyList())).thenReturn(Flux.just(
+            command
+        ));
+        when(this.client.update(command, new String[]{"foo", "bar"})).thenReturn(Mono.just(new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl())));
 
         new H2Statement(this.client, MockCodecs.empty(), "INSERT test-query")
             .returnGeneratedValues("foo", "bar")

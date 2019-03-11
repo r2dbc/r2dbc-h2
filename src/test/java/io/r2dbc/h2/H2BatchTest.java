@@ -18,11 +18,13 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.MockCodecs;
+import org.h2.command.CommandInterface;
 import org.h2.message.DbException;
 import org.h2.result.LocalResultImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Collections;
@@ -63,12 +65,22 @@ final class H2BatchTest {
 
     @Test
     void execute() {
-        when(this.client.query("test-query-1", Collections.emptyList())).thenReturn(Flux.just(new LocalResultImpl()));
-        when(this.client.query("test-query-2", Collections.emptyList())).thenReturn(Flux.just(new LocalResultImpl()));
+        CommandInterface command1 = mock(CommandInterface.class);
+        CommandInterface command2 = mock(CommandInterface.class);
+        when(this.client.prepareCommand("select test-query-1", Collections.emptyList())).thenReturn(Flux.just(
+            command1
+        ));
+        when(this.client.prepareCommand("select test-query-2", Collections.emptyList())).thenReturn(Flux.just(
+            command1
+        ));
+        when(command1.isQuery()).thenReturn(true);
+        when(command2.isQuery()).thenReturn(true);
+        when(this.client.query(command1)).thenReturn(Mono.just(new LocalResultImpl()));
+        when(this.client.query(command2)).thenReturn(Mono.just(new LocalResultImpl()));
 
         new H2Batch(this.client, MockCodecs.empty())
-            .add("test-query-1")
-            .add("test-query-2")
+            .add("select test-query-1")
+            .add("select test-query-2")
             .execute()
             .as(StepVerifier::create)
             .expectNextCount(2)
@@ -77,10 +89,15 @@ final class H2BatchTest {
 
     @Test
     void executeErrorResponse() {
-        when(this.client.query("test-query", Collections.emptyList())).thenReturn(Flux.error(DbException.get(0)));
+        CommandInterface command = mock(CommandInterface.class);
+        when(this.client.prepareCommand("select test-query", Collections.emptyList())).thenReturn(Flux.just(
+            command
+        ));
+        when(command.isQuery()).thenReturn(true);
+        when(this.client.query(command)).thenReturn(Mono.error(DbException.get(0)));
 
         new H2Batch(this.client, MockCodecs.empty())
-            .add("test-query")
+            .add("select test-query")
             .execute()
             .as(StepVerifier::create)
             .verifyError(H2DatabaseException.class);

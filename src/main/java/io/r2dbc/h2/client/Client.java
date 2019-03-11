@@ -17,6 +17,7 @@
 package io.r2dbc.h2.client;
 
 import io.r2dbc.h2.util.Assert;
+import org.h2.command.CommandInterface;
 import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
 import reactor.core.publisher.Flux;
@@ -24,20 +25,12 @@ import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Pattern;
-
-import static java.util.regex.Pattern.CASE_INSENSITIVE;
-import static java.util.regex.Pattern.DOTALL;
 
 
 /**
  * An abstraction that wraps interaction with the H2 Database APIs.
  */
 public interface Client {
-
-    Pattern INSERT = Pattern.compile("[\\s]*INSERT.*", CASE_INSENSITIVE | DOTALL);
-
-    Pattern SELECT = Pattern.compile("[\\s]*SELECT.*", CASE_INSENSITIVE | DOTALL);
 
     /**
      * Release any resources held by the {@link Client}.
@@ -70,7 +63,8 @@ public interface Client {
     default Mono<Void> execute(String sql) {
         Assert.requireNonNull(sql, "sql must not be null");
 
-        return update(sql, Collections.emptyList(), false)
+        return prepareCommand(sql, Collections.emptyList())
+            .flatMap(command -> update(command, false))
             .then();
     }
 
@@ -82,24 +76,31 @@ public interface Client {
     boolean inTransaction();
 
     /**
+     * Transform a SQL statement and a set of {@link Binding}s into a {@link CommandInterface}.
+     *
+     * @param sql to either query or update
+     * @param bindings the parameter bindings to use
+     * @return {@link CommandInterface} to be flat mapped over
+     */
+    Flux<CommandInterface> prepareCommand(String sql, List<Binding> bindings);
+
+    /**
      * Execute a query.
      *
-     * @param sql      the SQL of the query
-     * @param bindings the parameter bindings to use
+     * @param command the {@link CommandInterface} to query
      * @return the result of the query
      * @throws NullPointerException if {@code sql} or {@code bindings} is {@code null}
      */
-    Flux<ResultInterface> query(String sql, List<Binding> bindings);
+    Mono<ResultInterface> query(CommandInterface command);
 
     /**
      * Execute an update.
      *
-     * @param sql      the SQL of the update
-     * @param bindings the parameter bindings to use
+     * @param command      the {@link CommandInterface} to update
      * @param generatedColumns the parameter to specify what columns to generate
      * @return the result of the update
      * @throws NullPointerException if {@code sql} or {@code bindings} is {@code null}
      */
-    Flux<ResultWithGeneratedKeys> update(String sql, List<Binding> bindings, Object generatedColumns);
+    Mono<ResultWithGeneratedKeys> update(CommandInterface command, Object generatedColumns);
 
 }

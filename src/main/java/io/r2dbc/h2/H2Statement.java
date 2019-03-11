@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static io.r2dbc.h2.client.Client.SELECT;
-
 /**
  * An implementation of {@link Statement} for an H2 database.
  */
@@ -134,7 +132,7 @@ public final class H2Statement implements Statement {
         } else {
             this.generatedColumns = columns;
         }
-        
+
         return this;
     }
 
@@ -151,19 +149,23 @@ public final class H2Statement implements Statement {
     }
 
     private static Flux<H2Result> execute(Client client, String sql, Bindings bindings, Codecs codecs, Object generatedColumns) {
-        if (!SELECT.matcher(sql).matches()) {
-            return client.update(sql, bindings.bindings, generatedColumns)
-                .map(result -> {
-                    if (GeneratedKeysMode.valueOf(generatedColumns) == GeneratedKeysMode.NONE) {
-                        return H2Result.toResult(codecs, result.getUpdateCount());
-                    } else {
-                        return H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount());
-                    }
-                });
-        } else {
-            return client.query(sql, bindings.bindings)
-                .map(result -> H2Result.toResult(codecs, result, null));
-        }
+
+        return client.prepareCommand(sql, bindings.bindings)
+            .flatMap(command -> {
+                if (command.isQuery()) {
+                    return client.query(command)
+                        .map(result -> H2Result.toResult(codecs, result, null));
+                } else {
+                    return client.update(command, generatedColumns)
+                        .map(result -> {
+                            if (GeneratedKeysMode.valueOf(generatedColumns) == GeneratedKeysMode.NONE) {
+                                return H2Result.toResult(codecs, result.getUpdateCount());
+                            } else {
+                                return H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount());
+                            }
+                        });
+                }
+            });
     }
 
     private int getIndex(String identifier) {
