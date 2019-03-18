@@ -65,17 +65,6 @@ public final class H2Batch implements Batch {
                 }
             })
             .onErrorMap(DbException.class, H2DatabaseException::new);
-//        return Flux.fromIterable(this.statements)
-//            .flatMap(statement -> {
-//                if (INSERT.matcher(statement).matches()) {
-//                    return this.client.update(statement, Collections.emptyList(), false)
-//                        .map(result -> H2Result.toResult(this.codecs, result.getUpdateCount()));
-//                } else {
-//                    return this.client.query(statement, Collections.emptyList())
-//                        .map(result -> H2Result.toResult(this.codecs, result, null));
-//                }
-//            })
-//            .onErrorMap(DbException.class, H2DatabaseException::new);
     }
 
 }
