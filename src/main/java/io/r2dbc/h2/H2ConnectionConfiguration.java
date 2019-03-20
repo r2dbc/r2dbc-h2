@@ -156,7 +156,7 @@ public final class H2ConnectionConfiguration {
          * Configure the database url. Includes everything after the {@code jdbc:h2:} prefix. For in-memory and file-based databases, must include the proper prefix (e.g. {@code file:} or {@code
          * mem:}).
          * <p>
-         * See <a href="http://www.h2database.com/html/features.html#database_url">http://www.h2database.com/html/features.html#database_url</a> for more details.
+         * See <a href="https://www.h2database.com/html/features.html#database_url">https://www.h2database.com/html/features.html#database_url</a> for more details.
          *
          * @param url the url
          * @return this {@link Builder}
