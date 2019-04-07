@@ -79,6 +79,7 @@
         <dependency>
             <groupId>io.projectreactor.addons</groupId>
             <artifactId>reactor-extra</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.r2dbc</groupId>

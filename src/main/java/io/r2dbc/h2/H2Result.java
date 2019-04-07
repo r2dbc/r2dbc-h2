@@ -31,8 +31,6 @@ import reactor.util.annotation.Nullable;
 
 import java.util.function.BiFunction;
 
-import static reactor.function.TupleUtils.function;
-
 /**
  * An implementation of {@link Result} representing the results of a query against an H2 database.
  */
@@ -61,7 +59,7 @@ public final class H2Result implements Result {
 
         return this.rows
             .zipWith(this.rowMetadata.repeat())
-            .map(function(f::apply));
+            .map(tuple -> f.apply(tuple.getT1(), tuple.getT2()));
     }
 
     @Override
