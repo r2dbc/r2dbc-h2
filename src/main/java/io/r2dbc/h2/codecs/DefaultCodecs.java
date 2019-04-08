@@ -34,8 +34,10 @@ public final class DefaultCodecs implements Codecs {
         this.codecs = Arrays.asList(
             new BigDecimalCodec(),
             new BooleanCodec(),
+            new BlobCodec(),
             new ByteCodec(),
             new BytesCodec(),
+            new ClobCodec(),
             new DateCodec(),
             new DoubleCodec(),
             new FloatCodec(),

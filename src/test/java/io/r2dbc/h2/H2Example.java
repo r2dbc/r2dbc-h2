@@ -21,6 +21,7 @@ import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import io.r2dbc.spi.test.Example;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.jdbc.core.JdbcOperations;
@@ -43,6 +44,7 @@ final class H2Example {
         .option(USER, SERVER.getUsername())
         .build());
 
+    @Disabled
     @Nested
     final class JdbcStyle implements Example<Integer> {
 
