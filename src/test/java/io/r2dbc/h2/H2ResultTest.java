@@ -17,7 +17,7 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.h2.codecs.MockCodecs;
-import org.h2.message.DbException;
+import io.r2dbc.spi.R2dbcDataIntegrityViolationException;
 import org.h2.result.ResultInterface;
 import org.h2.value.Value;
 import org.h2.value.ValueInt;
@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.sql.SQLIntegrityConstraintViolationException;
 
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
@@ -55,13 +57,15 @@ final class H2ResultTest {
 
     @Test
     void toResultErrorResponse() {
-        when(this.result.next()).thenThrow(DbException.get(0));
+        when(this.result.next()).thenAnswer(arg -> {
+            throw new SQLIntegrityConstraintViolationException("can't commit", "some state", 999);
+        });
 
         H2Result result = H2Result.toResult(MockCodecs.empty(), this.result, null);
 
         result.map((row, rowMetadata) -> row)
             .as(StepVerifier::create)
-            .verifyError(H2DatabaseException.class);
+            .verifyError(R2dbcDataIntegrityViolationException.class);
 
         result.getRowsUpdated()
             .as(StepVerifier::create)

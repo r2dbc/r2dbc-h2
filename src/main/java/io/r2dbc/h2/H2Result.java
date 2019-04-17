@@ -21,7 +21,6 @@ import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Row;
 import io.r2dbc.spi.RowMetadata;
-import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.value.Value;
 import reactor.core.publisher.Flux;
@@ -29,6 +28,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
 import reactor.util.annotation.Nullable;
 
+import java.sql.SQLException;
 import java.util.function.BiFunction;
 
 /**
@@ -93,7 +93,7 @@ public final class H2Result implements Result {
                 }
             })
             .map(values -> H2Row.toRow(values, result, codecs))
-            .onErrorMap(DbException.class, H2DatabaseException::new);
+            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
 
         return new H2Result(rowMetadata, rows, Mono.justOrEmpty(rowsUpdated));
     }

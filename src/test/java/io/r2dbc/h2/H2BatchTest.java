@@ -18,8 +18,8 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.MockCodecs;
+import io.r2dbc.spi.R2dbcBadGrammarException;
 import org.h2.command.CommandInterface;
-import org.h2.message.DbException;
 import org.h2.result.LocalResultImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -27,6 +27,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.sql.SQLSyntaxErrorException;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -94,13 +95,13 @@ final class H2BatchTest {
             command
         ));
         when(command.isQuery()).thenReturn(true);
-        when(this.client.query(command)).thenReturn(Mono.error(DbException.get(0)));
+        when(this.client.query(command)).thenReturn(Mono.error(new SQLSyntaxErrorException("bad statement", "state", 999)));
 
         new H2Batch(this.client, MockCodecs.empty())
             .add("select test-query")
             .execute()
             .as(StepVerifier::create)
-            .verifyError(H2DatabaseException.class);
+            .verifyError(R2dbcBadGrammarException.class);
     }
 
 }

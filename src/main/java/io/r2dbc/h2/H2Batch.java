@@ -20,9 +20,9 @@ import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Batch;
-import org.h2.message.DbException;
 import reactor.core.publisher.Flux;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -64,7 +64,7 @@ public final class H2Batch implements Batch {
                         .map(result -> H2Result.toResult(this.codecs, result.getUpdateCount()));
                 }
             })
-            .onErrorMap(DbException.class, H2DatabaseException::new);
+            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
     }
 
 }

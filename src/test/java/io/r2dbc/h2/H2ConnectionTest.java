@@ -18,11 +18,18 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.MockCodecs;
+import io.r2dbc.spi.R2dbcNonTransientException;
+import io.r2dbc.spi.R2dbcNonTransientResourceException;
+import io.r2dbc.spi.R2dbcRollbackException;
 import org.h2.message.DbException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLNonTransientConnectionException;
+import java.sql.SQLTransactionRollbackException;
 
 import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
 import static io.r2dbc.spi.IsolationLevel.READ_UNCOMMITTED;
@@ -53,12 +60,14 @@ final class H2ConnectionTest {
     @Test
     void beginTransactionErrorResponse() {
         when(this.client.inTransaction()).thenReturn(false);
-        when(this.client.disableAutoCommit()).thenThrow(DbException.get(0));
+        when(this.client.disableAutoCommit()).thenAnswer(invocation -> {
+            throw new SQLNonTransientConnectionException("Unable to disable autocommits", "some state", 999);
+        });
 
         new H2Connection(this.client, MockCodecs.empty())
             .beginTransaction()
             .as(StepVerifier::create)
-            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+            .verifyErrorMatches(R2dbcNonTransientResourceException.class::isInstance);
     }
 
     @Test
@@ -97,13 +106,15 @@ final class H2ConnectionTest {
     @Test
     void commitTransactionErrorResponse() {
         when(this.client.inTransaction()).thenReturn(true);
-        when(this.client.execute("COMMIT")).thenThrow(DbException.get(0));
+        when(this.client.execute("COMMIT")).thenAnswer(arg -> {
+            throw new SQLTransactionRollbackException("can't commit", "some state", 999);
+        });
         when(this.client.enableAutoCommit()).thenReturn(Mono.empty());
 
         new H2Connection(this.client, MockCodecs.empty())
             .commitTransaction()
             .as(StepVerifier::create)
-            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+            .verifyErrorMatches(R2dbcRollbackException.class::isInstance);
     }
 
     @Test
@@ -148,12 +159,14 @@ final class H2ConnectionTest {
     @Test
     void createSavepointErrorResponse() {
         when(this.client.inTransaction()).thenReturn(true);
-        when(this.client.execute("SAVEPOINT test-name")).thenThrow(DbException.get(0));
+        when(this.client.execute("SAVEPOINT test-name")).thenAnswer(arg -> {
+            throw new SQLFeatureNotSupportedException("can't savepoint", "some state", 999);
+        });
 
         new H2Connection(this.client, MockCodecs.empty())
             .createSavepoint("test-name")
             .as(StepVerifier::create)
-            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+            .verifyErrorMatches(R2dbcNonTransientException.class::isInstance);
     }
 
     @Test
@@ -192,12 +205,14 @@ final class H2ConnectionTest {
     @Test
     void releaseSavepointErrorResponse() {
         when(this.client.inTransaction()).thenReturn(true);
-        when(this.client.execute("RELEASE SAVEPOINT test-name")).thenThrow(DbException.get(0));
-
+        when(this.client.execute("RELEASE SAVEPOINT test-name")).thenAnswer(arg -> {
+            throw new SQLFeatureNotSupportedException("can't savepoint", "some state", 999);
+        });
+        
         new H2Connection(this.client, MockCodecs.empty())
             .releaseSavepoint("test-name")
             .as(StepVerifier::create)
-            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+            .verifyErrorMatches(R2dbcNonTransientException.class::isInstance);
     }
 
     @Test
@@ -232,13 +247,15 @@ final class H2ConnectionTest {
     @Test
     void rollbackTransactionErrorResponse() {
         when(this.client.inTransaction()).thenReturn(true);
-        when(this.client.execute("ROLLBACK")).thenThrow(DbException.get(0));
+        when(this.client.execute("ROLLBACK")).thenAnswer(arg -> {
+            throw new SQLTransactionRollbackException("can't commit", "some state", 999);
+        });
         when(this.client.enableAutoCommit()).thenReturn(Mono.empty());
 
         new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransaction()
             .as(StepVerifier::create)
-            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+            .verifyErrorMatches(R2dbcRollbackException.class::isInstance);
     }
 
     @Test
@@ -266,12 +283,14 @@ final class H2ConnectionTest {
     @Test
     void rollbackTransactionToSavepointErrorResponse() {
         when(this.client.inTransaction()).thenReturn(true);
-        when(this.client.execute("ROLLBACK TO SAVEPOINT test-name")).thenThrow(DbException.get(0));
+        when(this.client.execute("ROLLBACK TO SAVEPOINT test-name")).thenAnswer(arg -> {
+            throw new SQLTransactionRollbackException("can't commit", "some state", 999);
+        });
 
         new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransactionToSavepoint("test-name")
             .as(StepVerifier::create)
-            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+            .verifyErrorMatches(R2dbcRollbackException.class::isInstance);
     }
 
     @Test
@@ -344,7 +363,7 @@ final class H2ConnectionTest {
         new H2Connection(this.client, MockCodecs.empty())
             .setTransactionIsolationLevel(READ_COMMITTED)
             .as(StepVerifier::create)
-            .verifyErrorMatches(H2DatabaseException.class::isInstance);
+            .verifyErrorMatches(R2dbcNonTransientException.class::isInstance);
     }
 
     @Test
