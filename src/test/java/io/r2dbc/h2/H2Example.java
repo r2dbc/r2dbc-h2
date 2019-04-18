@@ -21,6 +21,7 @@ import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import io.r2dbc.spi.test.Example;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.jdbc.core.JdbcOperations;
@@ -71,6 +72,26 @@ final class H2Example {
         public String getPlaceholder(int index) {
             return "?";
         }
+
+        @Disabled
+        @Override
+        public void blobInsert() {
+        }
+
+        @Disabled
+        @Override
+        public void blobSelect() {
+        }
+
+        @Disabled
+        @Override
+        public void clobInsert() {
+        }
+
+        @Disabled
+        @Override
+        public void clobSelect() {
+        }
     }
 
     @Nested
@@ -100,6 +121,26 @@ final class H2Example {
         @Override
         public String getPlaceholder(int index) {
             return String.format("?%d", index + 1);
+        }
+
+        @Disabled
+        @Override
+        public void blobInsert() {
+        }
+
+        @Disabled
+        @Override
+        public void blobSelect() {
+        }
+
+        @Disabled
+        @Override
+        public void clobInsert() {
+        }
+
+        @Disabled
+        @Override
+        public void clobSelect() {
         }
     }
 
@@ -132,5 +173,24 @@ final class H2Example {
             return String.format("$%d", index + 1);
         }
 
+        @Disabled
+        @Override
+        public void blobInsert() {
+        }
+
+        @Disabled
+        @Override
+        public void blobSelect() {
+        }
+
+        @Disabled
+        @Override
+        public void clobInsert() {
+        }
+
+        @Disabled
+        @Override
+        public void clobSelect() {
+        }
     }
 }
