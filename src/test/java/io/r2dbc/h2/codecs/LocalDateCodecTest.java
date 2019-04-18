@@ -5,17 +5,19 @@ import org.h2.value.ValueDate;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
 
+import java.text.ParseException;
 import java.time.LocalDate;
 
-import static io.r2dbc.h2.codecs.LocalDateCodec.transform;
+import static io.r2dbc.h2.codecs.DateCodec.transform;
+import static io.r2dbc.h2.codecs.DateCodecTest.FORMAT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 final class LocalDateCodecTest {
 
     @Test
-    void decode() {
-        assertThat(new LocalDateCodec().decode(ValueDate.get(transform(LocalDate.of(2018, 10, 31))), LocalDate.class))
+    void decode() throws ParseException {
+        assertThat(new LocalDateCodec().decode(ValueDate.get(transform(FORMAT.parse("2018-10-31"))), LocalDate.class))
                 .isEqualTo(LocalDate.of(2018, 10, 31));
     }
 
@@ -29,9 +31,9 @@ final class LocalDateCodecTest {
     }
 
     @Test
-    void doEncode() {
+    void doEncode() throws ParseException {
         assertThat(new LocalDateCodec().doEncode(LocalDate.of(2018, 10, 31)))
-                .isEqualTo(ValueDate.get(transform(LocalDate.of(2018, 10, 31))));
+                .isEqualTo(ValueDate.get(transform(FORMAT.parse("2018-10-31"))));
     }
 
     @Test

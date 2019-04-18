@@ -1,10 +1,9 @@
 package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.util.Assert;
+import org.h2.util.LocalDateTimeUtils;
 import org.h2.value.Value;
-import org.h2.value.ValueTimestamp;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 final class LocalDateTimeCodec extends AbstractCodec<LocalDateTime> {
@@ -20,11 +19,11 @@ final class LocalDateTimeCodec extends AbstractCodec<LocalDateTime> {
 
     @Override
     LocalDateTime doDecode(Value value, Class<? extends LocalDateTime> type) {
-        return value.getTimestamp().toLocalDateTime();
+        return (LocalDateTime) LocalDateTimeUtils.valueToLocalDateTime(value);
     }
 
     @Override
     Value doEncode(LocalDateTime value) {
-        return ValueTimestamp.get(Timestamp.valueOf(Assert.requireNonNull(value, "value must not be null")));
+        return LocalDateTimeUtils.localDateTimeToValue(Assert.requireNonNull(value, "value must not be null"));
     }
 }
