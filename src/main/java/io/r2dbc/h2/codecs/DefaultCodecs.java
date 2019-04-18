@@ -36,6 +36,7 @@ public final class DefaultCodecs implements Codecs {
             new BooleanCodec(),
             new ByteCodec(),
             new BytesCodec(),
+            new LocalDateCodec(),
             new DateCodec(),
             new DoubleCodec(),
             new FloatCodec(),
