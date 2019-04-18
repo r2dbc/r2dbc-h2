@@ -48,7 +48,8 @@ public final class DefaultCodecs implements Codecs {
             new TimeCodec(),
             new LocalDateTimeCodec(),
             new TimestampCodec(),
-            new OffsetDateTimeCodec()
+            new OffsetDateTimeCodec(),
+            new ZonedDateTimeCodec()
         );
     }
 
