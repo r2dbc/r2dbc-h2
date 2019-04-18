@@ -43,6 +43,7 @@ public final class DefaultCodecs implements Codecs {
             new LongCodec(),
             new ShortCodec(),
             new StringCodec(),
+            new LocalTimeCodec(),
             new TimeCodec(),
             new TimestampCodec()
         );
