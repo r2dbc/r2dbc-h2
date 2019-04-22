@@ -50,6 +50,7 @@ public final class DefaultCodecs implements Codecs {
             new StringCodec(),
             new TimeCodec(),
             new TimestampCodec(),
+            new UuidCodec(),
             new ZonedDateTimeCodec()
         );
     }
