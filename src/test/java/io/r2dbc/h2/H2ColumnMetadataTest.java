@@ -67,6 +67,7 @@ final class H2ColumnMetadataTest {
     void toColumnMetadata() {
         TypeInfo typeInfo = TypeInfo.TYPE_INT;
         when(this.result.getColumnName(0)).thenReturn("test-name");
+        when(this.result.getAlias(0)).thenReturn("test-alias");
         when(this.result.getColumnType(0)).thenReturn(typeInfo);
         when(this.result.getNullable(0)).thenReturn(Column.NULLABLE);
 
@@ -77,7 +78,7 @@ final class H2ColumnMetadataTest {
         H2ColumnMetadata columnMetadata = H2ColumnMetadata.toColumnMetadata(codecs, this.result, 0);
 
         assertThat(columnMetadata.getJavaType()).isEqualTo(String.class);
-        assertThat(columnMetadata.getName()).isEqualTo("test-name");
+        assertThat(columnMetadata.getName()).isEqualTo("test-alias");
         assertThat(columnMetadata.getNativeTypeMetadata()).isEqualTo(4);
         assertThat(columnMetadata.getNullability()).isEqualTo(NULLABLE);
         assertThat(columnMetadata.getPrecision()).isEqualTo(10);

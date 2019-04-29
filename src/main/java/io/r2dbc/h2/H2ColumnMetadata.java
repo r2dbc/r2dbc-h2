@@ -127,7 +127,7 @@ public final class H2ColumnMetadata implements ColumnMetadata {
 
         TypeInfo typeInfo = result.getColumnType(index);
 
-        return new H2ColumnMetadata(codecs.preferredType(typeInfo.getValueType()), result.getColumnName(index), typeInfo.getValueType(), toNullability(result.getNullable(index)),
+        return new H2ColumnMetadata(codecs.preferredType(typeInfo.getValueType()), result.getAlias(index), typeInfo.getValueType(), toNullability(result.getNullable(index)),
             typeInfo.getPrecision(), typeInfo.getScale());
     }
 
