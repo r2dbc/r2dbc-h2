@@ -23,11 +23,13 @@ import io.r2dbc.spi.RowMetadata;
 import org.h2.result.ResultInterface;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * An implementation of {@link RowMetadata} for an H2 database.
@@ -77,6 +79,13 @@ public final class H2RowMetadata implements RowMetadata {
     @Override
     public List<H2ColumnMetadata> getColumnMetadatas() {
         return Collections.unmodifiableList(this.columnMetadatas);
+    }
+
+    @Override
+    public Collection<String> getColumnNames() {
+        return this.columnMetadatas.stream()
+            .map(H2ColumnMetadata::getName)
+            .collect(Collectors.toList());
     }
 
     @Override
