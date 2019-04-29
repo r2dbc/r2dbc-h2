@@ -28,10 +28,12 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 
 final class UuidCodecTest {
 
+    private static final String SAMPLE_UUID = "79e9eb45-2835-49c8-ad3b-c951b591bc7f";
+
     @Test
     void decode() {
-        assertThat(new UuidCodec().decode(ValueUuid.get("79e9eb45-2835-49c8-ad3b-c951b591bc7f"), UUID.class))
-            .isEqualTo(UUID.fromString("79e9eb45-2835-49c8-ad3b-c951b591bc7f"));
+        assertThat(new UuidCodec().decode(ValueUuid.get(SAMPLE_UUID), UUID.class))
+            .isEqualTo(UUID.fromString(SAMPLE_UUID));
     }
 
     @Test
@@ -45,8 +47,8 @@ final class UuidCodecTest {
 
     @Test
     void doEncode() {
-        assertThat(new UuidCodec().doEncode(UUID.fromString("79e9eb45-2835-49c8-ad3b-c951b591bc7f")))
-            .isEqualTo(ValueUuid.get("79e9eb45-2835-49c8-ad3b-c951b591bc7f"));
+        assertThat(new UuidCodec().doEncode(UUID.fromString(SAMPLE_UUID)))
+            .isEqualTo(ValueUuid.get(SAMPLE_UUID));
     }
 
     @Test
