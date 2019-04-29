@@ -40,10 +40,14 @@ public final class H2RowMetadata implements RowMetadata {
 
     private final Map<String, H2ColumnMetadata> nameKeyedColumnMetadatas;
 
+    private final List<String> columnNames;
+
     H2RowMetadata(List<H2ColumnMetadata> columnMetadatas) {
         this.columnMetadatas = Assert.requireNonNull(columnMetadatas, "columnMetadatas must not be null");
-
         this.nameKeyedColumnMetadatas = getNameKeyedColumnMetadatas(columnMetadatas);
+        this.columnNames = this.columnMetadatas.stream()
+            .map(H2ColumnMetadata::getName)
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -83,9 +87,7 @@ public final class H2RowMetadata implements RowMetadata {
 
     @Override
     public Collection<String> getColumnNames() {
-        return this.columnMetadatas.stream()
-            .map(H2ColumnMetadata::getName)
-            .collect(Collectors.toList());
+        return Collections.unmodifiableList(this.columnNames);
     }
 
     @Override
