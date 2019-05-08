@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import reactor.util.annotation.Nullable;
@@ -30,12 +31,14 @@ public final class DefaultCodecs implements Codecs {
 
     private final List<Codec<?>> codecs;
 
-    public DefaultCodecs() {
+    public DefaultCodecs(Client client) {
         this.codecs = Arrays.asList(
             new BigDecimalCodec(),
+            new BlobCodec(client),
             new BooleanCodec(),
             new ByteCodec(),
             new BytesCodec(),
+            new ClobCodec(client),
             new DateCodec(),
             new DoubleCodec(),
             new FloatCodec(),

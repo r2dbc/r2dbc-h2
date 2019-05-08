@@ -105,6 +105,14 @@ public final class SessionClient implements Client {
         return Mono.just(command.executeUpdate(generatedColumns));
     }
 
+    /**
+     * Return back the current {@link SessionInterface} to the database.
+     */
+    @Override
+    public SessionInterface getSession() {
+        return this.session;
+    }
+
     private CommandInterface createCommand(String sql, Binding binding) {
         CommandInterface command = this.session.prepareCommand(sql, Integer.MAX_VALUE);
 
