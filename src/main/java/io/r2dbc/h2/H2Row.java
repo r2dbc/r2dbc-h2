@@ -134,7 +134,7 @@ public final class H2Row implements Row {
         Map<String, Column> nameKeyedColumns = new HashMap<>(columns.size());
 
         for (Column column : columns) {
-            nameKeyedColumns.put(column.getName(), column);
+            nameKeyedColumns.putIfAbsent(column.getName(), column);
         }
 
         return nameKeyedColumns;

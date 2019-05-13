@@ -25,10 +25,10 @@ import org.h2.result.ResultInterface;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 /**
@@ -87,7 +87,7 @@ public final class H2RowMetadata implements RowMetadata {
 
     @Override
     public Collection<String> getColumnNames() {
-        return Collections.unmodifiableList(this.columnNames);
+        return new H2CollatedCollection(this.columnNames);
     }
 
     @Override
@@ -129,15 +129,17 @@ public final class H2RowMetadata implements RowMetadata {
     }
 
     private ColumnMetadata getColumnMetadata(String name) {
-        if (!this.nameKeyedColumnMetadatas.containsKey(name)) {
-            throw new IllegalArgumentException(String.format("Column name '%s' does not exist in column names %s", name, this.nameKeyedColumnMetadatas.keySet()));
+        String normalized = name.toUpperCase();
+
+        if (!this.nameKeyedColumnMetadatas.containsKey(normalized)) {
+            throw new IllegalArgumentException(String.format("Column name '%s' does not exist in column names %s", normalized, this.nameKeyedColumnMetadatas.keySet()));
         }
 
-        return this.nameKeyedColumnMetadatas.get(name);
+        return this.nameKeyedColumnMetadatas.get(normalized);
     }
 
     private Map<String, H2ColumnMetadata> getNameKeyedColumnMetadatas(List<H2ColumnMetadata> columnMetadatas) {
-        Map<String, H2ColumnMetadata> nameKeyedColumnMetadatas = new HashMap<>(columnMetadatas.size());
+        Map<String, H2ColumnMetadata> nameKeyedColumnMetadatas = new TreeMap<>();
 
         for (H2ColumnMetadata columnMetadata : columnMetadatas) {
             nameKeyedColumnMetadatas.put(columnMetadata.getName(), columnMetadata);

@@ -35,8 +35,8 @@ import static org.mockito.Mockito.when;
 final class H2RowMetadataTest {
 
     private final List<H2ColumnMetadata> columnMetadatas = Arrays.asList(
-        new H2ColumnMetadata(String.class, "test-name-1", 200, NULLABLE, 100L, 500),
-        new H2ColumnMetadata(Integer.class, "test-name-2", 400, NULLABLE, 300L, 600)
+        new H2ColumnMetadata(String.class, "TEST-NAME-1", 200, NULLABLE, 100L, 500),
+        new H2ColumnMetadata(Integer.class, "TEST-NAME-2", 400, NULLABLE, 300L, 600)
     );
 
     private final ResultInterface result = mock(ResultInterface.class, RETURNS_SMART_NULLS);
@@ -50,7 +50,7 @@ final class H2RowMetadataTest {
     @Test
     void getColumnMetadataIndex() {
         assertThat(new H2RowMetadata(this.columnMetadatas).getColumnMetadata(1))
-            .isEqualTo(new H2ColumnMetadata(Integer.class, "test-name-2", 400, NULLABLE, 300L, 600));
+            .isEqualTo(new H2ColumnMetadata(Integer.class, "TEST-NAME-2", 400, NULLABLE, 300L, 600));
     }
 
     @Test
@@ -62,13 +62,13 @@ final class H2RowMetadataTest {
     @Test
     void getColumnMetadataInvalidName() {
         assertThatIllegalArgumentException().isThrownBy(() -> new H2RowMetadata(this.columnMetadatas).getColumnMetadata("test-name-3"))
-            .withMessage("Column name 'test-name-3' does not exist in column names [test-name-1, test-name-2]");
+            .withMessage("Column name 'TEST-NAME-3' does not exist in column names [TEST-NAME-1, TEST-NAME-2]");
     }
 
     @Test
     void getColumnMetadataName() {
         assertThat(new H2RowMetadata(this.columnMetadatas).getColumnMetadata("test-name-2"))
-            .isEqualTo(new H2ColumnMetadata(Integer.class, "test-name-2", 400, NULLABLE, 300L, 600));
+            .isEqualTo(new H2ColumnMetadata(Integer.class, "TEST-NAME-2", 400, NULLABLE, 300L, 600));
     }
 
     @Test
