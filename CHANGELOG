@@ -1,6 +1,33 @@
 R2DBC H2 Changelog
 =============================
 
+0.8.0.M8
+------------------
+* Clean up code base to honor SPI changes. #75.
+* Introduce BLOB/CLOB support. #74.
+* Implement RowMetadata.getColumnNames() #73.
+* add UuidCodec #72.
+* Add UuidCodec #71.
+* Support for Java 8 date/time #70.
+* Add support for r2dbc exception hierarchy. #69.
+* Add support for LocalDate, LocalDateTime, and LocalTime types #67.
+* Use R2DBC Exception hierarchy for driver exceptions #66.
+* Enable JDBC-based binding examples. #58.
+* URL Cleanup #54.
+* Use H2 API to determine query vs. update. #53.
+* Upgrade to H2 1.4.198. #52.
+* Fix select bind incompatibility with H2 1.4.198 #51.
+* Make sure docs are consistent with implementation for bind prefix #50.
+* Add ConnectionFactoryProvider.getDriver() implementation #49.
+* Add ConnectionFactoryProvider.getDriver() implementation #48.
+* Feature/add support for bind with integer #47.
+* return alias instead of the column name #46.
+* Accept bind query param with integer index #45.
+* search for question mark as query input parameter #44.
+* Cannot use column label(alias) #43.
+* Add support for BLOB/CLOB types. #40.
+* Migrate from "$1" Postgres notation toward "?" H2 notation for SQL and binding. #7.
+
 1.0.0.M7
 ------------------
 * Update CHANGELOG for M7 #41
