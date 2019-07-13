@@ -41,6 +41,7 @@ public final class DefaultCodecs implements Codecs {
             new ClobCodec(client),
             new DoubleCodec(),
             new FloatCodec(),
+            new GeometryCodec(),
             new IntegerCodec(),
             new LocalDateCodec(),
             new LocalDateTimeCodec(),
