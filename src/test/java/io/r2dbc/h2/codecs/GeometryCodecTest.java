@@ -8,7 +8,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 final class GeometryCodecTest {
     private static final Geometry SAMPLE_GEOMETRY = new GeometryFactory().createPoint(new Coordinate(1, 1));

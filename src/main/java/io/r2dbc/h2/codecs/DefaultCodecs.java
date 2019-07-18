@@ -18,9 +18,11 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
+import io.r2dbc.h2.util.Check;
 import org.h2.value.Value;
 import reactor.util.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,7 +34,7 @@ public final class DefaultCodecs implements Codecs {
     private final List<Codec<?>> codecs;
 
     public DefaultCodecs(Client client) {
-        this.codecs = Arrays.asList(
+        this.codecs = new ArrayList<>(Arrays.asList(
             new BigDecimalCodec(),
             new BlobCodec(client),
             new BooleanCodec(),
@@ -51,7 +53,7 @@ public final class DefaultCodecs implements Codecs {
             new StringCodec(),
             new UuidCodec(),
             new ZonedDateTimeCodec()
-        );
+        ));
     }
 
     @Override
@@ -108,5 +110,17 @@ public final class DefaultCodecs implements Codecs {
         }
 
         return null;
+    }
+
+    /**
+     * Adds secondary codecs based on different conditions, e.g. Classpath availability.
+     * @return this {@link DefaultCodecs}
+     */
+    public DefaultCodecs addSecondaryCodecs() {
+        if (Check.findClass("org.locationtech.jts.geom.Geometry")) {
+            this.codecs.add(new GeometryCodec());
+        }
+
+        return this;
     }
 }
