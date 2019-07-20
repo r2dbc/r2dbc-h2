@@ -132,6 +132,15 @@ connection
 * $ symbol `bind("$2", "Walter")`. H2 supports postgres params notation.
 * Object (Integer) `bind(yourIntegerAsObject, "Walter")`. If you index (int) was converted into object by a framework
 
+=== Running JMH Benchmarks
+
+Running the JMH benchmarks builds and runs the benchmarks without running tests.
+
+[source,bash]
+----
+ $ ./mvnw clean install -Pjmh
+----
+
 == License
 
 This project is released under version 2.0 of the https://www.apache.org/licenses/LICENSE-2.0[Apache License].
