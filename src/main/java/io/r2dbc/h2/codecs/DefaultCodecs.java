@@ -39,7 +39,6 @@ public final class DefaultCodecs implements Codecs {
             new ByteCodec(),
             new BytesCodec(),
             new ClobCodec(client),
-            new DateCodec(),
             new DoubleCodec(),
             new FloatCodec(),
             new InstantCodec(),
@@ -51,8 +50,6 @@ public final class DefaultCodecs implements Codecs {
             new OffsetDateTimeCodec(),
             new ShortCodec(),
             new StringCodec(),
-            new TimeCodec(),
-            new TimestampCodec(),
             new UuidCodec(),
             new ZonedDateTimeCodec()
         );

@@ -53,7 +53,7 @@ abstract class AbstractCodec<T> implements Codec<T> {
     @Nullable
     @Override
     public T decode(Value value, Class<? extends T> type) {
-        if (value == null) {
+        if (value == null || value == ValueNull.INSTANCE) {
             return null;
         }
 
