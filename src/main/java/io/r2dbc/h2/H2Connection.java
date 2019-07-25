@@ -164,7 +164,8 @@ public final class H2Connection implements Connection {
 
         return Mono.<Void>fromRunnable(() -> {
             this.client.execute(getTransactionIsolationLevelQuery(isolationLevel));
-        }).onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
+        })
+            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
     }
 
     private static String getTransactionIsolationLevelQuery(IsolationLevel isolationLevel) {

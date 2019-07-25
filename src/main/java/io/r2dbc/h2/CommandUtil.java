@@ -19,9 +19,6 @@ package io.r2dbc.h2;
 import org.h2.command.Command;
 import org.h2.command.CommandInterface;
 
-/**
- * @author Mark Paluch
- */
 final class CommandUtil {
 
     /**

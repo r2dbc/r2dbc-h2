@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * An implementation of {@link RowMetadata} for an H2 database.
  */
-public class H2RowMetadata extends ColumnSource implements RowMetadata, Collection<String> {
+public final class H2RowMetadata extends ColumnSource implements RowMetadata, Collection<String> {
 
     H2RowMetadata(List<H2ColumnMetadata> columnMetadatas) {
         super(Assert.requireNonNull(columnMetadatas, "columnMetadatas must not be null"));
@@ -134,7 +134,6 @@ public class H2RowMetadata extends ColumnSource implements RowMetadata, Collecti
 
     @Override
     public Object[] toArray() {
-
         Object[] result = new Object[size()];
 
         for (int i = 0; i < size(); i++) {

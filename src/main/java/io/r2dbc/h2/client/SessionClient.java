@@ -87,6 +87,7 @@ public final class SessionClient implements Client {
         Assert.requireNonNull(bindings, "bindings must not be null");
 
         Iterator<Binding> bindingIterator = bindings.isEmpty() ? emptyBinding.iterator() : bindings.iterator();
+        
         return new Iterator<CommandInterface>() {
 
             @Override

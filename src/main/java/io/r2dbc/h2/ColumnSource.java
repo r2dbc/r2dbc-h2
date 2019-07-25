@@ -28,8 +28,6 @@ import java.util.Objects;
 
 /**
  * Object that provides access to {@link H2ColumnMetadata}s by index and by name. Column index starts at {@literal 0} (zero-based index).
- *
- * @author Mark Paluch
  */
 abstract class ColumnSource {
 
@@ -37,7 +35,7 @@ abstract class ColumnSource {
 
     private final Map<String, H2ColumnMetadata> nameKeyedColumns;
 
-    protected ColumnSource(List<H2ColumnMetadata> columns) {
+    ColumnSource(List<H2ColumnMetadata> columns) {
         this.columns = columns;
         this.nameKeyedColumns = getNameKeyedColumns(columns);
     }
@@ -87,7 +85,7 @@ abstract class ColumnSource {
     }
 
     /**
-     * Lookup {@link Column} by {@link Column#getIndex() index} or by its {@link Column#getName() name}.
+     * Lookup {@link H2ColumnMetadata} by {@link #getColumn(int)} () index} or by its {@link #getColumn(String)}  name}.
      *
      * @param identifier the index or name.
      * @return the column.

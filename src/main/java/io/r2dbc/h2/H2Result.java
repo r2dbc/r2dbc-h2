@@ -50,7 +50,6 @@ public final class H2Result implements Result {
 
     H2Result(H2RowMetadata rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated) {
         this.rowMetadata = Assert.requireNonNull(rowMetadata, "rowMetadata must not be null");
-        ;
         this.rows = Assert.requireNonNull(rows, "rows must not be null");
         this.rowsUpdated = Assert.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
     }

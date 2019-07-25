@@ -55,7 +55,6 @@ public final class H2Statement implements Statement {
 
     private boolean allGeneratedColumns = false;
 
-
     H2Statement(Client client, Codecs codecs, String sql) {
         this.client = Assert.requireNonNull(client, "client must not be null");
         this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
@@ -150,7 +149,6 @@ public final class H2Statement implements Statement {
     }
 
     private static Flux<H2Result> execute(Client client, String sql, Bindings bindings, Codecs codecs, Object generatedColumns) {
-
         return Flux.fromIterable(() -> client.prepareCommand(sql, bindings.bindings))
             .map(command -> {
 

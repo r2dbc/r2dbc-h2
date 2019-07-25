@@ -36,8 +36,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Benchmarks for Statement execution.
- *
- * @author Mark Paluch
  */
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
