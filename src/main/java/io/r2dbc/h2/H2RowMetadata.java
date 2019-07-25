@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * An implementation of {@link RowMetadata} for an H2 database.
  */
-public final class H2RowMetadata extends ColumnSource implements RowMetadata, Collection<String> {
+public class H2RowMetadata extends ColumnSource implements RowMetadata, Collection<String> {
 
     H2RowMetadata(List<H2ColumnMetadata> columnMetadatas) {
         super(Assert.requireNonNull(columnMetadatas, "columnMetadatas must not be null"));
