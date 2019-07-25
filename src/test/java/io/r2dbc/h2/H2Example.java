@@ -169,7 +169,7 @@ final class H2Example {
         public void returnGeneratedValues() {
             // TODO: Figure out how to insert a column and get the row back instead of rows updated.
         }
-        
+
         <T> Mono<T> close(Connection connection) {
             return Mono.from(connection
                 .close())

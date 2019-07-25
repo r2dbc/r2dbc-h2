@@ -22,6 +22,8 @@ import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Statement;
 import org.h2.engine.GeneratedKeysMode;
+import org.h2.result.ResultInterface;
+import org.h2.result.ResultWithGeneratedKeys;
 import reactor.core.publisher.Flux;
 import reactor.util.annotation.Nullable;
 
@@ -114,12 +116,11 @@ public final class H2Statement implements Statement {
     @Override
     public Flux<H2Result> execute() {
         return Flux.fromArray(this.sql.split(";"))
-            .map(String::trim)
             .flatMap(sql -> {
                 if (this.generatedColumns == null) {
-                    return execute(this.client, sql, this.bindings, this.codecs, this.allGeneratedColumns);
+                    return execute(this.client, sql.trim(), this.bindings, this.codecs, this.allGeneratedColumns);
                 }
-                return execute(this.client, sql, this.bindings, this.codecs, this.generatedColumns);
+                return execute(this.client, sql.trim(), this.bindings, this.codecs, this.generatedColumns);
             });
     }
 
@@ -150,20 +151,22 @@ public final class H2Statement implements Statement {
 
     private static Flux<H2Result> execute(Client client, String sql, Bindings bindings, Codecs codecs, Object generatedColumns) {
 
-        return client.prepareCommand(sql, bindings.bindings)
-            .flatMap(command -> {
+        return Flux.fromIterable(() -> client.prepareCommand(sql, bindings.bindings))
+            .map(command -> {
+
                 if (command.isQuery()) {
-                    return client.query(command)
-                        .map(result -> H2Result.toResult(codecs, result, null));
+                    ResultInterface result = client.query(command);
+                    CommandUtil.clearForReuse(command);
+                    return H2Result.toResult(codecs, result, null);
                 } else {
-                    return client.update(command, generatedColumns)
-                        .map(result -> {
-                            if (GeneratedKeysMode.valueOf(generatedColumns) == GeneratedKeysMode.NONE) {
-                                return H2Result.toResult(codecs, result.getUpdateCount());
-                            } else {
-                                return H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount());
-                            }
-                        });
+
+                    ResultWithGeneratedKeys result = client.update(command, generatedColumns);
+                    CommandUtil.clearForReuse(command);
+                    if (GeneratedKeysMode.valueOf(generatedColumns) == GeneratedKeysMode.NONE) {
+                        return H2Result.toResult(codecs, result.getUpdateCount());
+                    } else {
+                        return H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount());
+                    }
                 }
             });
     }

@@ -17,14 +17,15 @@
 package io.r2dbc.h2.client;
 
 import io.r2dbc.h2.util.Assert;
+import org.h2.command.Command;
 import org.h2.command.CommandInterface;
 import org.h2.engine.SessionInterface;
 import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 
@@ -45,14 +46,14 @@ public interface Client {
      *
      * @return a {@link Mono} that disable is complete
      */
-    Mono<Void> disableAutoCommit();
+    void disableAutoCommit();
 
     /**
      * Enables auto-commit.  Typically used at the end of a transaction, either success or failure.
      *
      * @return a {@link Mono} that enable is complete
      */
-    Mono<Void> enableAutoCommit();
+    void enableAutoCommit();
 
     /**
      * Execute a command, discarding any results.
@@ -61,12 +62,19 @@ public interface Client {
      * @return a {@link Mono} that the command is complete
      * @throws NullPointerException if {@code sql} is {@code null}
      */
-    default Mono<Void> execute(String sql) {
+    default void execute(String sql) {
         Assert.requireNonNull(sql, "sql must not be null");
 
-        return prepareCommand(sql, Collections.emptyList())
-            .flatMap(command -> update(command, false))
-            .then();
+        Iterator<CommandInterface> iterator = prepareCommand(sql, Collections.emptyList());
+
+        while (iterator.hasNext()) {
+            CommandInterface command = iterator.next();
+            update(command, false);
+
+            if (command instanceof Command) {
+                ((Command) command).setCanReuse(true);
+            }
+        }
     }
 
     /**
@@ -79,11 +87,11 @@ public interface Client {
     /**
      * Transform a SQL statement and a set of {@link Binding}s into a {@link CommandInterface}.
      *
-     * @param sql to either query or update
+     * @param sql      to either query or update
      * @param bindings the parameter bindings to use
      * @return {@link CommandInterface} to be flat mapped over
      */
-    Flux<CommandInterface> prepareCommand(String sql, List<Binding> bindings);
+    Iterator<CommandInterface> prepareCommand(String sql, List<Binding> bindings);
 
     /**
      * Execute a query.
@@ -92,17 +100,17 @@ public interface Client {
      * @return the result of the query
      * @throws NullPointerException if {@code sql} or {@code bindings} is {@code null}
      */
-    Mono<ResultInterface> query(CommandInterface command);
+    ResultInterface query(CommandInterface command);
 
     /**
      * Execute an update.
      *
-     * @param command      the {@link CommandInterface} to update
+     * @param command          the {@link CommandInterface} to update
      * @param generatedColumns the parameter to specify what columns to generate
      * @return the result of the update
      * @throws NullPointerException if {@code sql} or {@code bindings} is {@code null}
      */
-    Mono<ResultWithGeneratedKeys> update(CommandInterface command, Object generatedColumns);
+    ResultWithGeneratedKeys update(CommandInterface command, Object generatedColumns);
 
     /**
      * Return back the current {@link SessionInterface} to the database.

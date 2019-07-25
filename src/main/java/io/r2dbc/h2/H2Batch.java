@@ -20,6 +20,8 @@ import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Batch;
+import org.h2.result.ResultInterface;
+import org.h2.result.ResultWithGeneratedKeys;
 import reactor.core.publisher.Flux;
 
 import java.sql.SQLException;
@@ -54,14 +56,18 @@ public final class H2Batch implements Batch {
     @Override
     public Flux<H2Result> execute() {
         return Flux.fromIterable(this.statements)
-            .flatMap(statement -> this.client.prepareCommand(statement, Collections.emptyList()))
-            .flatMap(command -> {
+            .flatMapIterable(statement -> () -> this.client.prepareCommand(statement, Collections.emptyList()))
+            .map(command -> {
                 if (command.isQuery()) {
-                    return this.client.query(command)
-                        .map(result -> H2Result.toResult(this.codecs, result, null));
+
+                    ResultInterface result = this.client.query(command);
+                    CommandUtil.clearForReuse(command);
+                    return H2Result.toResult(this.codecs, result, null);
                 } else {
-                    return this.client.update(command, false)
-                        .map(result -> H2Result.toResult(this.codecs, result.getUpdateCount()));
+
+                    ResultWithGeneratedKeys result = this.client.update(command, false);
+                    CommandUtil.clearForReuse(command);
+                    return H2Result.toResult(this.codecs, result.getUpdateCount());
                 }
             })
             .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);

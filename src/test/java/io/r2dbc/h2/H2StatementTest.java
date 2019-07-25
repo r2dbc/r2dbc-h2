@@ -176,13 +176,11 @@ final class H2StatementTest {
         when(this.client.prepareCommand("select test-query-$1 from my_table", Arrays.asList(
             new Binding().add(0, ValueInt.get(100)),
             new Binding().add(0, ValueInt.get(200))
-        ))).thenReturn(Flux.just(
-            command1, command2
-        ));
+        ))).thenReturn(Arrays.asList(command1, command2).iterator());
         when(command1.isQuery()).thenReturn(true);
         when(command2.isQuery()).thenReturn(true);
-        when(this.client.query(command1)).thenReturn(Mono.just(new LocalResultImpl()));
-        when(this.client.query(command2)).thenReturn(Mono.just(new LocalResultImpl()));
+        when(this.client.query(command1)).thenReturn(new LocalResultImpl());
+        when(this.client.query(command2)).thenReturn(new LocalResultImpl());
 
         MockCodecs codecs = MockCodecs.builder()
             .encoding(100, ValueInt.get(100))
@@ -205,10 +203,8 @@ final class H2StatementTest {
         CommandInterface command = mock(CommandInterface.class);
         when(this.client.prepareCommand("insert test-query-$1", Arrays.asList(
             new Binding().add(0, ValueInt.get(100))
-        ))).thenReturn(Flux.just(
-            command
-        ));
-        when(this.client.update(command, false)).thenReturn(Mono.just(new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl())));
+        ))).thenReturn(Collections.singleton(command).iterator());
+        when(this.client.update(command, false)).thenReturn(new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl()));
 
         new H2Statement(this.client, this.codecs, "insert test-query-$1")
             .bind("$1", 100)
@@ -221,10 +217,8 @@ final class H2StatementTest {
     @Test
     void returnGeneratedValues() {
         CommandInterface command = mock(CommandInterface.class);
-        when(this.client.prepareCommand("INSERT test-query", Collections.emptyList())).thenReturn(Flux.just(
-            command
-        ));
-        when(this.client.update(command, new String[]{"foo", "bar"})).thenReturn(Mono.just(new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl())));
+        when(this.client.prepareCommand("INSERT test-query", Collections.emptyList())).thenReturn(Collections.singleton(command).iterator());
+        when(this.client.update(command, new String[]{"foo", "bar"})).thenReturn(new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl()));
 
         new H2Statement(this.client, MockCodecs.empty(), "INSERT test-query")
             .returnGeneratedValues("foo", "bar")
@@ -252,9 +246,9 @@ final class H2StatementTest {
         Mono.from(connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
-                    .createStatement(String.format("INSERT INTO test (value) VALUES (200)"))
-                    .returnGeneratedValues()
-                    .execute())
+                .createStatement(String.format("INSERT INTO test (value) VALUES (200)"))
+                .returnGeneratedValues()
+                .execute())
 
                 .concatWith(Mono.from(connection.close()).then(Mono.empty())))
             .flatMap(result -> ((H2Result) result).map(Tuples::of))

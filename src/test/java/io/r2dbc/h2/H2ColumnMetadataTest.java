@@ -16,6 +16,9 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.client.Client;
+import io.r2dbc.h2.codecs.Codecs;
+import io.r2dbc.h2.codecs.DefaultCodecs;
 import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.result.ResultInterface;
 import org.h2.table.Column;
@@ -33,33 +36,35 @@ final class H2ColumnMetadataTest {
 
     private final ResultInterface result = mock(ResultInterface.class, RETURNS_SMART_NULLS);
 
+    private final Codecs codecs = new DefaultCodecs(mock(Client.class));
+
     @Test
     void constructorNoName() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(String.class, null, 200, NULLABLE, 100L, 500))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, null, 200, NULLABLE, 100L, 500))
             .withMessage("name must not be null");
     }
 
     @Test
     void constructorNoNativeType() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(String.class, "test-name", null, NULLABLE, 100L, 500))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, "test-name", null, NULLABLE, 100L, 500))
             .withMessage("nativeType must not be null");
     }
 
     @Test
     void constructorNoNullability() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(String.class, "test-name", 200, null, 100L, 500))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, "test-name", 200, null, 100L, 500))
             .withMessage("nullability must not be null");
     }
 
     @Test
     void constructorNoPrecision() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(String.class, "test-name", 200, NULLABLE, null, 500))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, "test-name", 200, NULLABLE, null, 500))
             .withMessage("precision must not be null");
     }
 
     @Test
     void constructorNoScale() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(String.class, "test-name", 200, NULLABLE, 100L, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, "test-name", 200, NULLABLE, 100L, null))
             .withMessage("scale must not be null");
     }
 

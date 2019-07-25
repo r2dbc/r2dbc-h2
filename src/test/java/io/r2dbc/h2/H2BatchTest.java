@@ -20,14 +20,12 @@ import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.MockCodecs;
 import io.r2dbc.spi.R2dbcBadGrammarException;
 import org.h2.command.CommandInterface;
+import org.h2.message.DbException;
 import org.h2.result.LocalResultImpl;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import java.sql.SQLSyntaxErrorException;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -68,16 +66,16 @@ final class H2BatchTest {
     void execute() {
         CommandInterface command1 = mock(CommandInterface.class);
         CommandInterface command2 = mock(CommandInterface.class);
-        when(this.client.prepareCommand("select test-query-1", Collections.emptyList())).thenReturn(Flux.just(
+        when(this.client.prepareCommand("select test-query-1", Collections.emptyList())).thenReturn(Collections.singleton(
             command1
-        ));
-        when(this.client.prepareCommand("select test-query-2", Collections.emptyList())).thenReturn(Flux.just(
+        ).iterator());
+        when(this.client.prepareCommand("select test-query-2", Collections.emptyList())).thenReturn(Collections.singleton(
             command1
-        ));
+        ).iterator());
         when(command1.isQuery()).thenReturn(true);
         when(command2.isQuery()).thenReturn(true);
-        when(this.client.query(command1)).thenReturn(Mono.just(new LocalResultImpl()));
-        when(this.client.query(command2)).thenReturn(Mono.just(new LocalResultImpl()));
+        when(this.client.query(command1)).thenReturn(new LocalResultImpl());
+        when(this.client.query(command2)).thenReturn(new LocalResultImpl());
 
         new H2Batch(this.client, MockCodecs.empty())
             .add("select test-query-1")
@@ -89,13 +87,14 @@ final class H2BatchTest {
     }
 
     @Test
+    @Disabled("see https://github.com/r2dbc/r2dbc-h2/issues/83")
     void executeErrorResponse() {
         CommandInterface command = mock(CommandInterface.class);
-        when(this.client.prepareCommand("select test-query", Collections.emptyList())).thenReturn(Flux.just(
+        when(this.client.prepareCommand("select test-query", Collections.emptyList())).thenReturn(Collections.singleton(
             command
-        ));
+        ).iterator());
         when(command.isQuery()).thenReturn(true);
-        when(this.client.query(command)).thenReturn(Mono.error(new SQLSyntaxErrorException("bad statement", "state", 999)));
+        when(this.client.query(command)).thenThrow(DbException.getSyntaxError("bad statement", 999));
 
         new H2Batch(this.client, MockCodecs.empty())
             .add("select test-query")

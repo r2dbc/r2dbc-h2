@@ -25,10 +25,10 @@ import org.h2.result.ResultInterface;
 import org.h2.value.Value;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.SynchronousSink;
 import reactor.util.annotation.Nullable;
 
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.function.BiFunction;
 
 /**
@@ -36,14 +36,21 @@ import java.util.function.BiFunction;
  */
 public final class H2Result implements Result {
 
-    private final Mono<H2RowMetadata> rowMetadata;
+    private final H2RowMetadata rowMetadata;
 
     private final Flux<H2Row> rows;
 
     private final Mono<Integer> rowsUpdated;
 
-    H2Result(Mono<H2RowMetadata> rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated) {
+    private H2Result(Mono<Integer> rowsUpdated) {
+        this.rowMetadata = null;
+        this.rows = Flux.empty();
+        this.rowsUpdated = Assert.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
+    }
+
+    H2Result(H2RowMetadata rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated) {
         this.rowMetadata = Assert.requireNonNull(rowMetadata, "rowMetadata must not be null");
+        ;
         this.rows = Assert.requireNonNull(rows, "rows must not be null");
         this.rowsUpdated = Assert.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
     }
@@ -58,8 +65,7 @@ public final class H2Result implements Result {
         Assert.requireNonNull(f, "f must not be null");
 
         return this.rows
-            .zipWith(this.rowMetadata.repeat())
-            .map(tuple -> f.apply(tuple.getT1(), tuple.getT2()));
+            .map(row -> f.apply(row, this.rowMetadata));
     }
 
     @Override
@@ -74,24 +80,36 @@ public final class H2Result implements Result {
     static H2Result toResult(Codecs codecs, @Nullable Integer rowsUpdated) {
         Assert.requireNonNull(codecs, "codecs must not be null");
 
-        return new H2Result(Mono.empty(), Flux.empty(), Mono.justOrEmpty(rowsUpdated));
+        return new H2Result(Mono.justOrEmpty(rowsUpdated));
     }
 
     static H2Result toResult(Codecs codecs, ResultInterface result, @Nullable Integer rowsUpdated) {
         Assert.requireNonNull(codecs, "codecs must not be null");
         Assert.requireNonNull(result, "result must not be null");
 
-        Mono<H2RowMetadata> rowMetadata = Mono.just(H2RowMetadata.toRowMetadata(codecs, result));
+        H2RowMetadata rowMetadata = H2RowMetadata.toRowMetadata(codecs, result);
 
-        Flux<H2Row> rows = Flux
-            .generate((SynchronousSink<Value[]> sink) -> {
-                if (result.next()) {
-                    sink.next(result.currentRow());
-                } else {
+        Iterable<Value[]> iterable = () -> new Iterator<Value[]>() {
+
+            @Override
+            public boolean hasNext() {
+                boolean b = result.hasNext();
+
+                if (!b) {
                     result.close();
-                    sink.complete();
                 }
-            })
+
+                return b;
+            }
+
+            @Override
+            public Value[] next() {
+                result.next();
+                return result.currentRow();
+            }
+        };
+
+        Flux<H2Row> rows = Flux.fromIterable(iterable)
             .map(values -> H2Row.toRow(values, result, codecs))
             .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
 

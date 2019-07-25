@@ -25,41 +25,16 @@ import org.h2.result.ResultInterface;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 /**
  * An implementation of {@link RowMetadata} for an H2 database.
  */
-public final class H2RowMetadata implements RowMetadata {
-
-    private final List<H2ColumnMetadata> columnMetadatas;
-
-    private final Map<String, H2ColumnMetadata> nameKeyedColumnMetadatas;
-
-    private final List<String> columnNames;
+public class H2RowMetadata extends ColumnSource implements RowMetadata, Collection<String> {
 
     H2RowMetadata(List<H2ColumnMetadata> columnMetadatas) {
-        this.columnMetadatas = Assert.requireNonNull(columnMetadatas, "columnMetadatas must not be null");
-        this.nameKeyedColumnMetadatas = getNameKeyedColumnMetadatas(columnMetadatas);
-        this.columnNames = this.columnMetadatas.stream()
-            .map(H2ColumnMetadata::getName)
-            .collect(Collectors.toList());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        H2RowMetadata that = (H2RowMetadata) o;
-        return Objects.equals(this.columnMetadatas, that.columnMetadatas);
+        super(Assert.requireNonNull(columnMetadatas, "columnMetadatas must not be null"));
     }
 
     /**
@@ -69,38 +44,12 @@ public final class H2RowMetadata implements RowMetadata {
      */
     @Override
     public ColumnMetadata getColumnMetadata(Object identifier) {
-        Assert.requireNonNull(identifier, "identifier must not be null");
-
-        if (identifier instanceof Integer) {
-            return getColumnMetadata((Integer) identifier);
-        } else if (identifier instanceof String) {
-            return getColumnMetadata((String) identifier);
-        }
-
-        throw new IllegalArgumentException(String.format("Identifier '%s' is not a valid identifier. Should either be an Integer index or a String column name.", identifier));
+        return getColumn(identifier);
     }
 
     @Override
     public List<H2ColumnMetadata> getColumnMetadatas() {
-        return Collections.unmodifiableList(this.columnMetadatas);
-    }
-
-    @Override
-    public Collection<String> getColumnNames() {
-        return new H2CollatedCollection(this.columnNames);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(this.columnMetadatas);
-    }
-
-    @Override
-    public String toString() {
-        return "H2RowMetadata{" +
-            "columnMetadatas=" + this.columnMetadatas +
-            ", nameKeyedColumnMetadatas=" + this.nameKeyedColumnMetadatas +
-            '}';
+        return Collections.unmodifiableList(super.getColumnMetadatas());
     }
 
     static H2RowMetadata toRowMetadata(Codecs codecs, ResultInterface result) {
@@ -120,31 +69,108 @@ public final class H2RowMetadata implements RowMetadata {
         return columnMetadatas;
     }
 
-    private ColumnMetadata getColumnMetadata(Integer index) {
-        if (index >= this.columnMetadatas.size()) {
-            throw new IllegalArgumentException(String.format("Column index %d is larger than the number of columns %d", index, this.columnMetadatas.size()));
-        }
-
-        return this.columnMetadatas.get(index);
+    @Override
+    public Collection<String> getColumnNames() {
+        return this;
     }
 
-    private ColumnMetadata getColumnMetadata(String name) {
-        String normalized = name.toUpperCase();
-
-        if (!this.nameKeyedColumnMetadatas.containsKey(normalized)) {
-            throw new IllegalArgumentException(String.format("Column name '%s' does not exist in column names %s", normalized, this.nameKeyedColumnMetadatas.keySet()));
-        }
-
-        return this.nameKeyedColumnMetadatas.get(normalized);
+    @Override
+    public int size() {
+        return this.getColumnCount();
     }
 
-    private Map<String, H2ColumnMetadata> getNameKeyedColumnMetadatas(List<H2ColumnMetadata> columnMetadatas) {
-        Map<String, H2ColumnMetadata> nameKeyedColumnMetadatas = new TreeMap<>();
+    @Override
+    public boolean isEmpty() {
+        return size() == 0;
+    }
 
-        for (H2ColumnMetadata columnMetadata : columnMetadatas) {
-            nameKeyedColumnMetadatas.put(columnMetadata.getName(), columnMetadata);
+    @Override
+    public boolean contains(Object o) {
+
+        if (o instanceof String) {
+            return this.findColumn((String) o) != null;
         }
 
-        return nameKeyedColumnMetadatas;
+        return false;
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+
+        for (Object o : c) {
+            if (!contains(o)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    public Iterator<String> iterator() {
+
+        Iterator<H2ColumnMetadata> iterator = super.getColumnMetadatas().iterator();
+
+        return new Iterator<String>() {
+
+
+            @Override
+            public boolean hasNext() {
+                return iterator.hasNext();
+            }
+
+            @Override
+            public String next() {
+                return iterator.next().getName();
+            }
+        };
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T[] toArray(T[] a) {
+        return (T[]) toArray();
+    }
+
+    @Override
+    public Object[] toArray() {
+
+        Object[] result = new Object[size()];
+
+        for (int i = 0; i < size(); i++) {
+            result[i] = this.getColumn(i).getName();
+        }
+
+        return result;
+    }
+
+    @Override
+    public boolean add(String s) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean remove(Object o) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends String> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void clear() {
+        throw new UnsupportedOperationException();
     }
 }

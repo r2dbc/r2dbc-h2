@@ -58,11 +58,11 @@ public final class H2Connection implements Connection {
     public Mono<Void> beginTransaction() {
         return useTransactionStatus(inTransaction -> {
             if (!inTransaction) {
-                return this.client.disableAutoCommit();
+                this.client.disableAutoCommit();
             } else {
                 this.logger.debug("Skipping begin transaction because already in one");
-                return Mono.empty();
             }
+            return Mono.empty();
         })
             .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
     }
@@ -76,13 +76,13 @@ public final class H2Connection implements Connection {
     public Mono<Void> commitTransaction() {
         return useTransactionStatus(inTransaction -> {
             if (inTransaction) {
-                return this.client.execute("COMMIT")
-                    .thenEmpty(this.client.enableAutoCommit())
-                    .onErrorResume(t -> this.client.enableAutoCommit().then(Mono.error(t)));
+                this.client.execute("COMMIT");
+                this.client.enableAutoCommit();
             } else {
                 this.logger.debug("Skipping commit transaction because no transaction in progress.");
-                return Mono.empty();
             }
+
+            return Mono.empty();
         })
             .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
     }
@@ -98,11 +98,11 @@ public final class H2Connection implements Connection {
 
         return useTransactionStatus(inTransaction -> {
             if (inTransaction) {
-                return this.client.execute(String.format("SAVEPOINT %s", name));
+                this.client.execute(String.format("SAVEPOINT %s", name));
             } else {
                 this.logger.debug("Skipping savepoint because no transaction in progress.");
-                return Mono.empty();
             }
+            return Mono.empty();
         })
             .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
     }
@@ -118,11 +118,12 @@ public final class H2Connection implements Connection {
 
         return useTransactionStatus(inTransaction -> {
             if (inTransaction) {
-                return this.client.execute(String.format("RELEASE SAVEPOINT %s", name));
+                this.client.execute(String.format("RELEASE SAVEPOINT %s", name));
             } else {
                 this.logger.debug("Skipping release savepoint because no transaction in progress.");
-                return Mono.empty();
             }
+
+            return Mono.empty();
         })
             .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
     }
@@ -131,13 +132,12 @@ public final class H2Connection implements Connection {
     public Mono<Void> rollbackTransaction() {
         return useTransactionStatus(inTransaction -> {
             if (inTransaction) {
-                return this.client.execute("ROLLBACK")
-                    .thenEmpty(this.client.enableAutoCommit())
-                    .onErrorResume(t -> this.client.enableAutoCommit().then(Mono.error(t)));
+                this.client.execute("ROLLBACK");
+                this.client.enableAutoCommit();
             } else {
                 this.logger.debug("Skipping rollback because no transaction in progress.");
-                return Mono.empty();
             }
+            return Mono.empty();
         })
             .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
     }
@@ -148,11 +148,12 @@ public final class H2Connection implements Connection {
 
         return useTransactionStatus(inTransaction -> {
             if (inTransaction) {
-                return this.client.execute(String.format("ROLLBACK TO SAVEPOINT %s", name));
+                this.client.execute(String.format("ROLLBACK TO SAVEPOINT %s", name));
             } else {
                 this.logger.debug("Skipping rollback to savepoint because no transaction in progress.");
-                return Mono.empty();
             }
+
+            return Mono.empty();
         })
             .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
     }
@@ -161,8 +162,9 @@ public final class H2Connection implements Connection {
     public Mono<Void> setTransactionIsolationLevel(IsolationLevel isolationLevel) {
         Assert.requireNonNull(isolationLevel, "isolationLevel must not be null");
 
-        return this.client.execute(getTransactionIsolationLevelQuery(isolationLevel))
-            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
+        return Mono.<Void>fromRunnable(() -> {
+            this.client.execute(getTransactionIsolationLevelQuery(isolationLevel));
+        }).onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
     }
 
     private static String getTransactionIsolationLevelQuery(IsolationLevel isolationLevel) {

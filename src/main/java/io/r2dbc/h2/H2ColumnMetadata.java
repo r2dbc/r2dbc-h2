@@ -23,7 +23,6 @@ import io.r2dbc.spi.Nullability;
 import org.h2.result.ResultInterface;
 import org.h2.table.Column;
 import org.h2.value.TypeInfo;
-import reactor.util.annotation.Nullable;
 
 import java.util.Objects;
 
@@ -36,7 +35,7 @@ import static io.r2dbc.spi.Nullability.UNKNOWN;
  */
 public final class H2ColumnMetadata implements ColumnMetadata {
 
-    private final Class<?> javaType;
+    private final Codecs codecs;
 
     private final String name;
 
@@ -48,8 +47,8 @@ public final class H2ColumnMetadata implements ColumnMetadata {
 
     private final Integer scale;
 
-    H2ColumnMetadata(@Nullable Class<?> javaType, String name, Integer nativeType, Nullability nullability, Long precision, Integer scale) {
-        this.javaType = javaType;
+    H2ColumnMetadata(Codecs codecs, String name, Integer nativeType, Nullability nullability, Long precision, Integer scale) {
+        this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
         this.name = Assert.requireNonNull(name, "name must not be null");
         this.nativeType = Assert.requireNonNull(nativeType, "nativeType must not be null");
         this.nullability = Assert.requireNonNull(nullability, "nullability must not be null");
@@ -66,7 +65,7 @@ public final class H2ColumnMetadata implements ColumnMetadata {
             return false;
         }
         H2ColumnMetadata that = (H2ColumnMetadata) o;
-        return Objects.equals(this.javaType, that.javaType) &&
+        return Objects.equals(this.codecs, that.codecs) &&
             this.name.equals(that.name) &&
             this.nativeType.equals(that.nativeType) &&
             this.nullability == that.nullability &&
@@ -76,7 +75,7 @@ public final class H2ColumnMetadata implements ColumnMetadata {
 
     @Override
     public Class<?> getJavaType() {
-        return this.javaType;
+        return codecs.preferredType(this.nativeType);
     }
 
     @Override
@@ -106,13 +105,13 @@ public final class H2ColumnMetadata implements ColumnMetadata {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.javaType, this.name, this.nativeType, this.nullability, this.precision, this.scale);
+        return Objects.hash(this.codecs, this.name, this.nativeType, this.nullability, this.precision, this.scale);
     }
 
     @Override
     public String toString() {
         return "H2ColumnMetadata{" +
-            "javaType=" + this.javaType +
+            "codecs=" + this.codecs +
             ", name='" + this.name + '\'' +
             ", nativeType=" + this.nativeType +
             ", nullability=" + this.nullability +
@@ -126,9 +125,9 @@ public final class H2ColumnMetadata implements ColumnMetadata {
         Assert.requireNonNull(result, "result must not be null");
 
         TypeInfo typeInfo = result.getColumnType(index);
-
         String alias = result.getAlias(index);
-        return new H2ColumnMetadata(codecs.preferredType(typeInfo.getValueType()), alias, typeInfo.getValueType(), toNullability(result.getNullable(index)),
+
+        return new H2ColumnMetadata(codecs, alias, typeInfo.getValueType(), toNullability(result.getNullable(index)),
             typeInfo.getPrecision(), typeInfo.getScale());
     }
 

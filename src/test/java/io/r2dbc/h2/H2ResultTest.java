@@ -45,18 +45,19 @@ final class H2ResultTest {
 
     @Test
     void constructorNoRows() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(Mono.empty(), null, Mono.empty()))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(mock(H2RowMetadata.class), null, Mono.empty()))
             .withMessage("rows must not be null");
     }
 
     @Test
     void constructorNoRowsUpdated() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(Mono.empty(), Flux.empty(), null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(mock(H2RowMetadata.class), Flux.empty(), null))
             .withMessage("rowsUpdated must not be null");
     }
 
     @Test
     void toResultErrorResponse() {
+        when(this.result.hasNext()).thenReturn(true, false);
         when(this.result.next()).thenAnswer(arg -> {
             throw new SQLIntegrityConstraintViolationException("can't commit", "some state", 999);
         });
@@ -86,7 +87,7 @@ final class H2ResultTest {
 
     @Test
     void toResultRowDescription() {
-        when(this.result.next()).thenReturn(true, true, false);
+        when(this.result.hasNext()).thenReturn(true, true, false);
         when(this.result.currentRow()).thenReturn(new Value[]{ValueInt.get(100)}, new Value[]{ValueInt.get(200)});
 
         H2Result result = H2Result.toResult(MockCodecs.empty(), this.result, Integer.MAX_VALUE);
