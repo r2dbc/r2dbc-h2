@@ -87,7 +87,6 @@ final class H2BatchTest {
     }
 
     @Test
-    @Disabled("see https://github.com/r2dbc/r2dbc-h2/issues/83")
     void executeErrorResponse() {
         CommandInterface command = mock(CommandInterface.class);
         when(this.client.prepareCommand("select test-query", Collections.emptyList())).thenReturn(Collections.singleton(

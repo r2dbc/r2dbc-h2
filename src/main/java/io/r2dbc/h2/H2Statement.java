@@ -22,6 +22,7 @@ import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Statement;
 import org.h2.engine.GeneratedKeysMode;
+import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
 import reactor.core.publisher.Flux;
@@ -152,19 +153,23 @@ public final class H2Statement implements Statement {
         return Flux.fromIterable(() -> client.prepareCommand(sql, bindings.bindings))
             .map(command -> {
 
-                if (command.isQuery()) {
-                    ResultInterface result = client.query(command);
-                    CommandUtil.clearForReuse(command);
-                    return H2Result.toResult(codecs, result, null);
-                } else {
-
-                    ResultWithGeneratedKeys result = client.update(command, generatedColumns);
-                    CommandUtil.clearForReuse(command);
-                    if (GeneratedKeysMode.valueOf(generatedColumns) == GeneratedKeysMode.NONE) {
-                        return H2Result.toResult(codecs, result.getUpdateCount());
+                try {
+                    if (command.isQuery()) {
+                        ResultInterface result = client.query(command);
+                        CommandUtil.clearForReuse(command);
+                        return H2Result.toResult(codecs, result, null);
                     } else {
-                        return H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount());
+
+                        ResultWithGeneratedKeys result = client.update(command, generatedColumns);
+                        CommandUtil.clearForReuse(command);
+                        if (GeneratedKeysMode.valueOf(generatedColumns) == GeneratedKeysMode.NONE) {
+                            return H2Result.toResult(codecs, result.getUpdateCount());
+                        } else {
+                            return H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount());
+                        }
                     }
+                } catch (DbException e) {
+                    throw H2DatabaseExceptionFactory.convert(e);
                 }
             });
     }

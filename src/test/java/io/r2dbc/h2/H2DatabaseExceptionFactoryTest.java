@@ -48,7 +48,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void sqlDataException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLDataException("SQLDataException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLDataException("SQLDataException", "SQLState", 999)))
             .hasMessage("SQLDataException")
             .isInstanceOf(R2dbcException.class)
             .extracting("sqlState", "errorCode").contains("SQLState", 999);
@@ -56,7 +56,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void sqlException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -64,7 +64,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void featureNotSupportedException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLFeatureNotSupportedException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLFeatureNotSupportedException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcNonTransientException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -72,7 +72,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void integrityConstraintViolationException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLIntegrityConstraintViolationException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLIntegrityConstraintViolationException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcDataIntegrityViolationException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -80,7 +80,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void invalidAuthorizationSpecException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLInvalidAuthorizationSpecException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLInvalidAuthorizationSpecException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcPermissionDeniedException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -88,7 +88,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void nonTransientConnectionException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLNonTransientConnectionException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLNonTransientConnectionException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcNonTransientResourceException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -96,7 +96,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void nonTransientException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLNonTransientException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLNonTransientException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcNonTransientException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -104,7 +104,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void recoverableException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLRecoverableException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLRecoverableException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcNonTransientException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -112,7 +112,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void syntaxErrorException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLSyntaxErrorException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLSyntaxErrorException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcBadGrammarException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -120,7 +120,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void timeoutException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLTimeoutException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLTimeoutException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcTimeoutException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -128,7 +128,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void transactionRollbackException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLTransactionRollbackException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLTransactionRollbackException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcRollbackException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -136,7 +136,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void transientConnectionException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLTransientConnectionException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLTransientConnectionException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcTransientResourceException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -144,7 +144,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void transientException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLTransientException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLTransientException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcTransientException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);
@@ -152,7 +152,7 @@ final class H2DatabaseExceptionFactoryTest {
 
     @Test
     void unknownException() {
-        assertThat(H2DatabaseExceptionFactory.create(new SQLException("SQLException", "SQLState", 999)))
+        assertThat(H2DatabaseExceptionFactory.convert(new SQLException("SQLException", "SQLState", 999)))
             .hasMessage("SQLException")
             .isInstanceOf(R2dbcException.class)
             .extracting("sqlState", "errorCode").containsExactly("SQLState", 999);

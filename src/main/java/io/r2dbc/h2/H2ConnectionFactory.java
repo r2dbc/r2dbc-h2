@@ -22,6 +22,7 @@ import io.r2dbc.h2.codecs.DefaultCodecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.ConnectionFactory;
 import org.h2.engine.ConnectionInfo;
+import org.h2.message.DbException;
 import reactor.core.publisher.Mono;
 
 import java.util.Properties;
@@ -76,7 +77,11 @@ public final class H2ConnectionFactory implements ConnectionFactory {
         configuration.getUsername().ifPresent(username -> sb.append(";USER=").append(username));
         configuration.getPassword().ifPresent(password -> sb.append(";PASSWORD=").append(password));
 
-        return new ConnectionInfo(sb.toString(), new Properties());
+        try {
+            return new ConnectionInfo(sb.toString(), new Properties());
+        } catch (DbException e) {
+            throw H2DatabaseExceptionFactory.convert(e);
+        }
     }
 
 }
