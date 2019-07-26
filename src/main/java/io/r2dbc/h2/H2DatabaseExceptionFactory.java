@@ -26,6 +26,7 @@ import io.r2dbc.spi.R2dbcRollbackException;
 import io.r2dbc.spi.R2dbcTimeoutException;
 import io.r2dbc.spi.R2dbcTransientException;
 import io.r2dbc.spi.R2dbcTransientResourceException;
+import org.h2.message.DbException;
 
 import java.sql.SQLDataException;
 import java.sql.SQLException;
@@ -46,57 +47,62 @@ import java.sql.SQLTransientException;
  */
 public final class H2DatabaseExceptionFactory {
 
-    public static R2dbcException create(SQLException e) {
-        if (e.getClass() == SQLDataException.class) {
+    /**
+     * Convert {@link DbException} to {@link SQLException} before converting to {@link R2dbcException}.
+     */
+    public static R2dbcException convert(DbException dbException) {
+        SQLException e = DbException.toSQLException(dbException);
+
+        if (SQLDataException.class.isAssignableFrom(e.getClass())) {
             return new H2R2dbcDataException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
-        if (e.getClass() == SQLException.class) {
-            return new H2R2dbcException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
-        }
-
-        if (e.getClass() == SQLFeatureNotSupportedException.class) {
+        if (SQLFeatureNotSupportedException.class.isAssignableFrom(e.getClass())) {
             return new H2R2dbcNonTransientException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
-        if (e.getClass() == SQLIntegrityConstraintViolationException.class) {
+        if (SQLIntegrityConstraintViolationException.class.isAssignableFrom(e.getClass())) {
             return new R2dbcDataIntegrityViolationException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
-        if (e.getClass() == SQLInvalidAuthorizationSpecException.class) {
+        if (SQLInvalidAuthorizationSpecException.class.isAssignableFrom(e.getClass())) {
             return new R2dbcPermissionDeniedException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
-        if (e.getClass() == SQLNonTransientConnectionException.class) {
+        if (SQLNonTransientConnectionException.class.isAssignableFrom(e.getClass())) {
             return new R2dbcNonTransientResourceException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
-        if (e.getClass() == SQLNonTransientException.class) {
+        if (SQLRecoverableException.class.isAssignableFrom(e.getClass())) {
             return new H2R2dbcNonTransientException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
-        if (e.getClass() == SQLRecoverableException.class) {
-            return new H2R2dbcNonTransientException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
-        }
-
-        if (e.getClass() == SQLSyntaxErrorException.class) {
+        if (SQLSyntaxErrorException.class.isAssignableFrom(e.getClass())) {
             return new R2dbcBadGrammarException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
-        if (e.getClass() == SQLTimeoutException.class) {
+        if (SQLTimeoutException.class.isAssignableFrom(e.getClass())) {
             return new R2dbcTimeoutException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
-        if (e.getClass() == SQLTransactionRollbackException.class) {
+        if (SQLTransactionRollbackException.class.isAssignableFrom(e.getClass())) {
             return new R2dbcRollbackException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
-        if (e.getClass() == SQLTransientConnectionException.class) {
+        if (SQLTransientConnectionException.class.isAssignableFrom(e.getClass())) {
             return new R2dbcTransientResourceException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
-        if (e.getClass() == SQLTransientException.class) {
+        if (SQLTransientException.class.isAssignableFrom(e.getClass())) {
             return new H2R2dbcTransientException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
+        }
+
+        if (SQLNonTransientException.class.isAssignableFrom(e.getClass())) {
+            return new H2R2dbcNonTransientException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
+        }
+
+        if (SQLException.class.isAssignableFrom(e.getClass())) {
+            return new H2R2dbcException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);
         }
 
         return new H2R2dbcException(e.getMessage(), e.getSQLState(), e.getErrorCode(), e);

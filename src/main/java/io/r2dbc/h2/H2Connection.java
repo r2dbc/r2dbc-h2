@@ -21,13 +21,13 @@ import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.IsolationLevel;
+import org.h2.message.DbException;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.sql.SQLException;
 import java.util.function.Function;
 
 import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
@@ -64,7 +64,7 @@ public final class H2Connection implements Connection {
             }
             return Mono.empty();
         })
-            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
+            .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
     }
 
     @Override
@@ -84,7 +84,7 @@ public final class H2Connection implements Connection {
 
             return Mono.empty();
         })
-            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
+            .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
     }
 
     @Override
@@ -104,7 +104,7 @@ public final class H2Connection implements Connection {
             }
             return Mono.empty();
         })
-            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
+            .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
     }
 
     @Override
@@ -125,7 +125,7 @@ public final class H2Connection implements Connection {
 
             return Mono.empty();
         })
-            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
+            .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
     }
 
     @Override
@@ -139,7 +139,7 @@ public final class H2Connection implements Connection {
             }
             return Mono.empty();
         })
-            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
+            .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
     }
 
     @Override
@@ -155,7 +155,7 @@ public final class H2Connection implements Connection {
 
             return Mono.empty();
         })
-            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
+            .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
     }
 
     @Override
@@ -165,7 +165,7 @@ public final class H2Connection implements Connection {
         return Mono.<Void>fromRunnable(() -> {
             this.client.execute(getTransactionIsolationLevelQuery(isolationLevel));
         })
-            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
+            .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
     }
 
     private static String getTransactionIsolationLevelQuery(IsolationLevel isolationLevel) {
@@ -182,7 +182,7 @@ public final class H2Connection implements Connection {
 
     private Mono<Void> useTransactionStatus(Function<Boolean, Publisher<?>> f) {
         return Flux.defer(() -> f.apply(this.client.inTransaction()))
-            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create)
+            .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert)
             .then();
     }
 

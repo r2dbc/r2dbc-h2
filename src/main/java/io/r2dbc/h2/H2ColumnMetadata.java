@@ -20,6 +20,7 @@ import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.ColumnMetadata;
 import io.r2dbc.spi.Nullability;
+import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.table.Column;
 import org.h2.value.TypeInfo;
@@ -124,11 +125,15 @@ public final class H2ColumnMetadata implements ColumnMetadata {
         Assert.requireNonNull(codecs, "codecs must not be null");
         Assert.requireNonNull(result, "result must not be null");
 
-        TypeInfo typeInfo = result.getColumnType(index);
-        String alias = result.getAlias(index);
+        try {
+            TypeInfo typeInfo = result.getColumnType(index);
+            String alias = result.getAlias(index);
 
-        return new H2ColumnMetadata(codecs, alias, typeInfo.getValueType(), toNullability(result.getNullable(index)),
-            typeInfo.getPrecision(), typeInfo.getScale());
+            return new H2ColumnMetadata(codecs, alias, typeInfo.getValueType(), toNullability(result.getNullable(index)),
+                typeInfo.getPrecision(), typeInfo.getScale());
+        } catch (DbException e) {
+            throw H2DatabaseExceptionFactory.convert(e);
+        }
     }
 
     private static Nullability toNullability(int n) {

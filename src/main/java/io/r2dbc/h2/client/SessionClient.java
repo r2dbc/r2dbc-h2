@@ -16,12 +16,14 @@
 
 package io.r2dbc.h2.client;
 
+import io.r2dbc.h2.H2DatabaseExceptionFactory;
 import io.r2dbc.h2.util.Assert;
 import org.h2.command.CommandInterface;
 import org.h2.engine.ConnectionInfo;
 import org.h2.engine.SessionInterface;
 import org.h2.engine.SessionRemote;
 import org.h2.expression.ParameterInterface;
+import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
 import org.h2.value.Value;
@@ -97,12 +99,15 @@ public final class SessionClient implements Client {
 
             @Override
             public CommandInterface next() {
-
                 Binding binding = bindingIterator.next();
 
-                CommandInterface command = createCommand(sql, binding);
-                logger.debug("Request:  {}", command);
-                return command;
+                try {
+                    CommandInterface command = createCommand(sql, binding);
+                    logger.debug("Request:  {}", command);
+                    return command;
+                } catch (DbException e) {
+                    throw H2DatabaseExceptionFactory.convert(e);
+                }
             }
         };
     }
@@ -110,9 +115,13 @@ public final class SessionClient implements Client {
     @Override
     public ResultInterface query(CommandInterface command) {
 
-        ResultInterface result = command.executeQuery(Integer.MAX_VALUE, false);
-        this.logger.debug("Response: {}", result);
-        return result;
+        try {
+            ResultInterface result = command.executeQuery(Integer.MAX_VALUE, false);
+            this.logger.debug("Response: {}", result);
+            return result;
+        } catch (DbException e) {
+            throw H2DatabaseExceptionFactory.convert(e);
+        }
     }
 
     @Override
@@ -129,13 +138,17 @@ public final class SessionClient implements Client {
     }
 
     private CommandInterface createCommand(String sql, Binding binding) {
-        CommandInterface command = this.session.prepareCommand(sql, Integer.MAX_VALUE);
+        try {
+            CommandInterface command = this.session.prepareCommand(sql, Integer.MAX_VALUE);
 
-        List<? extends ParameterInterface> parameters = command.getParameters();
-        for (Map.Entry<Integer, Value> entry : binding.getParameters().entrySet()) {
-            parameters.get(entry.getKey()).setValue(entry.getValue(), false);
+            List<? extends ParameterInterface> parameters = command.getParameters();
+            for (Map.Entry<Integer, Value> entry : binding.getParameters().entrySet()) {
+                parameters.get(entry.getKey()).setValue(entry.getValue(), false);
+            }
+
+            return command;
+        } catch (DbException e) {
+            throw H2DatabaseExceptionFactory.convert(e);
         }
-
-        return command;
     }
 }

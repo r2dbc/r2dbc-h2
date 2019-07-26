@@ -23,6 +23,7 @@ import io.r2dbc.h2.util.H2ServerExtension;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import io.r2dbc.spi.R2dbcBadGrammarException;
 import org.h2.command.CommandInterface;
 import org.h2.result.LocalResultImpl;
 import org.h2.result.ResultWithGeneratedKeys;
@@ -335,4 +336,21 @@ final class H2StatementTest {
         SERVER.afterAll(null);
     }
 
+    @Test
+    void executeErrorResponse() {
+        H2ConnectionFactory connectionFactory = new H2ConnectionFactory(H2ConnectionConfiguration
+            .builder() //
+            .inMemory("r2dbc") //
+            .username("sa") //
+            .password("") //
+            .option("DB_CLOSE_DELAY=-1").build());
+
+        Flux.from(connectionFactory.create())
+            .flatMap(conn -> conn.createStatement("SELECT foobar FROM doesnt_exist").execute())
+            .as(StepVerifier::create)
+            .expectErrorSatisfies(throwable -> {
+                assertThat(throwable).isInstanceOf(R2dbcBadGrammarException.class);
+            })
+            .verify();
+    }
 }

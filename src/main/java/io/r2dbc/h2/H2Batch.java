@@ -20,11 +20,11 @@ import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Batch;
+import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
 import reactor.core.publisher.Flux;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -58,19 +58,22 @@ public final class H2Batch implements Batch {
         return Flux.fromIterable(this.statements)
             .flatMapIterable(statement -> () -> this.client.prepareCommand(statement, Collections.emptyList()))
             .map(command -> {
-                if (command.isQuery()) {
+                try {
+                    if (command.isQuery()) {
 
-                    ResultInterface result = this.client.query(command);
-                    CommandUtil.clearForReuse(command);
-                    return H2Result.toResult(this.codecs, result, null);
-                } else {
+                        ResultInterface result = this.client.query(command);
+                        CommandUtil.clearForReuse(command);
+                        return H2Result.toResult(this.codecs, result, null);
+                    } else {
 
-                    ResultWithGeneratedKeys result = this.client.update(command, false);
-                    CommandUtil.clearForReuse(command);
-                    return H2Result.toResult(this.codecs, result.getUpdateCount());
+                        ResultWithGeneratedKeys result = this.client.update(command, false);
+                        CommandUtil.clearForReuse(command);
+                        return H2Result.toResult(this.codecs, result.getUpdateCount());
+                    }
+                } catch (DbException e) {
+                    throw H2DatabaseExceptionFactory.convert(e);
                 }
-            })
-            .onErrorMap(SQLException.class, H2DatabaseExceptionFactory::create);
+            });
     }
 
 }
