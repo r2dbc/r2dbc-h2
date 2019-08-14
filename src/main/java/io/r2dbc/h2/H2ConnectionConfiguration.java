@@ -122,6 +122,29 @@ public final class H2ConnectionConfiguration {
         }
 
         /**
+         * Configure a TCP connection to a remote database.
+         *
+         * @param host - hostname of the remote database (can be {@code localhost})
+         * @param path - path of the database, e.g. {@code ~/test} resolves to {user.home}/test.db
+         * @return this {@link Builder}
+         */
+        public Builder tcp(String host, String path) {
+            return url(String.format("tcp://%s/%s", host, path));
+        }
+
+        /**
+         * Configure a TCP connection to a remote database
+         *
+         * @param host - hostname of the remote database (can be {@code localhost})
+         * @param port - port the database is serving from
+         * @param path - path of the database, e.g. {@code ~/test} resolves to {user.home}/test.db
+         * @return this {@link Builder}
+         */
+        public Builder tcp(String host, String port, String path) {
+            return url(String.format("tcp://%s:%s/%s", host, port, path));
+        }
+
+        /**
          * Configure an option that is appended at the end, e.g. {@code DB_CLOSE_DELAY=10}, prefixed with ";".
          *
          * @param option to append at the end using a {@code ;} prefix.
