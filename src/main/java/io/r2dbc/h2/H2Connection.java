@@ -21,6 +21,7 @@ import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.IsolationLevel;
+import io.r2dbc.spi.ValidationDepth;
 import org.h2.message.DbException;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.function.Function;
 
 import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
@@ -166,6 +168,29 @@ public final class H2Connection implements Connection {
             this.client.execute(getTransactionIsolationLevelQuery(isolationLevel));
         })
             .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
+    }
+
+    /**
+     * Validates the connection according to the given {@link ValidationDepth}.
+     *
+     * @param depth the validation depth
+     * @return a {@link Publisher} that indicates whether the validation was successful
+     * @throws IllegalArgumentException if {@code depth} is {@code null}
+     */
+    @Override
+    public Mono<Boolean> validate(ValidationDepth depth) {
+        Assert.requireNonNull(depth, "depth must not be null");
+
+        return Mono.fromCallable(() -> {
+            if (this.client.getSession().isClosed()) {
+                return false;
+            }
+
+            this.client.query(this.client.prepareCommand("SELECT CURRENT_TIMESTAMP", Collections.emptyList()).next());
+            
+            return true;
+        })
+            .switchIfEmpty(Mono.just(false));
     }
 
     private static String getTransactionIsolationLevelQuery(IsolationLevel isolationLevel) {
