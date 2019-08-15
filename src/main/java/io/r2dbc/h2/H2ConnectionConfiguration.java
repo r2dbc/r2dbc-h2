@@ -140,7 +140,7 @@ public final class H2ConnectionConfiguration {
          * @param path - path of the database, e.g. {@code ~/test} resolves to {user.home}/test.db
          * @return this {@link Builder}
          */
-        public Builder tcp(String host, String port, String path) {
+        public Builder tcp(String host, int port, String path) {
             return url(String.format("tcp://%s:%s/%s", host, port, path));
         }
 

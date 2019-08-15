@@ -67,7 +67,7 @@ final class H2RemoteAccessTest {
         FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.trace.db"));
 
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .tcp("localhost", "9123", "~/test")
+            .tcp("localhost", 9123, "~/test")
             .username("sa")
             .password("")
             .build();
