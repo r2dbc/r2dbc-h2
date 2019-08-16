@@ -1,7 +1,7 @@
 = Reactive Relational Database Connectivity H2 Implementation
 
-This project contains the https://www.h2database.com/html/main.html[H2] implementation of the https://github.com/r2dbc/r2dbc-spi[R2DBC SPI]. This implementation is not intended to be used directly,
- but rather to be used as the backing implementation for a humane client library.
+This project contains the https://www.h2database.com/html/main.html[H2] implementation of the https://github.com/r2dbc/r2dbc-spi[R2DBC SPI].
+This implementation is not intended to be used directly, but rather to be used as the backing implementation for a humane client library.
 
 This driver provides the following features:
 
@@ -10,6 +10,11 @@ This driver provides the following features:
 * Execution of prepared statements with bindings
 * Execution of batch statements without bindings
 * Read and write support for all data types except LOB types (e.g. `BLOB`, `CLOB`)
+
+WARNING: Since this driver runs on top of the internals of H2, there is risk of change.
+`r2dbc-h2` does not guarantee compatiblity except against the version of H2 found in the build file.
+Because various parts of H2 are blocking, like file and network access, the only non-blocking assurances are in the layers above H2.
+Nevertheless, `r2dbc-h2` is a great way to warm up to the usage of R2DBC with a small footprint.
 
 == Maven
 
@@ -71,7 +76,7 @@ Mono<Connection> connection = connectionFactory.create();
 
 Supported Connection Factory Discovery options:
 
-[cols="1,5", options="header"]
+[cols="1,5",options="header"]
 |===
 |Option
 |Description
@@ -107,7 +112,9 @@ Mono<Connection> connection = connectionFactory.create();
 ----
 
 ==== Setting query params
-H2 uses index parameters that are prefixed with `$`. The following SQL statement makes use of parameters:
+
+H2 uses index parameters that are prefixed with `$`.
+The following SQL statement makes use of parameters:
 
 [source,sql]
 ----
@@ -128,9 +135,12 @@ connection
 
 ===== We also support params binding as
 
-* index `bind(1, "Walter")`. Notice that passing an integer means index (zero-based) references.
-* $ symbol `bind("$2", "Walter")`. H2 supports postgres params notation.
-* Object (Integer) `bind(yourIntegerAsObject, "Walter")`. If you index (int) was converted into object by a framework
+* index `bind(1, "Walter")`.
+Notice that passing an integer means index (zero-based) references.
+* $ symbol `bind("$2", "Walter")`.
+H2 supports postgres params notation.
+* Object (Integer) `bind(yourIntegerAsObject, "Walter")`.
+If you index (int) was converted into object by a framework
 
 === Running JMH Benchmarks
 
