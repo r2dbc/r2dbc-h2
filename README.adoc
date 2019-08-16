@@ -12,7 +12,7 @@ This driver provides the following features:
 * Read and write support for all data types except LOB types (e.g. `BLOB`, `CLOB`)
 
 WARNING: Since this driver runs on top of the internals of H2, there is risk of change.
-`r2dbc-h2` does not guarantee compatiblity except against the version of H2 found in the build file.
+`r2dbc-h2` does not guarantee compatibility except against the version of H2 found in the build file.
 Because various parts of H2 are blocking, like file and network access, the only non-blocking assurances are in the layers above H2.
 Nevertheless, `r2dbc-h2` is a great way to warm up to the usage of R2DBC with a small footprint.
 
