@@ -51,6 +51,8 @@ public final class H2Connection implements Connection {
 
     private final Codecs codecs;
 
+    private IsolationLevel isolationLevel;
+
     H2Connection(Client client, Codecs codecs) {
         this.client = Assert.requireNonNull(client, "client must not be null");
         this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
@@ -98,20 +100,24 @@ public final class H2Connection implements Connection {
     public Mono<Void> createSavepoint(String name) {
         Assert.requireNonNull(name, "name must not be null");
 
-        return useTransactionStatus(inTransaction -> {
-            if (inTransaction) {
-                this.client.execute(String.format("SAVEPOINT %s", name));
-            } else {
-                this.logger.debug("Skipping savepoint because no transaction in progress.");
-            }
-            return Mono.empty();
-        })
+        return beginTransaction()
+            .then(Mono.<Void>fromRunnable(() -> this.client.execute(String.format("SAVEPOINT %s", name))))
             .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
     }
 
     @Override
     public H2Statement createStatement(String sql) {
         return new H2Statement(this.client, this.codecs, sql);
+    }
+
+    @Override
+    public IsolationLevel getTransactionIsolationLevel() {
+        return this.isolationLevel;
+    }
+
+    @Override
+    public boolean isAutoCommit() {
+        return this.client.getSession().getAutoCommit();
     }
 
     @Override
@@ -161,12 +167,19 @@ public final class H2Connection implements Connection {
     }
 
     @Override
+    public Mono<Void> setAutoCommit(boolean autoCommit) {
+        return Mono.fromRunnable(() -> this.client.getSession().setAutoCommit(autoCommit));
+    }
+
+    @Override
     public Mono<Void> setTransactionIsolationLevel(IsolationLevel isolationLevel) {
         Assert.requireNonNull(isolationLevel, "isolationLevel must not be null");
 
-        return Mono.<Void>fromRunnable(() -> {
-            this.client.execute(getTransactionIsolationLevelQuery(isolationLevel));
-        })
+        return Mono.<Void>fromRunnable(() -> this.client.execute(getTransactionIsolationLevelQuery(isolationLevel)))
+            .map(aVoid -> {
+                this.isolationLevel = isolationLevel;
+                return aVoid;
+            })
             .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
     }
 
@@ -187,7 +200,7 @@ public final class H2Connection implements Connection {
             }
 
             this.client.query(this.client.prepareCommand("SELECT CURRENT_TIMESTAMP", Collections.emptyList()).next());
-            
+
             return true;
         })
             .switchIfEmpty(Mono.just(false));
