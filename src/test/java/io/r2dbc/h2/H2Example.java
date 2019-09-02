@@ -21,7 +21,7 @@ import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import io.r2dbc.spi.test.Example;
+import io.r2dbc.spi.test.TestKit;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -55,7 +55,7 @@ final class H2Example {
 
     @Nested
     @Disabled("TODO: Fix H2Statement so it properly handles plain JDBC placeholders.")
-    final class JdbcStyle implements Example<Integer> {
+    final class JdbcStyle implements TestKit<Integer> {
 
         @Override
         public ConnectionFactory getConnectionFactory() {
@@ -90,7 +90,7 @@ final class H2Example {
     }
 
     @Nested
-    final class NamedParameterStyle implements Example<String> {
+    final class NamedParameterStyle implements TestKit<String> {
 
         @Override
         public ConnectionFactory getConnectionFactory() {
@@ -178,7 +178,7 @@ final class H2Example {
     }
 
     @Nested
-    final class PostgresqlStyle implements Example<String> {
+    final class PostgresqlStyle implements TestKit<String> {
 
         @Override
         public ConnectionFactory getConnectionFactory() {
