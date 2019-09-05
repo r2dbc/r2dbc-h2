@@ -20,7 +20,7 @@ import io.r2dbc.h2.util.H2ServerExtension;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import io.r2dbc.spi.test.Example;
+import io.r2dbc.spi.test.TestKit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +37,7 @@ import static io.r2dbc.h2.H2ConnectionFactoryProvider.URL;
 import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
 import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
 import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
-import static io.r2dbc.spi.test.Example.close;
+import static io.r2dbc.spi.test.TestKit.close;
 
 final class H2RowTest {
 
@@ -89,7 +89,7 @@ final class H2RowTest {
 
                 .createStatement("SELECT value FROM test")
                 .execute())
-                .flatMap(Example::extractColumns)
+                .flatMap(TestKit::extractColumns)
 
                 .concatWith(close(connection)))
             .as(StepVerifier::create)
