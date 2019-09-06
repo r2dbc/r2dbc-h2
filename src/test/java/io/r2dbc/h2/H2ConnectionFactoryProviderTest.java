@@ -19,7 +19,7 @@ package io.r2dbc.h2;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import org.h2.message.DbException;
+import io.r2dbc.spi.R2dbcNonTransientException;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -82,8 +82,7 @@ final class H2ConnectionFactoryProviderTest {
             .flatMapMany(o -> o.createStatement("CREATE TABLE option_test (id int)").execute())
             .as(StepVerifier::create)
             .expectErrorSatisfies(e -> {
-
-                assertThat(e).isInstanceOf(DbException.class).hasMessageContaining("90097");
+                assertThat(e).isInstanceOf(R2dbcNonTransientException.class).hasMessageContaining("90097");
             }).verify();
     }
 

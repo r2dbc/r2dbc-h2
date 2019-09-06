@@ -43,10 +43,14 @@ public final class H2ConnectionFactory implements ConnectionFactory {
      * @throws NullPointerException if {@code configuration} is {@code null}
      */
     public H2ConnectionFactory(H2ConnectionConfiguration configuration) {
-        this(Mono.defer(() -> {
+        this(Mono.fromSupplier(() -> {
             Assert.requireNonNull(configuration, "configuration must not be null");
 
-            return Mono.just(new SessionClient(getConnectionInfo(configuration)));
+            try {
+                return new SessionClient(getConnectionInfo(configuration));
+            } catch (DbException e) {
+                throw H2DatabaseExceptionFactory.convert(e);
+            }
         }));
     }
 

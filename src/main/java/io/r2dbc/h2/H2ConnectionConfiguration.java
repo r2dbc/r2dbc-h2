@@ -58,7 +58,7 @@ public final class H2ConnectionConfiguration {
     public String toString() {
         return "H2ConnectionConfiguration{" +
             "password='" + this.password + '\'' +
-            "properties='" + this.properties + '\'' +
+            ", properties='" + this.properties + '\'' +
             ", url='" + this.url + '\'' +
             ", username='" + this.username + '\'' +
             '}';
@@ -194,7 +194,7 @@ public final class H2ConnectionConfiguration {
         public String toString() {
             return "Builder{" +
                 "password='" + this.password + '\'' +
-                "properties='" + this.properties + '\'' +
+                ", properties='" + this.properties + '\'' +
                 ", url='" + this.url + '\'' +
                 ", username='" + this.username + '\'' +
                 '}';
