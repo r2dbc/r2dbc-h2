@@ -16,8 +16,13 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
+import org.h2.message.DbException;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import static io.r2dbc.h2.H2ConnectionFactoryProvider.H2_DRIVER;
 import static io.r2dbc.h2.H2ConnectionFactoryProvider.PROTOCOL_MEM;
@@ -68,6 +73,18 @@ final class H2ConnectionFactoryProviderTest {
             .option(DRIVER, H2_DRIVER)
             .option(URL, "test-url")
             .build())).isTrue();
+    }
+
+    @Test
+    void supportsKnownOptions() {
+        ConnectionFactory connectionFactory = ConnectionFactories.get("r2dbc:h2:mem:///option-test?access_mode_data=r");
+        Mono.from(connectionFactory.create())
+            .flatMapMany(o -> o.createStatement("CREATE TABLE option_test (id int)").execute())
+            .as(StepVerifier::create)
+            .expectErrorSatisfies(e -> {
+
+                assertThat(e).isInstanceOf(DbException.class).hasMessageContaining("90097");
+            }).verify();
     }
 
     @Test

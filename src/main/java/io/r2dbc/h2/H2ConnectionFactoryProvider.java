@@ -21,6 +21,12 @@ import io.r2dbc.spi.ConnectionFactoryOptions;
 import io.r2dbc.spi.ConnectionFactoryProvider;
 import io.r2dbc.spi.Option;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
 import static io.r2dbc.spi.ConnectionFactoryOptions.DATABASE;
 import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
 import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
@@ -57,6 +63,14 @@ public final class H2ConnectionFactoryProvider implements ConnectionFactoryProvi
      */
     public static final Option<String> URL = Option.valueOf("url");
 
+    private static final Set<String> KNOWN_OPTION_KEYS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("CIPHER",
+        "FILE_LOCK", "IFEXISTS", "DB_CLOSE_ON_EXIT", "INIT",
+        "TRACE_LEVEL_FILE", "TRACE_MAX_FILE_SIZE", "TRACE_LEVEL_SYSTEM_OUT", "LOG",
+        "IGNORE_UNKNOWN_SETTINGS", "ACCESS_MODE_DATA", "MODE",
+        "AUTO_SERVER", "AUTO_SERVER_PORT",
+        "PAGE_SIZE", "MULTI_THREADED", "CACHE_TYPE", "PASSWORD_HASH"
+    )));
+
     @Override
     public H2ConnectionFactory create(ConnectionFactoryOptions connectionFactoryOptions) {
         Assert.requireNonNull(connectionFactoryOptions, "connectionFactoryOptions must not be null");
@@ -90,6 +104,19 @@ public final class H2ConnectionFactoryProvider implements ConnectionFactoryProvi
         }
 
         builder.username(connectionFactoryOptions.getValue(USER));
+
+        for (String knownOptionKey : KNOWN_OPTION_KEYS) {
+
+            Option<String> uc = Option.valueOf(knownOptionKey);
+            if (connectionFactoryOptions.hasOption(uc)) {
+                builder.property(uc.name(), connectionFactoryOptions.getRequiredValue(uc));
+            } else {
+                Option<String> lc = Option.valueOf(knownOptionKey.toLowerCase(Locale.ENGLISH));
+                if (connectionFactoryOptions.hasOption(lc)) {
+                    builder.property(lc.name(), connectionFactoryOptions.getRequiredValue(lc));
+                }
+            }
+        }
 
         return new H2ConnectionFactory(builder.build());
     }

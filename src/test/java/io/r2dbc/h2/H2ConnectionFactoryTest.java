@@ -102,4 +102,14 @@ final class H2ConnectionFactoryTest {
 
         assertThat(configuration.getUrl()).isEqualTo("mem:in-memory-db;DB_CLOSE_DELAY=10");
     }
+
+    @Test
+    void individualOptions() {
+        H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
+            .inMemory("in-memory-db")
+            .property("DB_CLOSE_DELAY", "10")
+            .build();
+
+        assertThat(configuration.getProperties()).containsEntry("DB_CLOSE_DELAY", "10");
+    }
 }

@@ -20,7 +20,9 @@ import io.r2dbc.h2.util.Assert;
 import reactor.util.annotation.Nullable;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -34,10 +36,13 @@ public final class H2ConnectionConfiguration {
 
     private final String username;
 
-    private H2ConnectionConfiguration(@Nullable String password, String url, @Nullable String username) {
+    private final Map<String, String> properties;
+
+    private H2ConnectionConfiguration(@Nullable String password, String url, @Nullable String username, Map<String, String> properties) {
         this.password = password;
         this.url = Assert.requireNonNull(url, "url must not be null");
         this.username = username;
+        this.properties = Assert.requireNonNull(properties, "properties must not be null");
     }
 
     /**
@@ -53,6 +58,7 @@ public final class H2ConnectionConfiguration {
     public String toString() {
         return "H2ConnectionConfiguration{" +
             "password='" + this.password + '\'' +
+            "properties='" + this.properties + '\'' +
             ", url='" + this.url + '\'' +
             ", username='" + this.username + '\'' +
             '}';
@@ -64,6 +70,10 @@ public final class H2ConnectionConfiguration {
 
     String getUrl() {
         return this.url;
+    }
+
+    Map<String, String> getProperties() {
+        return this.properties;
     }
 
     Optional<String> getUsername() {
@@ -78,7 +88,9 @@ public final class H2ConnectionConfiguration {
     public static final class Builder {
 
         private List<String> options = new ArrayList<>();
-        
+
+        private Map<String, String> properties = new LinkedHashMap<>();
+
         private String password;
 
         private String url;
@@ -92,13 +104,13 @@ public final class H2ConnectionConfiguration {
          */
         public H2ConnectionConfiguration build() {
             if (this.options.isEmpty()) {
-                return new H2ConnectionConfiguration(this.password, this.url, this.username);
+                return new H2ConnectionConfiguration(this.password, this.url, this.username, this.properties);
             }
 
             String urlWithOptions = this.options.stream()
                 .reduce(this.url, (url, option) -> url += ";" + option);
 
-            return new H2ConnectionConfiguration(this.password, urlWithOptions, this.username);
+            return new H2ConnectionConfiguration(this.password, urlWithOptions, this.username, this.properties);
         }
 
         /**
@@ -156,6 +168,18 @@ public final class H2ConnectionConfiguration {
         }
 
         /**
+         * Configure a property for H2.
+         *
+         * @param option the option key.
+         * @param value  the option value.
+         * @return this (@link Builder)
+         */
+        public Builder property(String option, String value) {
+            this.properties.put(Assert.requireNonNull(option, "option must not be null"), Assert.requireNonNull(value, "value must not be null"));
+            return this;
+        }
+
+        /**
          * Configure the password.
          *
          * @param password the password
@@ -170,6 +194,7 @@ public final class H2ConnectionConfiguration {
         public String toString() {
             return "Builder{" +
                 "password='" + this.password + '\'' +
+                "properties='" + this.properties + '\'' +
                 ", url='" + this.url + '\'' +
                 ", username='" + this.username + '\'' +
                 '}';

@@ -78,7 +78,10 @@ public final class H2ConnectionFactory implements ConnectionFactory {
         configuration.getPassword().ifPresent(password -> sb.append(";PASSWORD=").append(password));
 
         try {
-            return new ConnectionInfo(sb.toString(), new Properties());
+            Properties properties = new Properties();
+            properties.putAll(configuration.getProperties());
+
+            return new ConnectionInfo(sb.toString(), properties);
         } catch (DbException e) {
             throw H2DatabaseExceptionFactory.convert(e);
         }
