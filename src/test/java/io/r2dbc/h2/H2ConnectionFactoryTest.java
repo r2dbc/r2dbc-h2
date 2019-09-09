@@ -112,4 +112,45 @@ final class H2ConnectionFactoryTest {
 
         assertThat(configuration.getProperties()).containsEntry("DB_CLOSE_DELAY", "10");
     }
+
+    @Test
+    void individualOptionsAsEnum() {
+        H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
+            .inMemory("in-memory-db")
+            .property(H2ConnectionOption.DB_CLOSE_DELAY, "10")
+            .build();
+
+        assertThat(configuration.getProperties()).containsEntry("DB_CLOSE_DELAY", "10");
+    }
+
+    @Test
+    void invalidOptions() {
+        assertThatIllegalArgumentException().isThrownBy(() -> {
+            H2ConnectionConfiguration.builder()
+                .inMemory("in-memory-db")
+                .property((String) null, "bar")
+                .build();
+        }).withMessageContaining("option must not be null");
+
+        assertThatIllegalArgumentException().isThrownBy(() -> {
+            H2ConnectionConfiguration.builder()
+                .inMemory("in-memory-db")
+                .property("some property", null)
+                .build();
+        }).withMessageContaining("value must not be null");
+
+        assertThatIllegalArgumentException().isThrownBy(() -> {
+            H2ConnectionConfiguration.builder()
+                .inMemory("in-memory-db")
+                .property((H2ConnectionOption) null, "bar")
+                .build();
+        }).withMessageContaining("option must not be null");
+
+        assertThatIllegalArgumentException().isThrownBy(() -> {
+            H2ConnectionConfiguration.builder()
+                .inMemory("in-memory-db")
+                .property(H2ConnectionOption.DB_CLOSE_DELAY, null)
+                .build();
+        }).withMessageContaining("value must not be null");
+    }
 }

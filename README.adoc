@@ -106,6 +106,7 @@ Supported Connection Factory Discovery options:
 ----
 ConnectionFactory connectionFactory = new H2ConnectionFactory(H2ConnectionConfiguration.builder()
     .inMemory("...")
+    .option(H2ConnectionOption.DB_CLOSE_DELAY, "-1")
     .build());
 
 Mono<Connection> connection = connectionFactory.create();

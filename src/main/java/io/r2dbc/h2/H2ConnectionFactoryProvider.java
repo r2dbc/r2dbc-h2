@@ -23,9 +23,9 @@ import io.r2dbc.spi.Option;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static io.r2dbc.spi.ConnectionFactoryOptions.DATABASE;
 import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
@@ -63,13 +63,9 @@ public final class H2ConnectionFactoryProvider implements ConnectionFactoryProvi
      */
     public static final Option<String> URL = Option.valueOf("url");
 
-    private static final Set<String> KNOWN_OPTION_KEYS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList("CIPHER",
-        "FILE_LOCK", "IFEXISTS", "DB_CLOSE_ON_EXIT", "INIT",
-        "TRACE_LEVEL_FILE", "TRACE_MAX_FILE_SIZE", "TRACE_LEVEL_SYSTEM_OUT", "LOG",
-        "IGNORE_UNKNOWN_SETTINGS", "ACCESS_MODE_DATA", "MODE",
-        "AUTO_SERVER", "AUTO_SERVER_PORT",
-        "PAGE_SIZE", "MULTI_THREADED", "CACHE_TYPE", "PASSWORD_HASH"
-    )));
+    private static final Set<String> KNOWN_OPTION_KEYS = Collections.unmodifiableSet(Arrays.stream(H2ConnectionOption.values())
+        .map(H2ConnectionOption::getKey)
+        .collect(Collectors.toSet()));
 
     @Override
     public H2ConnectionFactory create(ConnectionFactoryOptions connectionFactoryOptions) {
