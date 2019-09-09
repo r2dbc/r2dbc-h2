@@ -85,14 +85,6 @@ final class H2RowMetadataTest {
     }
 
     @Test
-    void getColumnMetadataWrongIdentifierType() {
-        Object identifier = new Object();
-
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2RowMetadata(this.columnMetadatas).getColumnMetadata(identifier))
-            .withMessage("Identifier '%s' is not a valid identifier. Should either be an Integer index or a String column name.", identifier.toString());
-    }
-
-    @Test
     void getColumnMetadatas() {
         assertThat(new H2RowMetadata(this.columnMetadatas).getColumnMetadatas()).containsAll(this.columnMetadatas);
     }

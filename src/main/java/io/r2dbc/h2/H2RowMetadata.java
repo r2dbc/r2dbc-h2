@@ -41,7 +41,9 @@ public class H2RowMetadata extends ColumnSource implements RowMetadata, Collecti
      * {@inheritDoc}
      *
      * @throws IllegalArgumentException if {@code identifier} does not correspond to a column
+     * @deprecated Use {@link #getColumnMetadata(int)} or {@link #getColumnMetadata(String)} instead
      */
+    @Deprecated
     @Override
     public ColumnMetadata getColumnMetadata(Object identifier) {
         return getColumn(identifier);

@@ -80,8 +80,7 @@ final class H2StatementTest {
 
     @Test
     void bindWithPositionNumberAsObject() {
-        Object index = Integer.valueOf(0);
-        assertThat(this.statement.bind(index, 100).getCurrentBinding())
+        assertThat(this.statement.bind(0, 100).getCurrentBinding())
             .isEqualTo(new Binding().add(0, ValueInt.get(100)));
     }
 
@@ -95,7 +94,7 @@ final class H2StatementTest {
 
     @Test
     void bindIndex() {
-        assertThat(((H2Statement) this.statement.bind(0, 100)).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
+        assertThat(this.statement.bind(0, 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
     }
 
     @Test
@@ -107,7 +106,7 @@ final class H2StatementTest {
     @Test
     void bindNoIdentifier() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind(null, ""))
-            .withMessage("identifier must not be null");
+            .withMessage("name must not be null");
     }
 
     @Test
@@ -131,7 +130,7 @@ final class H2StatementTest {
     @Test
     void bindNullNoIdentifier() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bindNull(null, Integer.class))
-            .withMessage("identifier must not be null");
+            .withMessage("name must not be null");
     }
 
     @Test
@@ -141,21 +140,9 @@ final class H2StatementTest {
     }
 
     @Test
-    void bindNullWrongIdentifierType() {
-        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bindNull(new Object(), Integer.class))
-            .withMessage("identifier must be: String or Integer");
-    }
-
-    @Test
     void bindWrongIdentifierFormat() {
         assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind("foo", ""))
             .withMessage("Identifier 'foo' is not a valid identifier. Should be of the pattern '.*([$?])([\\d]+).*'.");
-    }
-
-    @Test
-    void bindWrongIdentifierType() {
-        assertThatIllegalArgumentException().isThrownBy(() -> this.statement.bind(new Object(), ""))
-            .withMessage("identifier must be: String or Integer");
     }
 
     @Test

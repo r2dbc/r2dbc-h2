@@ -68,19 +68,70 @@ public final class H2Statement implements Statement {
         return this;
     }
 
+    /**
+     * @deprecated Use {@link #bind(String, Object)} instead
+     */
+    @Deprecated
     @Override
     public H2Statement bind(Object identifier, Object value) {
         Assert.requireNonNull(identifier, "identifier must not be null");
 
         if (identifier instanceof String) {
-            return addIndex(getIndex((String) identifier), value);
+            return bind((String) identifier, value);
         }
 
         if (identifier instanceof Integer) {
-            return addIndex((int) identifier, value);
+            return bind((int) identifier, value);
         }
 
         throw new IllegalArgumentException("identifier must be: String or Integer");
+    }
+
+    @Override
+    public H2Statement bind(String name, Object value) {
+        Assert.requireNonNull(name, "name must not be null");
+
+        return addIndex(getIndex(name), value);
+    }
+
+    @Override
+    public H2Statement bind(int index, boolean value) {
+        return bind(index, (Boolean) value);
+    }
+
+    @Override
+    public H2Statement bind(int index, byte value) {
+        return bind(index, (Byte) value);
+    }
+
+    @Override
+    public H2Statement bind(int index, char value) {
+        return bind(index, (Character) value);
+    }
+
+    @Override
+    public H2Statement bind(int index, double value) {
+        return bind(index, (Double) value);
+    }
+
+    @Override
+    public H2Statement bind(int index, float value) {
+        return bind(index, (Float) value);
+    }
+
+    @Override
+    public H2Statement bind(int index, int value) {
+        return bind(index, (Integer) value);
+    }
+
+    @Override
+    public H2Statement bind(int index, long value) {
+        return null;
+    }
+
+    @Override
+    public H2Statement bind(int index, short value) {
+        return null;
     }
 
     @Override
@@ -88,22 +139,32 @@ public final class H2Statement implements Statement {
         return addIndex(index, value);
     }
 
+    /**
+     * @deprecated Use {@link #bindNull(String, Class)} or {@link #bindNull(int, Class)} instead.
+     */
+    @Deprecated
     @Override
     public H2Statement bindNull(Object identifier, @Nullable Class<?> type) {
         Assert.requireNonNull(identifier, "identifier must not be null");
 
         if (identifier instanceof String) {
-            int index = getIndex((String) identifier);
-            bindNull(index, type);
-            return this;
+            return bindNull((String) identifier, type);
         }
 
         if (identifier instanceof Integer) {
-            bindNull((int) identifier, type);
-            return this;
+            return bindNull((int) identifier, type);
         }
 
         throw new IllegalArgumentException("identifier must be: String or Integer");
+    }
+
+    @Override
+    public H2Statement bindNull(String name, Class<?> type) {
+        Assert.requireNonNull(name, "name must not be null");
+
+        bindNull(getIndex(name), type);
+
+        return this;
     }
 
     @Override
