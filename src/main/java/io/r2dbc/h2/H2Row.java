@@ -60,6 +60,10 @@ public final class H2Row implements Row {
         return Objects.equals(this.columns, that.columns);
     }
 
+    /**
+     * @deprecated Use {@link #get(int, Class)} or {@link #get(String, Class)} instead
+     */
+    @Deprecated
     @SuppressWarnings("unchecked")
     @Nullable
     @Override

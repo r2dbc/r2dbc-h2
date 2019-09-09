@@ -80,8 +80,7 @@ final class H2StatementTest {
 
     @Test
     void bindWithPositionNumberAsObject() {
-        Object index = Integer.valueOf(0);
-        assertThat(this.statement.bind(index, 100).getCurrentBinding())
+        assertThat(this.statement.bind(0, 100).getCurrentBinding())
             .isEqualTo(new Binding().add(0, ValueInt.get(100)));
     }
 
