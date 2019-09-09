@@ -160,7 +160,7 @@ public final class H2ConnectionConfiguration {
          * Configure an option that is appended at the end, e.g. {@code DB_CLOSE_DELAY=10}, prefixed with ";".
          *
          * @param option to append at the end using a {@code ;} prefix.
-         * @return this (@link Builder)
+         * @return this {@link Builder}
          */
         public Builder option(String option) {
             this.options.add(option);
@@ -172,11 +172,22 @@ public final class H2ConnectionConfiguration {
          *
          * @param option the option key.
          * @param value  the option value.
-         * @return this (@link Builder)
+         * @return this {@link Builder}
          */
         public Builder property(String option, String value) {
             this.properties.put(Assert.requireNonNull(option, "option must not be null"), Assert.requireNonNull(value, "value must not be null"));
             return this;
+        }
+
+        /**
+         * Configure a property for H2 using pre-build {@link H2ConnectionOption}.
+         *
+         * @param option the option key enum
+         * @param value  the option value
+         * @return this {@link Builder}
+         */
+        public Builder property(H2ConnectionOption option, String value) {
+            return property(option.getKey(), value);
         }
 
         /**

@@ -112,4 +112,14 @@ final class H2ConnectionFactoryTest {
 
         assertThat(configuration.getProperties()).containsEntry("DB_CLOSE_DELAY", "10");
     }
+
+    @Test
+    void individualOptionsAsEnum() {
+        H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
+            .inMemory("in-memory-db")
+            .property(H2ConnectionOption.DB_CLOSE_DELAY, "10")
+            .build();
+
+        assertThat(configuration.getProperties()).containsEntry("DB_CLOSE_DELAY", "10");
+    }
 }
