@@ -116,6 +116,11 @@ public final class H2Connection implements Connection {
     }
 
     @Override
+    public H2ConnectionMetadata getMetadata() {
+        return H2ConnectionMetadata.INSTANCE;
+    }
+
+    @Override
     public boolean isAutoCommit() {
         return this.client.getSession().getAutoCommit();
     }

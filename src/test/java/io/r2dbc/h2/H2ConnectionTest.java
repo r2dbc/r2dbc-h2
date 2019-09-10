@@ -21,6 +21,7 @@ import io.r2dbc.h2.codecs.MockCodecs;
 import io.r2dbc.spi.R2dbcNonTransientException;
 import io.r2dbc.spi.R2dbcNonTransientResourceException;
 import io.r2dbc.spi.R2dbcRollbackException;
+import org.h2.engine.Constants;
 import org.h2.message.DbException;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -333,6 +334,14 @@ final class H2ConnectionTest {
             .setTransactionIsolationLevel(SERIALIZABLE)
             .as(StepVerifier::create)
             .verifyComplete();
+    }
+
+    @Test
+    void getConnectionMetadata() {
+        H2ConnectionMetadata metadata = new H2Connection(this.client, MockCodecs.empty()).getMetadata();
+
+        assertThat(metadata.getDatabaseProductName()).isEqualTo("H2");
+        assertThat(metadata.getDatabaseVersion()).isEqualTo(Constants.getFullVersion());
     }
 
     @Disabled("Not yet implemented")
