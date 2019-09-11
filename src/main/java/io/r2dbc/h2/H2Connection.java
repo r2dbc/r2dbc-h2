@@ -22,7 +22,10 @@ import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.IsolationLevel;
 import io.r2dbc.spi.ValidationDepth;
+import org.h2.command.CommandInterface;
+import org.h2.engine.Constants;
 import org.h2.message.DbException;
+import org.h2.result.ResultInterface;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +33,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.function.Function;
 
 import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
@@ -51,11 +55,28 @@ public final class H2Connection implements Connection {
 
     private final Codecs codecs;
 
+    private final H2ConnectionMetadata metadata;
+
     private IsolationLevel isolationLevel;
 
     H2Connection(Client client, Codecs codecs) {
+
         this.client = Assert.requireNonNull(client, "client must not be null");
         this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
+
+        String version = Constants.getVersion();
+        Iterator<CommandInterface> commands = client.prepareCommand("CALL H2VERSION()", Collections.emptyList());
+
+        if (commands.hasNext()) {
+
+            CommandInterface command = commands.next();
+            ResultInterface query = client.query(command);
+            query.next();
+            version = query.currentRow()[0].getString();
+            query.close();
+        }
+
+        this.metadata = new H2ConnectionMetadata(version);
     }
 
     @Override
@@ -113,6 +134,11 @@ public final class H2Connection implements Connection {
     @Override
     public IsolationLevel getTransactionIsolationLevel() {
         return this.isolationLevel;
+    }
+
+    @Override
+    public H2ConnectionMetadata getMetadata() {
+        return this.metadata;
     }
 
     @Override

@@ -21,7 +21,8 @@ import io.r2dbc.h2.codecs.MockCodecs;
 import io.r2dbc.spi.R2dbcNonTransientException;
 import io.r2dbc.spi.R2dbcNonTransientResourceException;
 import io.r2dbc.spi.R2dbcRollbackException;
-import org.h2.message.DbException;
+import org.h2.engine.Constants;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
@@ -30,6 +31,7 @@ import reactor.test.StepVerifier;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLNonTransientConnectionException;
 import java.sql.SQLTransactionRollbackException;
+import java.util.Collections;
 
 import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
 import static io.r2dbc.spi.IsolationLevel.READ_UNCOMMITTED;
@@ -46,6 +48,11 @@ import static org.mockito.Mockito.when;
 final class H2ConnectionTest {
 
     private final Client client = mock(Client.class, RETURNS_SMART_NULLS);
+
+    @BeforeEach
+    void setUp() {
+        when(this.client.prepareCommand("CALL H2VERSION()", Collections.emptyList())).thenReturn(Collections.emptyIterator());
+    }
 
     @Test
     void beginTransaction() {
@@ -333,6 +340,14 @@ final class H2ConnectionTest {
             .setTransactionIsolationLevel(SERIALIZABLE)
             .as(StepVerifier::create)
             .verifyComplete();
+    }
+
+    @Test
+    void getConnectionMetadata() {
+        H2ConnectionMetadata metadata = new H2Connection(this.client, MockCodecs.empty()).getMetadata();
+
+        assertThat(metadata.getDatabaseProductName()).isEqualTo("H2");
+        assertThat(metadata.getDatabaseVersion()).isEqualTo(Constants.getVersion());
     }
 
     @Disabled("Not yet implemented")
