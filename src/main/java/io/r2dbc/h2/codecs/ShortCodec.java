@@ -20,9 +20,6 @@ import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueShort;
 
-/**
- * @author Greg Turnquist
- */
 final class ShortCodec extends AbstractCodec<Short> {
 
     ShortCodec() {

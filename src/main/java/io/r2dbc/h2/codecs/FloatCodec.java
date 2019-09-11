@@ -21,9 +21,6 @@ import org.h2.value.Value;
 import org.h2.value.ValueFloat;
 import org.h2.value.ValueInt;
 
-/**
- * @author Greg Turnquist
- */
 final class FloatCodec extends AbstractCodec<Float> {
 
     FloatCodec() {

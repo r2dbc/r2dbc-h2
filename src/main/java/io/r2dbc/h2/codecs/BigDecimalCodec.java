@@ -22,9 +22,6 @@ import org.h2.value.ValueDecimal;
 
 import java.math.BigDecimal;
 
-/**
- * @author Greg Turnquist
- */
 final class BigDecimalCodec extends AbstractCodec<BigDecimal> {
 
     BigDecimalCodec() {

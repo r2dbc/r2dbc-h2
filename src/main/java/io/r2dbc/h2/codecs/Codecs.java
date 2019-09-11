@@ -16,10 +16,6 @@
 
 package io.r2dbc.h2.codecs;
 
-/**
- * @author Greg Turnquist
- */
-
 import org.h2.value.Value;
 import reactor.util.annotation.Nullable;
 

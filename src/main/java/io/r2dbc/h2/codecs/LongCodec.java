@@ -20,9 +20,6 @@ import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueLong;
 
-/**
- * @author Greg Turnquist
- */
 final class LongCodec extends AbstractCodec<Long> {
 
     LongCodec() {

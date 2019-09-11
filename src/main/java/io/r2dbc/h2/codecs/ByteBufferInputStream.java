@@ -22,8 +22,6 @@ import java.nio.ByteBuffer;
 
 /**
  * Borrowed from JDK 8's {@link sun.security.ssl.ByteBufferInputStream}.
- *
- * @author  Brad Wetmore
  */
 class ByteBufferInputStream extends InputStream {
 

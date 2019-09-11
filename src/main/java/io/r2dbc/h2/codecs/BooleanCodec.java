@@ -22,9 +22,6 @@ import org.h2.value.ValueBoolean;
 
 import java.util.Objects;
 
-/**
- * @author Greg Turnquist
- */
 final class BooleanCodec extends AbstractCodec<Boolean> {
 
     BooleanCodec() {

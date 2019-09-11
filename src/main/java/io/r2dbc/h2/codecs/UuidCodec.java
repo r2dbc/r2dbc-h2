@@ -22,9 +22,6 @@ import org.h2.value.ValueUuid;
 
 import java.util.UUID;
 
-/**
- * @author Fred Montariol
- */
 final class UuidCodec extends AbstractCodec<UUID> {
 
     UuidCodec() {

@@ -20,11 +20,6 @@ import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueDouble;
 
-import java.util.Objects;
-
-/**
- * @author Greg Turnquist
- */
 final class DoubleCodec extends AbstractCodec<Double> {
 
     DoubleCodec() {

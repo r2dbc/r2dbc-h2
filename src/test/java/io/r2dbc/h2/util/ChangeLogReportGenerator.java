@@ -30,9 +30,6 @@ import java.util.List;
 
 /**
  * Changelog report generator.
- * 
- * @author Oliver Drotbohm
- * @author Greg Turnquist
  */
 final class ChangeLogReportGenerator {
 

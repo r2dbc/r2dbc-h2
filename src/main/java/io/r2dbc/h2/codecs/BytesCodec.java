@@ -20,9 +20,6 @@ import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueBytes;
 
-/**
- * @author Greg Turnquist
- */
 final class BytesCodec extends AbstractCodec<byte[]> {
 
     BytesCodec() {
