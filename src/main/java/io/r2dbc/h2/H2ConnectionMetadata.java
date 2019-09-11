@@ -17,14 +17,17 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.spi.ConnectionMetadata;
-import org.h2.engine.Constants;
 
 /**
  * Connection metadata for a connection connected to a H2 database.
  */
-public enum H2ConnectionMetadata implements ConnectionMetadata {
+public class H2ConnectionMetadata implements ConnectionMetadata {
 
-    INSTANCE;
+    private final String databaseVersion;
+
+    public H2ConnectionMetadata(String databaseVersion) {
+        this.databaseVersion = databaseVersion;
+    }
 
     @Override
     public String getDatabaseProductName() {
@@ -33,6 +36,6 @@ public enum H2ConnectionMetadata implements ConnectionMetadata {
 
     @Override
     public String getDatabaseVersion() {
-        return Constants.getFullVersion();
+        return this.databaseVersion;
     }
 }
