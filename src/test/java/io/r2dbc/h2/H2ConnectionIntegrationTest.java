@@ -33,7 +33,7 @@ final class H2ConnectionIntegrationTest {
     void getMetadata() {
 
         ConnectionInfo configuration = new ConnectionInfo("jdbc:h2:mem:" + UUID.randomUUID().toString() + ";USER=sa;PASSWORD=sa;", new Properties());
-        SessionClient sessionClient = new SessionClient(configuration);
+        SessionClient sessionClient = new SessionClient(configuration, false);
 
         H2Connection connection = new H2Connection(sessionClient, new DefaultCodecs(sessionClient));
         H2ConnectionMetadata metadata = connection.getMetadata();

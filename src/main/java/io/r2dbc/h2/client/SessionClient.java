@@ -48,21 +48,29 @@ public final class SessionClient implements Client {
 
     private final SessionInterface session;
 
+    private final boolean shutdownDatabaseOnClose;
+
     /**
      * Creates a new instance.
      *
      * @param connectionInfo the connection info to use
      * @throws NullPointerException if {@code connectionInfo} is {@code null}
      */
-    public SessionClient(ConnectionInfo connectionInfo) {
+    public SessionClient(ConnectionInfo connectionInfo, boolean shutdownDatabaseOnClose) {
         Assert.requireNonNull(connectionInfo, "connectionInfo must not be null");
 
         this.session = new SessionRemote(connectionInfo).connectEmbeddedOrServer(false);
+        this.shutdownDatabaseOnClose = shutdownDatabaseOnClose;
     }
 
     @Override
     public Mono<Void> close() {
         return Mono.defer(() -> {
+
+            if (this.shutdownDatabaseOnClose) {
+                CommandInterface shutdown = this.session.prepareCommand("SHUTDOWN", 0);
+                shutdown.executeUpdate(null);
+            }
             this.session.close();
             return Mono.empty();
         });
@@ -89,7 +97,7 @@ public final class SessionClient implements Client {
         Assert.requireNonNull(bindings, "bindings must not be null");
 
         Iterator<Binding> bindingIterator = bindings.isEmpty() ? emptyBinding.iterator() : bindings.iterator();
-        
+
         return new Iterator<CommandInterface>() {
 
             @Override
