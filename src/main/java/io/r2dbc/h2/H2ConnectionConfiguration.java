@@ -30,7 +30,7 @@ import java.util.Optional;
  */
 public final class H2ConnectionConfiguration {
 
-    private final String password;
+    private final CharSequence password;
 
     private final String url;
 
@@ -38,7 +38,7 @@ public final class H2ConnectionConfiguration {
 
     private final Map<String, String> properties;
 
-    private H2ConnectionConfiguration(@Nullable String password, String url, @Nullable String username, Map<String, String> properties) {
+    private H2ConnectionConfiguration(@Nullable CharSequence password, String url, @Nullable String username, Map<String, String> properties) {
         this.password = password;
         this.url = Assert.requireNonNull(url, "url must not be null");
         this.username = username;
@@ -57,14 +57,14 @@ public final class H2ConnectionConfiguration {
     @Override
     public String toString() {
         return "H2ConnectionConfiguration{" +
-            "password='" + this.password + '\'' +
+            "password='REDACTED'" +
             ", properties='" + this.properties + '\'' +
             ", url='" + this.url + '\'' +
             ", username='" + this.username + '\'' +
             '}';
     }
 
-    Optional<String> getPassword() {
+    Optional<CharSequence> getPassword() {
         return Optional.ofNullable(this.password);
     }
 
@@ -91,7 +91,7 @@ public final class H2ConnectionConfiguration {
 
         private Map<String, String> properties = new LinkedHashMap<>();
 
-        private String password;
+        private CharSequence password;
 
         private String url;
 
@@ -197,7 +197,7 @@ public final class H2ConnectionConfiguration {
          * @param password the password
          * @return this {@link Builder}
          */
-        public Builder password(@Nullable String password) {
+        public Builder password(@Nullable CharSequence password) {
             this.password = password;
             return this;
         }
@@ -205,7 +205,7 @@ public final class H2ConnectionConfiguration {
         @Override
         public String toString() {
             return "Builder{" +
-                "password='" + this.password + '\'' +
+                "password='REDACTED'" +
                 ", properties='" + this.properties + '\'' +
                 ", url='" + this.url + '\'' +
                 ", username='" + this.username + '\'' +
