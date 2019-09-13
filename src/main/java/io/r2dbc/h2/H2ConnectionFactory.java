@@ -20,12 +20,17 @@ import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.client.SessionClient;
 import io.r2dbc.h2.codecs.DefaultCodecs;
 import io.r2dbc.h2.util.Assert;
+import io.r2dbc.spi.Closeable;
 import io.r2dbc.spi.ConnectionFactory;
+import io.r2dbc.spi.ConnectionFactoryMetadata;
 import org.h2.engine.ConnectionInfo;
 import org.h2.message.DbException;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 import static org.h2.engine.Constants.START_URL;
 
@@ -44,14 +49,74 @@ public final class H2ConnectionFactory implements ConnectionFactory {
      */
     public H2ConnectionFactory(H2ConnectionConfiguration configuration) {
         this(Mono.fromSupplier(() -> {
-            Assert.requireNonNull(configuration, "configuration must not be null");
-
-            try {
-                return new SessionClient(getConnectionInfo(configuration));
-            } catch (DbException e) {
-                throw H2DatabaseExceptionFactory.convert(e);
-            }
+            return getSessionClient(configuration, false);
         }));
+    }
+
+    /**
+     * Create a new {@link CloseableConnectionFactory In-Memory database connection factory} for database at {@code name}.
+     * <p>The closeable {@link ConnectionFactory} keeps the database open unless the connection factory is {@link Closeable#close() closed}.
+     * <p>The database gets created if it does not exist yet.
+     * <p>Connecting to an existing database closes the database for all participating components if the resulting {@link ConnectionFactory} is {@link CloseableConnectionFactory#close() closed}.
+     *
+     * @param name database name
+     * @return connection factory for database at {@code name}
+     */
+    public static CloseableConnectionFactory inMemory(String name) {
+        return inMemory(name, "sa", "");
+    }
+
+    /**
+     * Create a new {@link CloseableConnectionFactory In-Memory database connection factory} for database at {@code name} given {@code username} and {@code password}.
+     * <p>The closeable {@link ConnectionFactory} keeps the database open unless the connection factory is {@link Closeable#close() closed}.
+     * <p>The database gets created if it does not exist yet.
+     * <p>Connecting to an existing database closes the database for all participating components if the resulting {@link ConnectionFactory} is {@link CloseableConnectionFactory#close() closed}.
+     *
+     * @param name     database name
+     * @param username the username
+     * @param password the password to use
+     * @return connection factory for database at {@code name}.
+     */
+    public static CloseableConnectionFactory inMemory(String name, String username, CharSequence password) {
+        return inMemory(name, username, password, Collections.emptyMap());
+    }
+
+    /**
+     * Create a new {@link CloseableConnectionFactory In-Memory database connection factory} for database at {@code name} given {@code username} and {@code password}.
+     * <p>The closeable {@link ConnectionFactory} keeps the database open unless the connection factory is {@link Closeable#close() closed}.
+     * <p>Connecting to an existing database closes the database for all participating components if the resulting {@link ConnectionFactory} is {@link CloseableConnectionFactory#close() closed}.
+     *
+     * @param name       database name
+     * @param username   the username
+     * @param password   the password to use
+     * @param properties properties to set
+     * @return connection factory for database at {@code name}.
+     * @see H2ConnectionOption
+     */
+    public static CloseableConnectionFactory inMemory(String name, String username, CharSequence password, Map<H2ConnectionOption, String> properties) {
+
+        Assert.requireNonNull(name, "name must not be null");
+        Assert.requireNonNull(username, "username must not be null");
+        Assert.requireNonNull(password, "password must not be null");
+        Assert.requireNonNull(properties, "properties must not be null");
+
+        H2ConnectionConfiguration.Builder builder = H2ConnectionConfiguration.builder().inMemory(name).username(username).password(password);
+
+        for (Map.Entry<H2ConnectionOption, String> entry : properties.entrySet()) {
+            builder.property(entry.getKey(), entry.getValue());
+        }
+
+        return new DefaultCloseableConnectionFactory(builder.build());
+    }
+
+    private static SessionClient getSessionClient(H2ConnectionConfiguration configuration, boolean shutdownDatabaseOnClose) {
+        Assert.requireNonNull(configuration, "configuration must not be null");
+
+        try {
+            return new SessionClient(getConnectionInfo(configuration), shutdownDatabaseOnClose);
+        } catch (DbException e) {
+            throw H2DatabaseExceptionFactory.convert(e);
+        }
     }
 
     H2ConnectionFactory(Mono<? extends Client> clientFactory) {
@@ -88,6 +153,61 @@ public final class H2ConnectionFactory implements ConnectionFactory {
             return new ConnectionInfo(sb.toString(), properties);
         } catch (DbException e) {
             throw H2DatabaseExceptionFactory.convert(e);
+        }
+    }
+
+    private static class DefaultCloseableConnectionFactory implements CloseableConnectionFactory {
+
+        private final H2ConnectionConfiguration configuration;
+
+        private final Supplier<SessionClient> clientFactory;
+
+        private volatile SessionClient persistentConnection;
+
+        public DefaultCloseableConnectionFactory(H2ConnectionConfiguration configuration) {
+            this.configuration = configuration;
+            this.clientFactory = () -> getSessionClient(configuration, false);
+            this.persistentConnection = getSessionClient(configuration, true);
+        }
+
+        @Override
+        public Mono<Void> close() {
+            return Mono.defer(() -> {
+
+                SessionClient connection = this.persistentConnection;
+                this.persistentConnection = null;
+
+                if (connection != null) {
+                    return connection.close();
+                }
+
+                return Mono.empty();
+            });
+        }
+
+        @Override
+        public Mono<H2Connection> create() {
+            return Mono.fromSupplier(() -> {
+
+                if (this.persistentConnection == null) {
+                    throw new H2DatabaseExceptionFactory.H2R2dbcNonTransientResourceException(String.format("ConnectionFactory for %s is closed", this.configuration.getUrl()));
+                }
+
+                Client client = this.clientFactory.get();
+                return new H2Connection(client, new DefaultCodecs(client));
+            });
+        }
+
+        @Override
+        public ConnectionFactoryMetadata getMetadata() {
+            return H2ConnectionFactoryMetadata.INSTANCE;
+        }
+
+        @Override
+        public String toString() {
+            return "CloseableConnectionFactory{" +
+                "configuration=" + this.configuration +
+                '}';
         }
     }
 

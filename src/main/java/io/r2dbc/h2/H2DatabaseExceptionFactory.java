@@ -136,4 +136,11 @@ public final class H2DatabaseExceptionFactory {
         }
     }
 
+    static class H2R2dbcNonTransientResourceException extends R2dbcNonTransientResourceException {
+
+        public H2R2dbcNonTransientResourceException(String reason) {
+            super(reason);
+        }
+    }
+
 }
