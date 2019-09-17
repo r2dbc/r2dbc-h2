@@ -16,6 +16,7 @@
 
 package io.r2dbc.h2;
 
+import io.r2dbc.h2.H2DatabaseExceptionFactory.H2R2dbcNonTransientResourceException;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.client.SessionClient;
 import io.r2dbc.h2.codecs.DefaultCodecs;
@@ -190,7 +191,7 @@ public final class H2ConnectionFactory implements ConnectionFactory {
             return Mono.fromSupplier(() -> {
 
                 if (this.persistentConnection == null) {
-                    throw new H2DatabaseExceptionFactory.H2R2dbcNonTransientResourceException(String.format("ConnectionFactory for %s is closed", this.configuration.getUrl()));
+                    throw new H2R2dbcNonTransientResourceException(String.format("ConnectionFactory for %s is closed", this.configuration.getUrl()));
                 }
 
                 Client client = this.clientFactory.get();

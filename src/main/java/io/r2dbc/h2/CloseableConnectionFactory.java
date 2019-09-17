@@ -27,8 +27,8 @@ import reactor.core.publisher.Mono;
 public interface CloseableConnectionFactory extends ConnectionFactory, Closeable {
 
     @Override
-    Mono<H2Connection> create();
+    Mono<Void> close();
 
     @Override
-    Mono<Void> close();
+    Mono<H2Connection> create();
 }

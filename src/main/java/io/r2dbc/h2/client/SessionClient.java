@@ -68,8 +68,12 @@ public final class SessionClient implements Client {
         return Mono.defer(() -> {
 
             if (this.shutdownDatabaseOnClose) {
-                CommandInterface shutdown = this.session.prepareCommand("SHUTDOWN", 0);
-                shutdown.executeUpdate(null);
+                try {
+                    CommandInterface shutdown = this.session.prepareCommand("SHUTDOWN", 0);
+                    shutdown.executeUpdate(null);
+                } catch (DbException e) {
+                    return Mono.error(H2DatabaseExceptionFactory.convert(e));
+                }
             }
             this.session.close();
             return Mono.empty();
