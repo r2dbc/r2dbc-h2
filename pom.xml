@@ -160,7 +160,7 @@
         <dependency>
             <groupId>org.springframework.hateoas</groupId>
             <artifactId>spring-hateoas</artifactId>
-            <version>1.0.0.BUILD-SNAPSHOT</version>
+            <version>1.0.0.RC2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
