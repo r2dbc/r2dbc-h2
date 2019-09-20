@@ -60,26 +60,16 @@ public final class H2Row implements Row {
         return Objects.equals(this.columns, that.columns);
     }
 
-    /**
-     * @deprecated Use {@link #get(int, Class)} or {@link #get(String, Class)} instead
-     */
-    @Deprecated
-    @SuppressWarnings("unchecked")
-    @Nullable
     @Override
-    public <T> T get(Object identifier, Class<T> type) {
-        Assert.requireNonNull(identifier, "identifier must not be null");
-        Assert.requireNonNull(type, "type must not be null");
+    public <T> T get(int index, Class<T> type) {
+        Column column = getColumn(index);
+        return this.codecs.decode(column.getValue(), column.getTypeInfo().getValueType(), type);
+    }
 
-        Column column;
-        if (identifier instanceof Integer) {
-            column = getColumn((Integer) identifier);
-        } else if (identifier instanceof String) {
-            column = getColumn((String) identifier);
-        } else {
-            throw new IllegalArgumentException(String.format("Identifier '%s' is not a valid identifier. Should either be an Integer index or a String column name.", identifier));
-        }
-
+    @Override
+    @Nullable
+    public <T> T get(String name, Class<T> type) {
+        Column column = getColumn(name);
         return this.codecs.decode(column.getValue(), column.getTypeInfo().getValueType(), type);
     }
 
@@ -117,6 +107,7 @@ public final class H2Row implements Row {
     }
 
     private Column getColumn(String name) {
+        Assert.requireNonNull(name, "name must not be null");
         String normalized = name.toUpperCase();
 
         if (!this.nameKeyedColumns.containsKey(normalized)) {
@@ -126,7 +117,7 @@ public final class H2Row implements Row {
         return this.nameKeyedColumns.get(normalized);
     }
 
-    private Column getColumn(Integer index) {
+    private Column getColumn(int index) {
         if (index >= this.columns.size()) {
             throw new IllegalArgumentException(String.format("Column index %d is larger than the number of columns %d", index, this.columns.size()));
         }

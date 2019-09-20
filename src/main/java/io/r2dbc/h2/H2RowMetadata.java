@@ -37,16 +37,14 @@ public class H2RowMetadata extends ColumnSource implements RowMetadata, Collecti
         super(Assert.requireNonNull(columnMetadatas, "columnMetadatas must not be null"));
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @throws IllegalArgumentException if {@code identifier} does not correspond to a column
-     * @deprecated Use {@link #getColumnMetadata(int)} or {@link #getColumnMetadata(String)} instead
-     */
-    @Deprecated
     @Override
-    public ColumnMetadata getColumnMetadata(Object identifier) {
-        return getColumn(identifier);
+    public ColumnMetadata getColumnMetadata(int index) {
+        return getColumn(index);
+    }
+
+    @Override
+    public ColumnMetadata getColumnMetadata(String name) {
+        return getColumn(name);
     }
 
     @Override

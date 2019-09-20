@@ -68,25 +68,6 @@ public final class H2Statement implements Statement {
         return this;
     }
 
-    /**
-     * @deprecated Use {@link #bind(String, Object)} instead
-     */
-    @Deprecated
-    @Override
-    public H2Statement bind(Object identifier, Object value) {
-        Assert.requireNonNull(identifier, "identifier must not be null");
-
-        if (identifier instanceof String) {
-            return bind((String) identifier, value);
-        }
-
-        if (identifier instanceof Integer) {
-            return bind((int) identifier, value);
-        }
-
-        throw new IllegalArgumentException("identifier must be: String or Integer");
-    }
-
     @Override
     public H2Statement bind(String name, Object value) {
         Assert.requireNonNull(name, "name must not be null");
@@ -126,36 +107,17 @@ public final class H2Statement implements Statement {
 
     @Override
     public H2Statement bind(int index, long value) {
-        return null;
+        return bind(index, (Long) value);
     }
 
     @Override
     public H2Statement bind(int index, short value) {
-        return null;
+        return bind(index, (Short) value);
     }
 
     @Override
     public H2Statement bind(int index, Object value) {
         return addIndex(index, value);
-    }
-
-    /**
-     * @deprecated Use {@link #bindNull(String, Class)} or {@link #bindNull(int, Class)} instead.
-     */
-    @Deprecated
-    @Override
-    public H2Statement bindNull(Object identifier, @Nullable Class<?> type) {
-        Assert.requireNonNull(identifier, "identifier must not be null");
-
-        if (identifier instanceof String) {
-            return bindNull((String) identifier, type);
-        }
-
-        if (identifier instanceof Integer) {
-            return bindNull((int) identifier, type);
-        }
-
-        throw new IllegalArgumentException("identifier must be: String or Integer");
     }
 
     @Override

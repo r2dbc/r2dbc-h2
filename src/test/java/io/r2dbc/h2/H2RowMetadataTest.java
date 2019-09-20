@@ -81,7 +81,7 @@ final class H2RowMetadataTest {
     @Test
     void getColumnMetadataNoIdentifier() {
         assertThatIllegalArgumentException().isThrownBy(() -> new H2RowMetadata(this.columnMetadatas).getColumnMetadata(null))
-            .withMessage("identifier must not be null");
+            .withMessage("name must not be null");
     }
 
     @Test

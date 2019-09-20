@@ -85,29 +85,6 @@ abstract class ColumnSource {
     }
 
     /**
-     * Lookup {@link H2ColumnMetadata} by {@link #getColumn(int)} () index} or by its {@link #getColumn(String)}  name}.
-     *
-     * @param identifier the index or name.
-     * @return the column.
-     * @throws IllegalArgumentException if the column cannot be retrieved.
-     * @throws IllegalArgumentException when {@code identifier} is {@code null}.
-     */
-    H2ColumnMetadata getColumn(Object identifier) {
-
-        Assert.requireNonNull(identifier, "identifier must not be null");
-
-        if (identifier instanceof Integer) {
-            return getColumn((int) identifier);
-        }
-
-        if (identifier instanceof String) {
-            return getColumn((String) identifier);
-        }
-
-        throw new IllegalArgumentException(String.format("Identifier '%s' is not a valid identifier. Should either be an Integer index or a String column name.", identifier));
-    }
-
-    /**
      * Lookup {@link H2ColumnMetadata} by its {@code index}.
      *
      * @param index the column index. Must be greater zero and less than the number of columns.
@@ -129,6 +106,8 @@ abstract class ColumnSource {
      * @return the {@link H2ColumnMetadata}.
      */
     H2ColumnMetadata getColumn(String name) {
+
+        Assert.requireNonNull(name, "name must not be null");
 
         H2ColumnMetadata column = findColumn(name);
 
