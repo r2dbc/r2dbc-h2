@@ -127,7 +127,7 @@ public final class H2ConnectionFactory implements ConnectionFactory {
     @Override
     public Mono<H2Connection> create() {
         return this.clientFactory
-            .map(client -> new H2Connection(client, new DefaultCodecs(client).addSecondaryCodecs()));
+            .map(client -> new H2Connection(client, new DefaultCodecs(client)));
     }
 
     @Override

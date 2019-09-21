@@ -18,13 +18,12 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
-import io.r2dbc.h2.util.Check;
 import org.h2.value.Value;
 import reactor.util.annotation.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * The default {@link Codecs} implementation. Delegates to type-specific codec implementations.
@@ -34,26 +33,31 @@ public final class DefaultCodecs implements Codecs {
     private final List<Codec<?>> codecs;
 
     public DefaultCodecs(Client client) {
-        this.codecs = new ArrayList<>(Arrays.asList(
-            new BigDecimalCodec(),
-            new BlobCodec(client),
-            new BooleanCodec(),
-            new ByteCodec(),
-            new BytesCodec(),
-            new ClobCodec(client),
-            new DoubleCodec(),
-            new FloatCodec(),
-            new GeometryCodec(),
-            new IntegerCodec(),
-            new LocalDateCodec(),
-            new LocalDateTimeCodec(),
-            new LocalTimeCodec(),
-            new LongCodec(),
-            new ShortCodec(),
-            new StringCodec(),
-            new UuidCodec(),
-            new ZonedDateTimeCodec()
-        ));
+        this.codecs = Arrays.asList(
+            Stream.concat(
+                Stream.of(
+                  new BigDecimalCodec(),
+                  new BlobCodec(client),
+                  new BooleanCodec(),
+                  new ByteCodec(),
+                  new BytesCodec(),
+                  new ClobCodec(client),
+                  new DoubleCodec(),
+                  new FloatCodec(),
+                  new GeometryCodec(),
+                  new IntegerCodec(),
+                  new LocalDateCodec(),
+                  new LocalDateTimeCodec(),
+                  new LocalTimeCodec(),
+                  new LongCodec(),
+                  new ShortCodec(),
+                  new StringCodec(),
+                  new UuidCodec(),
+                  new ZonedDateTimeCodec()
+                ),
+                addOptionalCodecs(this.getClass().getClassLoader())
+            ).toArray(Codec[]::new)
+        );
     }
 
     @Override
@@ -113,14 +117,30 @@ public final class DefaultCodecs implements Codecs {
     }
 
     /**
-     * Adds secondary codecs based on different conditions, e.g. Classpath availability.
-     * @return this {@link DefaultCodecs}
+     * Adds optional codecs based on different conditions, e.g. Classpath availability.
      */
-    public DefaultCodecs addSecondaryCodecs() {
-        if (Check.findClass("org.locationtech.jts.geom.Geometry")) {
-            this.codecs.add(new GeometryCodec());
+    public static Stream<Codec<?>> addOptionalCodecs(final ClassLoader classLoader) {
+        final Stream.Builder<Codec<?>> optionalCodecs = Stream.builder();
+        if (isPresent(classLoader, "org.locationtech.jts.geom.Geometry")) {
+            optionalCodecs.accept(new GeometryCodec());
         }
+        // Add any optional codec in here
+        return optionalCodecs.build();
+    }
 
-        return this;
+    /**
+     * Checks if the class is found in the current class loader.
+     *
+     * @param classLoader the desired ClassLoader to use
+     * @param fullyQualifiedClassName the fully qualified name of the desired class
+     * @return true, if the class is found
+     */
+    public static boolean isPresent(final ClassLoader classLoader, final String fullyQualifiedClassName) {
+        try {
+            classLoader.loadClass(fullyQualifiedClassName);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
     }
 }

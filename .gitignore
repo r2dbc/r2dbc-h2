@@ -15,6 +15,13 @@ build/
 .idea/
 *.iml
 
+# VSCode
+.vscode
+.vscode/
+.project
+.classpath
+.settings/
+
 ### Java template
 # Compiled class file
 *.class

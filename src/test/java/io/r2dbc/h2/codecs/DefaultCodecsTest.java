@@ -24,6 +24,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.willReturn;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.mock;
 
 final class DefaultCodecsTest {
@@ -96,4 +99,39 @@ final class DefaultCodecsTest {
             .withMessage("Cannot encode parameter of type java.lang.Object");
     }
 
+    @Test
+    void addOptionalCodecsGeometry() throws Exception {
+        final ClassLoader mockClassLoader = mock(ClassLoader.class);
+        willReturn(Object.class)
+            .given(mockClassLoader)
+            .loadClass(eq("org.locationtech.jts.geom.Geometry"));
+
+        final Codec<?> result = DefaultCodecs.addOptionalCodecs(mockClassLoader)
+            .findFirst()
+              .get();
+
+        assertThat(result).isExactlyInstanceOf(GeometryCodec.class);
+    }
+
+    @Test
+    void addOptionalCodecsGeometryNotFound() throws Exception  {
+        final ClassLoader mockClassLoader = mock(ClassLoader.class);
+        willThrow(new ClassNotFoundException())
+            .given(mockClassLoader)
+            .loadClass(eq("org.locationtech.jts.geom.Geometry"));
+
+        final long result = DefaultCodecs.addOptionalCodecs(mockClassLoader).count();
+
+        assertThat(result).isEqualTo(0L);
+    }
+
+    @Test
+    void isPresent() {
+        assertThat(DefaultCodecs.isPresent(this.getClass().getClassLoader(), "java.lang.Boolean")).isTrue();
+    }
+
+    @Test
+    void isPresentNotFound() {
+        assertThat(DefaultCodecs.isPresent(this.getClass().getClassLoader(), "java.lang.Boolean123456789")).isFalse();
+    }
 }
