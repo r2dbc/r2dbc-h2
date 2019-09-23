@@ -32,6 +32,32 @@ import static org.mockito.Mockito.mock;
 final class DefaultCodecsTest {
 
     @Test
+    void addOptionalCodecsGeometry() throws Exception {
+        final ClassLoader mockClassLoader = mock(ClassLoader.class);
+        willReturn(Object.class)
+            .given(mockClassLoader)
+            .loadClass(eq("org.locationtech.jts.geom.Geometry"));
+
+        final Codec<?> result = DefaultCodecs.addOptionalCodecs(mockClassLoader)
+            .findFirst()
+            .get();
+
+        assertThat(result).isExactlyInstanceOf(GeometryCodec.class);
+    }
+
+    @Test
+    void addOptionalCodecsGeometryNotFound() throws Exception {
+        final ClassLoader mockClassLoader = mock(ClassLoader.class);
+        willThrow(new ClassNotFoundException())
+            .given(mockClassLoader)
+            .loadClass(eq("org.locationtech.jts.geom.Geometry"));
+
+        final long result = DefaultCodecs.addOptionalCodecs(mockClassLoader).count();
+
+        assertThat(result).isEqualTo(0L);
+    }
+
+    @Test
     void decode() {
         assertThat(new DefaultCodecs(mock(Client.class)).decode(ValueInt.get(100), ValueInt.INT, Integer.class))
             .isEqualTo(100);
@@ -97,32 +123,6 @@ final class DefaultCodecsTest {
     void encodeUnsupportedType() {
         assertThatIllegalArgumentException().isThrownBy(() -> new DefaultCodecs(mock(Client.class)).encode(new Object()))
             .withMessage("Cannot encode parameter of type java.lang.Object");
-    }
-
-    @Test
-    void addOptionalCodecsGeometry() throws Exception {
-        final ClassLoader mockClassLoader = mock(ClassLoader.class);
-        willReturn(Object.class)
-            .given(mockClassLoader)
-            .loadClass(eq("org.locationtech.jts.geom.Geometry"));
-
-        final Codec<?> result = DefaultCodecs.addOptionalCodecs(mockClassLoader)
-            .findFirst()
-              .get();
-
-        assertThat(result).isExactlyInstanceOf(GeometryCodec.class);
-    }
-
-    @Test
-    void addOptionalCodecsGeometryNotFound() throws Exception  {
-        final ClassLoader mockClassLoader = mock(ClassLoader.class);
-        willThrow(new ClassNotFoundException())
-            .given(mockClassLoader)
-            .loadClass(eq("org.locationtech.jts.geom.Geometry"));
-
-        final long result = DefaultCodecs.addOptionalCodecs(mockClassLoader).count();
-
-        assertThat(result).isEqualTo(0L);
     }
 
     @Test

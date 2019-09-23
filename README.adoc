@@ -134,6 +134,25 @@ connection
     .execute()
 ----
 
+===== Geometry support
+
+`r2dbc-h2` will automatically register support for https://locationtech.github.io/jts/[JTS Toplogy Suite] and handle it's `Geometry` types if `org.locationtech.jts:jts-core` is on the classpath.
+
+To enable, add this to your build:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.locationtech.jts</groupId>
+    <artifactId>jts-core</artifactId>
+    <version>${jts.version}</version>
+</dependency>
+----
+
+IMPORTANT: Be sure to plug in your version of JTS!
+
+Also read https://h2database.com/html/datatypes.html#geometry_type[H2's reference documentation] on `GEOMETRY` types.
+
 ===== We also support params binding as
 
 * index `bind(1, "Walter")`.
