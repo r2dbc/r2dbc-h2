@@ -30,6 +30,9 @@ import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -143,6 +146,20 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
     @Test
     void shouldEncodeByteArrayAsVarBinary() {
         testType(connection, "VARBINARY(9)", "foobarbaz".getBytes());
+    }
+
+    @Test
+    void shouldEncodeOffsetDateTimeAsTimestampWithTimeZone() {
+        testType(connection, "TIMESTAMP(2) WITH TIME ZONE", OffsetDateTime.parse("2018-08-27T17:41:14.890+00:45"));
+    }
+
+    @Test
+    void shouldEncodeZonedDateTimeAsTimestampWithTimeZone() {
+        ZonedDateTime value = ZonedDateTime.of(LocalDateTime.parse("2018-11-08T11:08:28.2"), ZoneId.of("UT"));
+
+        testType(connection, "TIMESTAMP(1) WITH TIME ZONE", value, OffsetDateTime.class, actual -> {
+            assertThat((OffsetDateTime) actual).isEqualTo(value.toOffsetDateTime());
+        });
     }
 
     private void testType(H2Connection connection, String columnType, Object value) {

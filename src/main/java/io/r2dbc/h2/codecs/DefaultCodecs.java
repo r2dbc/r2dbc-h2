@@ -48,6 +48,7 @@ public final class DefaultCodecs implements Codecs {
                 new LocalDateTimeCodec(),
                 new LocalTimeCodec(),
                 new LongCodec(),
+                new OffsetDateTimeCodec(),
                 new ShortCodec(),
                 new StringCodec(),
                 new UuidCodec(),
