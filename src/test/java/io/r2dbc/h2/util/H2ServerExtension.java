@@ -25,15 +25,15 @@ import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import reactor.util.annotation.Nullable;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
+import java.util.UUID;
 
 public final class H2ServerExtension implements BeforeAllCallback, AfterAllCallback {
 
-    private final String password = randomAlphanumeric(16);
+    private final String password = UUID.randomUUID().toString();
 
-    private final String url = String.format("mem:%s", randomAlphanumeric(8));
+    private final String url = String.format("mem:%s", UUID.randomUUID().toString());
 
-    private final String username = randomAlphanumeric(16);
+    private final String username = UUID.randomUUID().toString();
 
     private HikariDataSource dataSource;
 
