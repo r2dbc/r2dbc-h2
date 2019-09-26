@@ -1,6 +1,33 @@
 R2DBC H2 Changelog
 =============================
 
+0.8.0.RC1
+------------------
+* Release 0.8.0.RC1 #113.
+* Add automatic module name #112.
+* Use UUID instead of RandomStringUtils.randomAlphanumeric #111.
+* Upgrade to Reactor Dysprosium GA #110.
+* Remove GeometryCodec from default codec list. #107.
+* Adapt H2Row, H2Statement, and H2RowMetadata to SPI changes #105.
+* Create suite of integration tests for H2's Codecs #104.
+* Upgrade to Spring HATEOAS 1.0.0.RC2 #103.
+* Upgrade to Spring Boot 2.1.8.RELEASE #102.
+* Remove repositories declaration from published pom #100.
+* Clean out @author tags #99.
+* Move jitpack repository declaration to JMH profile #98.
+* Expose ConnectionMetadata. #97.
+* Adapt to bind/bindNull SPI changes #95.
+* Pick up known H2 configuration properties #92.
+* Add support for SPI's validate() #90.
+* Add support for TCP connections to remote H2 instances. #87.
+* Support tcp protocol in R2DBC connection URLs #86.
+* Performance optimizations #84.
+* DbException not properly translated #83.
+* Add support for GEOMETRY type #80.
+* Decoding a null date value fails with NPE #78.
+* 0.8.0.RC1 Changelog #76.
+* Add builder shortcut options for common settings #55.
+
 0.8.0.M8
 ------------------
 * Clean up code base to honor SPI changes. #75.

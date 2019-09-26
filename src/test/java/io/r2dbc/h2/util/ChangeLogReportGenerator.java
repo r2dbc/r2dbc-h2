@@ -33,7 +33,7 @@ import java.util.List;
  */
 final class ChangeLogReportGenerator {
 
-    private static final int MILESTONE_ID = 3;
+    private static final int MILESTONE_ID = 4;
     private static final String URI_TEMPLATE = "https://api.github.com/repos/r2dbc/r2dbc-h2/issues?milestone={id}&state=closed";
 
     public static void main(String... args) {
