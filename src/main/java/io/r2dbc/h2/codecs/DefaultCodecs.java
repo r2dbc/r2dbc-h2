@@ -32,30 +32,13 @@ public final class DefaultCodecs implements Codecs {
 
     private final List<Codec<?>> codecs;
 
+    /**
+     * Constructs a new DefaultCodecs (The Default {@link Codec}s list).
+     *
+     * @param client for Lobs {@link Codec}s and whose class loader is used to search for optional {@link Codec}s.
+     */
     public DefaultCodecs(Client client) {
-        this.codecs = Stream.concat(
-            Stream.of(
-                new BigDecimalCodec(),
-                new BlobCodec(client),
-                new BooleanCodec(),
-                new ByteCodec(),
-                new BytesCodec(),
-                new ClobCodec(client),
-                new DoubleCodec(),
-                new FloatCodec(),
-                new IntegerCodec(),
-                new LocalDateCodec(),
-                new LocalDateTimeCodec(),
-                new LocalTimeCodec(),
-                new LongCodec(),
-                new OffsetDateTimeCodec(),
-                new ShortCodec(),
-                new StringCodec(),
-                new UuidCodec(),
-                new ZonedDateTimeCodec()
-            ),
-            addOptionalCodecs(this.getClass().getClassLoader())
-        ).collect(Collectors.toList());
+        this.codecs = createCodecs(client, client.getClass().getClassLoader());
     }
 
     @Override
@@ -115,13 +98,46 @@ public final class DefaultCodecs implements Codecs {
     }
 
     /**
+     * Creates Default {@link Codec}s list
+     *
+     * @param client for Lobs {@link Codec}s
+     * @param classLoader to scan for classes
+     * @return a {@link List} of default {@link Codec}s
+     */
+    static List<Codec<?>> createCodecs(Client client, ClassLoader classLoader) {
+        return Stream.concat(
+            Stream.of(
+                new BigDecimalCodec(),
+                new BlobCodec(client),
+                new BooleanCodec(),
+                new ByteCodec(),
+                new BytesCodec(),
+                new ClobCodec(client),
+                new DoubleCodec(),
+                new FloatCodec(),
+                new IntegerCodec(),
+                new LocalDateCodec(),
+                new LocalDateTimeCodec(),
+                new LocalTimeCodec(),
+                new LongCodec(),
+                new OffsetDateTimeCodec(),
+                new ShortCodec(),
+                new StringCodec(),
+                new UuidCodec(),
+                new ZonedDateTimeCodec()
+            ),
+            addOptionalCodecs(classLoader)
+        ).collect(Collectors.toList());
+    }
+
+    /**
      * Adds optional {@link Codec}s based on different conditions, e.g. classpath availability.
      *
      * @param classLoader to scan for classes
      * @return a {@link Stream} of additional {@link Codec}s
      */
-    static Stream<Codec<?>> addOptionalCodecs(final ClassLoader classLoader) {
-        final Stream.Builder<Codec<?>> optionalCodecs = Stream.builder();
+    static Stream<Codec<?>> addOptionalCodecs(ClassLoader classLoader) {
+        Stream.Builder<Codec<?>> optionalCodecs = Stream.builder();
 
         if (isPresent(classLoader, "org.locationtech.jts.geom.Geometry")) {
             optionalCodecs.accept(new GeometryCodec());
@@ -137,7 +153,7 @@ public final class DefaultCodecs implements Codecs {
      * @param fullyQualifiedClassName the fully qualified name of the desired class
      * @return true, if the class is found
      */
-    static boolean isPresent(final ClassLoader classLoader, final String fullyQualifiedClassName) {
+    static boolean isPresent(ClassLoader classLoader, String fullyQualifiedClassName) {
         try {
             classLoader.loadClass(fullyQualifiedClassName);
             return true;
