@@ -22,8 +22,11 @@ import org.h2.value.ValueInt;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
 
+import java.util.stream.Stream;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.willReturn;
 import static org.mockito.BDDMockito.willThrow;
@@ -33,12 +36,12 @@ final class DefaultCodecsTest {
 
     @Test
     void addOptionalCodecsGeometry() throws Exception {
-        final ClassLoader mockClassLoader = mock(ClassLoader.class);
+        ClassLoader mockClassLoader = mock(ClassLoader.class);
         willReturn(Object.class)
             .given(mockClassLoader)
             .loadClass(eq("org.locationtech.jts.geom.Geometry"));
 
-        final Codec<?> result = DefaultCodecs.addOptionalCodecs(mockClassLoader)
+        Codec<?> result = DefaultCodecs.addOptionalCodecs(mockClassLoader)
             .findFirst()
             .get();
 
@@ -47,14 +50,79 @@ final class DefaultCodecsTest {
 
     @Test
     void addOptionalCodecsGeometryNotFound() throws Exception {
-        final ClassLoader mockClassLoader = mock(ClassLoader.class);
+        ClassLoader mockClassLoader = mock(ClassLoader.class);
         willThrow(new ClassNotFoundException())
             .given(mockClassLoader)
             .loadClass(eq("org.locationtech.jts.geom.Geometry"));
 
-        final long result = DefaultCodecs.addOptionalCodecs(mockClassLoader).count();
+        long result = DefaultCodecs.addOptionalCodecs(mockClassLoader).count();
 
         assertThat(result).isEqualTo(0L);
+    }
+
+    @Test
+    void createCodecsWithNonOptionalCodecsAndNoDuplicates() throws Exception {
+        ClassLoader mockClassLoader = mock(ClassLoader.class);
+        willThrow(new ClassNotFoundException())
+            .given(mockClassLoader)
+            .loadClass(any());
+
+        Stream<Class<?>> result = DefaultCodecs.createCodecs(mock(Client.class), mockClassLoader)
+            .stream()
+            .map(Codec::getClass);
+
+        assertThat(result).containsOnlyOnce(
+            BigDecimalCodec.class,
+            BlobCodec.class,
+            BooleanCodec.class,
+            ByteCodec.class,
+            BytesCodec.class,
+            ClobCodec.class,
+            DoubleCodec.class,
+            FloatCodec.class,
+            IntegerCodec.class,
+            LocalDateCodec.class,
+            LocalDateTimeCodec.class,
+            LocalTimeCodec.class,
+            LongCodec.class,
+            ShortCodec.class,
+            StringCodec.class,
+            UuidCodec.class,
+            ZonedDateTimeCodec.class
+        );
+    }
+
+    @Test
+    void createCodecsWithOptionalCodecsAndNoDuplicates() throws Exception {
+        ClassLoader mockClassLoader = mock(ClassLoader.class);
+        willReturn(Object.class)
+            .given(mockClassLoader)
+            .loadClass(eq("org.locationtech.jts.geom.Geometry"));
+
+        Stream<Class<?>> result = DefaultCodecs.createCodecs(mock(Client.class), mockClassLoader)
+            .stream()
+            .map(Codec::getClass);
+
+        assertThat(result).containsOnlyOnce(
+            BigDecimalCodec.class,
+            BlobCodec.class,
+            BooleanCodec.class,
+            ByteCodec.class,
+            BytesCodec.class,
+            ClobCodec.class,
+            DoubleCodec.class,
+            FloatCodec.class,
+            GeometryCodec.class,
+            IntegerCodec.class,
+            LocalDateCodec.class,
+            LocalDateTimeCodec.class,
+            LocalTimeCodec.class,
+            LongCodec.class,
+            ShortCodec.class,
+            StringCodec.class,
+            UuidCodec.class,
+            ZonedDateTimeCodec.class
+        );
     }
 
     @Test
