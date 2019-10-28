@@ -117,14 +117,14 @@ public final class DefaultCodecs implements Codecs {
                 new FloatCodec(),
                 new IntegerCodec(),
                 new LocalDateCodec(),
-                new LocalDateTimeCodec(),
+                new LocalDateTimeCodec(client),
                 new LocalTimeCodec(),
                 new LongCodec(),
-                new OffsetDateTimeCodec(),
+                new OffsetDateTimeCodec(client),
                 new ShortCodec(),
                 new StringCodec(),
                 new UuidCodec(),
-                new ZonedDateTimeCodec()
+                new ZonedDateTimeCodec(client)
             ),
             addOptionalCodecs(classLoader)
         ).collect(Collectors.toList());

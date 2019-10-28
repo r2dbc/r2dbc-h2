@@ -5,7 +5,6 @@ import org.h2.value.ValueNull;
 import org.h2.value.ValueTime;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Time;
 import java.time.LocalTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -15,7 +14,7 @@ final class LocalTimeCodecTest {
 
     @Test
     void decode() {
-        assertThat(new LocalTimeCodec().decode(ValueTime.get(Time.valueOf("11:59:59")), LocalTime.class))
+        assertThat(new LocalTimeCodec().decode(ValueTime.parse("11:59:59"), LocalTime.class))
                 .isEqualTo(LocalTime.of(11, 59, 59));
     }
 
@@ -31,7 +30,7 @@ final class LocalTimeCodecTest {
     @Test
     void doEncode() {
         assertThat(new LocalTimeCodec().doEncode(LocalTime.of(11, 59, 59)))
-                .isEqualTo(ValueTime.get(Time.valueOf("11:59:59")));
+                .isEqualTo(ValueTime.parse("11:59:59"));
     }
 
     @Test

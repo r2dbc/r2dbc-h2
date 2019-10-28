@@ -64,7 +64,7 @@ public final class H2Connection implements Connection {
         this.client = Assert.requireNonNull(client, "client must not be null");
         this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
 
-        String version = Constants.getVersion();
+        String version = Constants.VERSION;
         Iterator<CommandInterface> commands = client.prepareCommand("CALL H2VERSION()", Collections.emptyList());
 
         if (commands.hasNext()) {

@@ -5,7 +5,6 @@ import org.h2.value.ValueDate;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Date;
 import java.text.ParseException;
 import java.time.LocalDate;
 
@@ -16,8 +15,8 @@ final class LocalDateCodecTest {
 
     @Test
     void decode() throws ParseException {
-        ValueDate valueDate = ValueDate.get(Date.valueOf("2018-10-31"));
-        
+        ValueDate valueDate = ValueDate.parse("2018-10-31");
+
         assertThat(new LocalDateCodec().decode(valueDate, LocalDate.class))
             .isEqualTo(LocalDate.of(2018, 10, 31));
     }
@@ -33,7 +32,7 @@ final class LocalDateCodecTest {
 
     @Test
     void doEncode() throws ParseException {
-        ValueDate valueDate = ValueDate.get(Date.valueOf("2018-10-31"));
+        ValueDate valueDate = ValueDate.parse("2018-10-31");
 
         assertThat(new LocalDateCodec().doEncode(LocalDate.of(2018, 10, 31)))
             .isEqualTo(valueDate);

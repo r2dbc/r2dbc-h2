@@ -347,7 +347,7 @@ final class H2ConnectionTest {
         H2ConnectionMetadata metadata = new H2Connection(this.client, MockCodecs.empty()).getMetadata();
 
         assertThat(metadata.getDatabaseProductName()).isEqualTo("H2");
-        assertThat(metadata.getDatabaseVersion()).isEqualTo(Constants.getVersion());
+        assertThat(metadata.getDatabaseVersion()).isEqualTo(Constants.VERSION);
     }
 
     @Disabled("Not yet implemented")

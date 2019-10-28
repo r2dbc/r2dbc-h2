@@ -38,6 +38,6 @@ final class H2ConnectionIntegrationTest {
         H2Connection connection = new H2Connection(sessionClient, new DefaultCodecs(sessionClient));
         H2ConnectionMetadata metadata = connection.getMetadata();
 
-        assertThat(metadata.getDatabaseVersion()).isEqualTo(Constants.getVersion());
+        assertThat(metadata.getDatabaseVersion()).isEqualTo(Constants.VERSION);
     }
 }
