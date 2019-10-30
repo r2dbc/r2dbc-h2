@@ -38,7 +38,7 @@ public final class DefaultCodecs implements Codecs {
      * @param client for Lobs {@link Codec}s and whose class loader is used to search for optional {@link Codec}s.
      */
     public DefaultCodecs(Client client) {
-        this.codecs = createCodecs(client, client.getClass().getClassLoader());
+        this.codecs = createCodecs(client, client.getClass().getClassLoader(), this);
     }
 
     @Override
@@ -102,9 +102,10 @@ public final class DefaultCodecs implements Codecs {
      *
      * @param client for Lobs {@link Codec}s
      * @param classLoader to scan for classes
+     * @param codecs for codecs that rely on other codecs
      * @return a {@link List} of default {@link Codec}s
      */
-    static List<Codec<?>> createCodecs(Client client, ClassLoader classLoader) {
+    static List<Codec<?>> createCodecs(Client client, ClassLoader classLoader, Codecs codecs) {
         return Stream.concat(
             Stream.of(
                 new BigDecimalCodec(),
@@ -124,7 +125,8 @@ public final class DefaultCodecs implements Codecs {
                 new ShortCodec(),
                 new StringCodec(),
                 new UuidCodec(),
-                new ZonedDateTimeCodec(client)
+                new ZonedDateTimeCodec(client),
+                new ArrayCodec(codecs)
             ),
             addOptionalCodecs(classLoader)
         ).collect(Collectors.toList());

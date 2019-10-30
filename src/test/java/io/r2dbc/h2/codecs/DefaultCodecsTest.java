@@ -67,7 +67,7 @@ final class DefaultCodecsTest {
             .given(mockClassLoader)
             .loadClass(any());
 
-        Stream<Class<?>> result = DefaultCodecs.createCodecs(mock(Client.class), mockClassLoader)
+        Stream<Class<?>> result = DefaultCodecs.createCodecs(mock(Client.class), mockClassLoader, null)
             .stream()
             .map(Codec::getClass);
 
@@ -88,7 +88,8 @@ final class DefaultCodecsTest {
             ShortCodec.class,
             StringCodec.class,
             UuidCodec.class,
-            ZonedDateTimeCodec.class
+            ZonedDateTimeCodec.class,
+            ArrayCodec.class
         );
     }
 
@@ -99,7 +100,7 @@ final class DefaultCodecsTest {
             .given(mockClassLoader)
             .loadClass(eq("org.locationtech.jts.geom.Geometry"));
 
-        Stream<Class<?>> result = DefaultCodecs.createCodecs(mock(Client.class), mockClassLoader)
+        Stream<Class<?>> result = DefaultCodecs.createCodecs(mock(Client.class), mockClassLoader, null)
             .stream()
             .map(Codec::getClass);
 
@@ -121,7 +122,8 @@ final class DefaultCodecsTest {
             ShortCodec.class,
             StringCodec.class,
             UuidCodec.class,
-            ZonedDateTimeCodec.class
+            ZonedDateTimeCodec.class,
+            ArrayCodec.class
         );
     }
 
