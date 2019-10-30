@@ -37,7 +37,13 @@ final class ArrayCodecTest {
         Value[] values = Arrays.stream(TEST_ARRAY).map(ValueString::get).toArray(Value[]::new);
         ValueArray valueArray = ValueArray.get(values);
 
-        Object[] decoded = new ArrayCodec(mock(Codecs.class)).decode(valueArray, String[].class);
+        MockCodecs codecs = MockCodecs.builder()
+                .decoding(ValueString.get(TEST_ARRAY[0]), Value.STRING, Object.class, TEST_ARRAY[0])
+                .decoding(ValueString.get(TEST_ARRAY[1]), Value.STRING, Object.class, TEST_ARRAY[1])
+                .decoding(ValueString.get(TEST_ARRAY[2]), Value.STRING, Object.class, TEST_ARRAY[2])
+                .build();
+
+        Object[] decoded = new ArrayCodec(codecs).decode(valueArray, String[].class);
 
         assertThat(decoded).containsExactlyElementsOf(Arrays.asList(TEST_ARRAY));
 
