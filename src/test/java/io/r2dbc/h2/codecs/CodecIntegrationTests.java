@@ -164,6 +164,8 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
 
     private void testType(H2Connection connection, String columnType, Object value) {
         testType(connection, columnType, value, value.getClass(), value);
+        testType(connection, "ARRAY", new Object[]{value}, Object[].class,
+                actual -> assertThat(((Object[]) actual)).containsExactly(value));
     }
 
     private void testType(H2Connection connection, String columnType, Object value, Class<?> valueClass, Object expectedGetObjectValue) {
