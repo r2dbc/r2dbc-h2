@@ -16,71 +16,70 @@
 
 package io.r2dbc.h2.codecs;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+
 import io.r2dbc.spi.Clob;
 import org.h2.value.Value;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
 import reactor.core.scheduler.Schedulers;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-
 /**
  * Implement {@link Clob}.
  */
-class ValueLobClob  implements Clob {
+class ValueLobClob implements Clob {
 
-    private static final Charset ENCODING = Charset.forName("UTF-8");
+	private static final Charset ENCODING = Charset.forName("UTF-8");
 
-    private final Value lobDb;
+	private final Value lobDb;
 
-    private SynchronousSink<CharSequence> valueLobHandlerSink;
+	private SynchronousSink<CharSequence> valueLobHandlerSink;
 
-    ValueLobClob(Value value) {
-        this.lobDb = value;
-    }
-    
-    @Override
-    public Publisher<CharSequence> stream() {
-        return Flux.<CharSequence, InputStreamReader>generate(
-            () -> new InputStreamReader(this.lobDb.getInputStream(), ENCODING),
-            (source, sink) -> {
-                this.valueLobHandlerSink = sink;
-                try {
-                    char[] data = new char[256];
-                    int readBytes = source.read(data);
+	ValueLobClob(Value value) {
+		this.lobDb = value;
+	}
 
-                    // End of the source's data.
-                    if (readBytes == -1) {
-                        sink.complete();
-                        return source;
-                    }
+	@Override
+	public Flux<CharSequence> stream() {
+		return Flux.<CharSequence, InputStreamReader> generate(
+			() -> new InputStreamReader(this.lobDb.getInputStream(), ENCODING),
+			(source, sink) -> {
+				this.valueLobHandlerSink = sink;
+				try {
+					char[] data = new char[256];
+					int readBytes = source.read(data);
 
-                    // Wrap the data buffer in the target type and put it into the Flux
-                    sink.next(new String(data, 0, readBytes));
-                } catch (IOException e) {
-                    sink.error(e);
-                }
+					// End of the source's data.
+					if (readBytes == -1) {
+						sink.complete();
+						return source;
+					}
 
-                return source;
-            },
-            source -> {
-                // When the Flux is terminated or cancelled
-                try {
-                    source.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .subscribeOn(Schedulers.elastic())
-            .cancelOn(Schedulers.elastic());
-    }
+					// Wrap the data buffer in the target type and put it into the Flux
+					sink.next(new String(data, 0, readBytes));
+				} catch (IOException e) {
+					sink.error(e);
+				}
 
-    @Override
-    public Publisher<Void> discard() {
-        return Mono.fromRunnable(() -> this.valueLobHandlerSink.complete()).then();
-    }
+				return source;
+			},
+			source -> {
+				// When the Flux is terminated or cancelled
+				try {
+					source.close();
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			})
+			.subscribeOn(Schedulers.elastic())
+			.cancelOn(Schedulers.elastic());
+	}
+
+	@Override
+	public Mono<Void> discard() {
+		return Mono.fromRunnable(() -> this.valueLobHandlerSink.complete()).then();
+	}
 }

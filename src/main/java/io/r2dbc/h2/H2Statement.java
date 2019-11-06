@@ -16,6 +16,11 @@
 
 package io.r2dbc.h2;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
@@ -27,11 +32,6 @@ import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
 import reactor.core.publisher.Flux;
 import reactor.util.annotation.Nullable;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * An implementation of {@link Statement} for an H2 database.
@@ -73,46 +73,6 @@ public final class H2Statement implements Statement {
         Assert.requireNonNull(name, "name must not be null");
 
         return addIndex(getIndex(name), value);
-    }
-
-    @Override
-    public H2Statement bind(int index, boolean value) {
-        return bind(index, (Boolean) value);
-    }
-
-    @Override
-    public H2Statement bind(int index, byte value) {
-        return bind(index, (Byte) value);
-    }
-
-    @Override
-    public H2Statement bind(int index, char value) {
-        return bind(index, (Character) value);
-    }
-
-    @Override
-    public H2Statement bind(int index, double value) {
-        return bind(index, (Double) value);
-    }
-
-    @Override
-    public H2Statement bind(int index, float value) {
-        return bind(index, (Float) value);
-    }
-
-    @Override
-    public H2Statement bind(int index, int value) {
-        return bind(index, (Integer) value);
-    }
-
-    @Override
-    public H2Statement bind(int index, long value) {
-        return bind(index, (Long) value);
-    }
-
-    @Override
-    public H2Statement bind(int index, short value) {
-        return bind(index, (Short) value);
     }
 
     @Override
