@@ -16,6 +16,11 @@
 
 package io.r2dbc.h2.codecs;
 
+import java.io.InputStream;
+import java.io.SequenceInputStream;
+import java.util.Enumeration;
+import java.util.Iterator;
+
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Blob;
@@ -23,11 +28,6 @@ import org.h2.value.Value;
 import org.h2.value.ValueNull;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
-
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.util.Enumeration;
-import java.util.Iterator;
 
 final class BlobCodec extends AbstractCodec<Blob> {
 
