@@ -16,21 +16,17 @@
 
 package io.r2dbc.h2.codecs;
 
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.BDDMockito.*;
+
+import java.util.stream.Stream;
+
 import io.r2dbc.h2.client.Client;
 import org.h2.value.Value;
 import org.h2.value.ValueInt;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
-
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.willReturn;
-import static org.mockito.BDDMockito.willThrow;
-import static org.mockito.Mockito.mock;
 
 final class DefaultCodecsTest {
 
@@ -73,6 +69,7 @@ final class DefaultCodecsTest {
 
         assertThat(result).containsOnlyOnce(
             BigDecimalCodec.class,
+            BlobToByteBufferCodec.class,
             BlobCodec.class,
             BooleanCodec.class,
             ByteCodec.class,
@@ -105,6 +102,7 @@ final class DefaultCodecsTest {
 
         assertThat(result).containsOnlyOnce(
             BigDecimalCodec.class,
+            BlobToByteBufferCodec.class,
             BlobCodec.class,
             BooleanCodec.class,
             ByteCodec.class,
