@@ -46,7 +46,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <r2dbc-spi.version>${project.version}</r2dbc-spi.version>
         <reactor.version>Dysprosium-SR1</reactor.version>
-        <slf4j.version>1.7.26</slf4j.version>
         <spring-boot.version>2.2.1.RELEASE</spring-boot.version>
     </properties>
 
@@ -118,11 +117,6 @@
             <groupId>io.projectreactor.addons</groupId>
             <artifactId>reactor-extra</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
