@@ -27,9 +27,9 @@ import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
 import org.h2.value.Value;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
+import reactor.util.Logger;
+import reactor.util.Loggers;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public final class SessionClient implements Client {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = Loggers.getLogger(this.getClass());
 
     private final Collection<Binding> emptyBinding = Collections.singleton(Binding.EMPTY);
 

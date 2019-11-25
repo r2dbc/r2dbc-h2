@@ -27,10 +27,10 @@ import org.h2.engine.Constants;
 import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.reactivestreams.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.Logger;
+import reactor.util.Loggers;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -49,7 +49,7 @@ import static org.h2.engine.Constants.LOCK_MODE_TABLE;
  */
 public final class H2Connection implements Connection {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = Loggers.getLogger(this.getClass());
 
     private final Client client;
 
