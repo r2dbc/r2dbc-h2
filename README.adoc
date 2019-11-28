@@ -1,5 +1,9 @@
 = Reactive Relational Database Connectivity H2 Implementation
 
+image::https://ci.spring.io/api/v1/teams/r2dbc/pipelines/r2dbc/jobs/r2dbc-h2/badge[Concourse CI, link="https://ci.spring.io/teams/r2dbc/pipelines/r2dbc/jobs/r2dbc-h2/"]
+
+image::https://maven-badges.herokuapp.com/maven-central/io.r2dbc/r2dbc-h2/badge.svg[Maven Central, link="https://maven-badges.herokuapp.com/maven-central/io.r2dbc/r2dbc-h2"]
+
 This project contains the https://www.h2database.com/html/main.html[H2] implementation of the https://github.com/r2dbc/r2dbc-spi[R2DBC SPI].
 This implementation is not intended to be used directly, but rather to be used as the backing implementation for a humane client library.
 
