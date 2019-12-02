@@ -25,18 +25,20 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.mock;
 
 final class ClobCodecTest {
 
-    String TEST = "foo你好";
-    byte[] TEST_BYTES = TEST.getBytes();
+    String TEST = "hello你好こんにちはアロハ안녕하세요Здравствуйте";
+    byte[] TEST_BYTES = TEST.getBytes(StandardCharsets.UTF_8);
 
     @Test
     void decode() {
-        Flux.from(new ClobCodec(mock(Client.class)).decode(ValueLobDb.createSmallLob(Value.BLOB , TEST_BYTES), Clob.class).stream())
+        Flux.from(new ClobCodec(mock(Client.class)).decode(ValueLobDb.createSmallLob(Value.CLOB , TEST_BYTES), Clob.class).stream())
             .as(StepVerifier::create)
             .expectNext(TEST)
             .verifyComplete();
