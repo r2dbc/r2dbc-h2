@@ -50,14 +50,12 @@ final class BlobToByteBufferCodec extends AbstractCodec<ByteBuffer> {
             return null;
         }
 
-        return new ValueLobBlob(value).stream()
-            .reduce((byteBuffer, byteBuffer2) -> {
-                ByteBuffer combined = ByteBuffer.allocate(byteBuffer.limit() + byteBuffer2.limit());
-                combined.put(byteBuffer);
-                combined.put(byteBuffer2);
-                return combined;
-            })
-            .block();
+        byte[] bytes = value.getBytesNoCopy();
+        ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
+        buffer.put(bytes);
+        buffer.flip();
+
+        return buffer;
     }
 
     @Override
