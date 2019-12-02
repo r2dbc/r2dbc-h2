@@ -16,14 +16,14 @@
 
 package io.r2dbc.h2.codecs;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import reactor.util.annotation.Nullable;
+
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * The default {@link Codecs} implementation. Delegates to type-specific codec implementations.
@@ -113,7 +113,6 @@ public final class DefaultCodecs implements Codecs {
                 new BooleanCodec(),
                 new ByteCodec(),
                 new BytesCodec(),
-                new ClobToStringCodec(client),
                 new ClobCodec(client),
                 new DoubleCodec(),
                 new FloatCodec(),
@@ -126,7 +125,10 @@ public final class DefaultCodecs implements Codecs {
                 new ShortCodec(),
                 new StringCodec(),
                 new UuidCodec(),
-                new ZonedDateTimeCodec(client)
+                new ZonedDateTimeCodec(client),
+
+                // De-prioritized codecs
+                new ClobToStringCodec(client)
             ),
             addOptionalCodecs(classLoader)
         ).collect(Collectors.toList());
