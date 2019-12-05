@@ -328,46 +328,9 @@
         </resources>
     </build>
 
-    <repositories>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-        <repository>
-            <id>spring-snapshots</id>
-            <name>Spring Snapshots</name>
-            <url>https://repo.spring.io/snapshot</url>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <profiles>
         
-        <profile>
-            <id>r2dbc-spi-artifactory</id>
-            <activation>
-                <property>
-                    <name>r2dbcSpiArtifactory</name>
-                </property>
-            </activation>
-            <repositories>
-                <repository>
-                    <id>r2dbc-spi-artifactory</id>
-                    <url>${r2dbcSpiArtifactory}</url>
-                    <snapshots>
-                        <enabled>true</enabled>
-                    </snapshots>
-                </repository>
-            </repositories>
-        </profile>
-        
-        <profile>
+         <profile>
             <id>jmh</id>
             <dependencies>
                 <dependency>
@@ -583,5 +546,31 @@
         </profile>
 
     </profiles>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-plugins-release</id>
+            <url>https://repo.spring.io/plugins-release</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>
