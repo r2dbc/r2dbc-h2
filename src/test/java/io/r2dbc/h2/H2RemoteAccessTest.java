@@ -16,16 +16,16 @@
 
 package io.r2dbc.h2;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.sql.SQLException;
+
 import org.h2.tools.Server;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.util.FileSystemUtils;
 import reactor.test.StepVerifier;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.sql.SQLException;
+import org.springframework.util.FileSystemUtils;
 
 final class H2RemoteAccessTest {
 
@@ -43,11 +43,11 @@ final class H2RemoteAccessTest {
 
     @Test
     void tcpByUrlWorks() throws IOException {
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.mv.db"));
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.trace.db"));
+        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.mv.db"));
+        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.trace.db"));
 
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .url("tcp://localhost:9123/~/test")
+            .url("tcp://localhost:9123//tmp/test")
             .username("sa")
             .password("")
             .build();
@@ -57,8 +57,8 @@ final class H2RemoteAccessTest {
             .expectNextCount(1)
             .verifyComplete();
 
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.mv.db"));
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.trace.db"));
+        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.mv.db"));
+        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.trace.db"));
     }
 
     @Test
@@ -67,7 +67,7 @@ final class H2RemoteAccessTest {
         FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.trace.db"));
 
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .tcp("localhost", 9123, "~/test")
+            .tcp("localhost", 9123, "/tmp/test")
             .username("sa")
             .password("")
             .build();
@@ -96,7 +96,7 @@ final class H2RemoteAccessTest {
 
 
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .tcp("localhost", "~/test")
+            .tcp("localhost", "/tmp/test")
             .username("sa")
             .password("")
             .build();
