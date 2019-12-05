@@ -16,17 +16,16 @@
 
 package io.r2dbc.h2;
 
-import io.r2dbc.h2.client.Client;
-import org.junit.jupiter.api.Test;
-import org.springframework.util.FileSystemUtils;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import io.r2dbc.h2.client.Client;
+import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
+import org.springframework.util.FileSystemUtils;
 
 final class H2ConnectionFactoryTest {
 
@@ -52,11 +51,11 @@ final class H2ConnectionFactoryTest {
 
     @Test
     void createFileBasedDatabase() throws IOException {
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.mv.db"));
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.trace.db"));
+        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.mv.db"));
+        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.trace.db"));
 
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .file("~/test")
+            .file("/tmp/test")
             .username("sa")
             .password("")
             .build();
@@ -66,8 +65,8 @@ final class H2ConnectionFactoryTest {
             .expectNextCount(1)
             .verifyComplete();
 
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.mv.db"));
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.trace.db"));
+        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.mv.db"));
+        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.trace.db"));
     }
 
     @Test
