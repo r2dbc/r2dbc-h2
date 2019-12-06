@@ -3,6 +3,7 @@ pipeline {
 
 	triggers {
 		pollSCM 'H/10 * * * *'
+		upstream(upstreamProjects: "r2dbc-spi/master", threshold: hudson.model.Result.SUCCESS)
 	}
 
 	options {
