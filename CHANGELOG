@@ -1,6 +1,14 @@
 R2DBC H2 Changelog
 =============================
 
+0.8.1.RELEASE
+------------------
+* Backport Travis CI support to 0.8.x #137.
+* Backport upstream CI trigger to 0.8.x #135.
+* Improve unit testing by using /tmp for all file-based databases. #132.
+* Fix ClobToStringCodec.encode and simplify decode #128.
+* ClobToStringCodec.encode(…) fails with IllegalStateException due to blocking #127.
+
 0.8.0.RELEASE
 ------------------
 * Upgrade to Reactor Dysprosium SR2 #126.
