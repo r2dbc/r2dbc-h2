@@ -125,6 +125,9 @@ public final class H2ConnectionConfiguration {
 
         /**
          * Configure an in-memory database, e.g. {@code my-test-database}.
+         * <p>A in-memory database is shut down if the last connection gets closed. To avoid this behavior, configure either the
+         * {@link H2ConnectionOption#DB_CLOSE_DELAY} option through {@link #property(H2ConnectionOption, String)} or use the {@link H2ConnectionFactory#inMemory(String)} connection factory to close
+         * the in-memory database by closing {@link CloseableConnectionFactory} externally.
          *
          * @param name of a private, in-memory database (automatically prefixed with {@code mem:})
          * @return this {@link Builder}
