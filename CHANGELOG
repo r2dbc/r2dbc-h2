@@ -1,6 +1,16 @@
 R2DBC H2 Changelog
 =============================
 
+0.8.2.RELEASE
+------------------
+* Use different container to publish to maven central #147.
+* Upgrade r2dbc-spi to 0.8.1.RELEASE #146.
+* Release 0.8.2.RELEASE #145.
+* Update CHANGELOG for 0.8.2.RELEASE #144.
+* Backport Instance support to 0.8.2 #142.
+* Update dependencies #141.
+* Improve documentation of `H2ConnectionConfiguration.Builder. inMemory(…)` #140.
+
 0.8.1.RELEASE
 ------------------
 * Backport Travis CI support to 0.8.x #137.
