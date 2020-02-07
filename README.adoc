@@ -61,7 +61,7 @@ Supported Connection Factory Discovery options:
 |Must be `h2`
 
 |`protocol`
-|Must be `file`, mem`, or `tcp`. Requires `database` if set. _(Optional)_ if `url` set.
+|Must be `file`, `mem`, or `tcp`. Requires `database` if set. _(Optional)_ if `url` set.
 
 |`url`
 |A fully qualified H2 URL. _(Optional)_ if `procotol` and `database` are set.
