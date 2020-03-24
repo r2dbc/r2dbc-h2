@@ -1,6 +1,6 @@
 = Reactive Relational Database Connectivity H2 Implementation
 
-image::https://ci.spring.io/api/v1/teams/r2dbc/pipelines/r2dbc/jobs/r2dbc-h2/badge[Concourse CI, link="https://ci.spring.io/teams/r2dbc/pipelines/r2dbc/jobs/r2dbc-h2/"]
+image:https://travis-ci.org/r2dbc/r2dbc-h2.svg?branch=0.8.x["Build Status", link="https://travis-ci.org/r2dbc/r2dbc-h2"]
 
 image::https://maven-badges.herokuapp.com/maven-central/io.r2dbc/r2dbc-h2/badge.svg[Maven Central, link="https://maven-badges.herokuapp.com/maven-central/io.r2dbc/r2dbc-h2"]
 
@@ -20,6 +20,90 @@ WARNING: Since this driver runs on top of the internals of H2, there is risk of 
 Because various parts of H2 are blocking, like file and network access, the only non-blocking assurances are in the layers above H2.
 Nevertheless, `r2dbc-h2` is a great way to warm up to the usage of R2DBC with a small footprint.
 
+== Code of Conduct
+
+This project is governed by the [Spring Code of Conduct](CODE_OF_CONDUCT.adoc). By participating, you are expected to uphold this code of conduct. Please report unacceptable behavior to [spring-code-of-conduct@pivotal.io](mailto:spring-code-of-conduct@pivotal.io).
+
+== Getting Started
+
+Here is a quick teaser of how to use R2DBC H2 in Java:
+
+**URL Connection Factory Discovery for In-Memory Databases**
+
+[source,java]
+----
+ConnectionFactory connectionFactory = ConnectionFactories.get("r2dbc:h2:mem///testdb");
+
+Publisher<? extends Connection> connectionPublisher = connectionFactory.create();
+----
+
+**URL Connection Factory Discovery for File Databases**
+
+[source,java]
+----
+ConnectionFactory connectionFactory = ConnectionFactories.get("r2dbc:h2:file//my/relative/path");
+
+Publisher<? extends Connection> connectionPublisher = connectionFactory.create();
+----
+
+**Programmatic Connection Factory Discovery**
+
+[source,java]
+----
+ConnectionFactoryOptions options = builder()
+    .option(DRIVER, "h2")
+    .option(PROTOCOL, "...")  // file, mem
+    .option(HOST, "…")
+    .option(USER, "…")
+    .option(PASSWORD, "…")
+    .option(DATABASE, "…")
+    .build();
+
+ConnectionFactory connectionFactory = ConnectionFactories.get(options);
+
+Publisher<? extends Connection> connectionPublisher = connectionFactory.create();
+
+// Alternative: Creating a Mono using Project Reactor
+Mono<Connection> connectionMono = Mono.from(connectionFactory.create());
+----
+
+**Supported ConnectionFactory Discovery Options**
+
+[%header,cols=2*]
+|===
+| Option            | Description
+| `driver`          | Must be `h2`.
+| `protocol`        | Must be `file`, `mem`, or `tcp`. Requires `database` if set _(Optional)_
+| `host`            | Only for `tcp` protocol: Server hostname to connect to. _(Optional)_
+| `port`            | Only for `tcp` protocol: Server port to connect to. _(Optional)_
+| `username`        | Login username.
+| `password`        | Login password.
+| `database`        | Database to use. For `file` protocol: Relative (`r2dbc:h2:file//../relative/file/name`) or absolute (`r2dbc:h2:file///absolute/file/name`) file name. For `mem` protocol: In-memory database name (`r2dbc:h2:mem///testdb`).
+| `<well-known-h2-option>`         | Pass-thru of well-known H2 options such as `DB_CLOSE_DELAY=10&MODE=DB2`. See https://github.com/r2dbc/r2dbc-h2/blob/master/src/main/java/io/r2dbc/h2/H2ConnectionOption.java[`io.r2dbc.h2.H2ConnectionOption`] for all options. _(Optional)_
+| `options`         | A semicolon-delimited list of H2 configuration options(`options=DB_CLOSE_DELAY=10;DB_CLOSE_ON_EXIT=true;…)`. _(Optional)_
+|===
+
+**Programmatic Configuration**
+
+[source,java]
+----
+H2ConnectionFactory connectionFactory = new H2ConnectionFactory(H2ConnectionConfiguration.builder()
+    .inMemory("...")
+    .option(H2ConnectionOption.DB_CLOSE_DELAY, "-1")
+    .build());
+
+Mono<Connection> connection = connectionFactory.create();
+----
+
+**Programmatic In-Memory Database Configuration**
+
+[source,java]
+----
+CloseableConnectionFactory connectionFactory = H2ConnectionFactory.inMemory("testdb");
+
+Mono<Connection> connection = connectionFactory.create();
+----
+
 == Maven
 
 Artifacts can be found on https://search.maven.org/search?q=r2dbc-h2[Maven Central].
@@ -29,66 +113,28 @@ Artifacts can be found on https://search.maven.org/search?q=r2dbc-h2[Maven Centr
 <dependency>
   <groupId>io.r2dbc</groupId>
   <artifactId>r2dbc-h2</artifactId>
-  <version>0.8.0.RELEASE</version>
+  <version>${version}</version>
 </dependency>
 ----
 
-== Usage
+If you'd rather like the latest snapshots of the upcoming major version, use our Maven snapshot repository and declare the appropriate dependency version.
 
-Configuration of the `ConnectionFactory` can be accomplished in two ways:
-
-=== Connection Factory Discovery
-
-[source,java]
+[source,xml]
 ----
-ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
-   .option(DRIVER, "h2")
-   .option(PROTOCOL, "...")  // file, mem
-   .option(DATABASE, "...")
-   .build());
+<dependency>
+  <groupId>io.r2dbc</groupId>
+  <artifactId>r2dbc-h2</artifactId>
+  <version>${version}.BUILD-SNAPSHOT</version>
+</dependency>
 
-Mono<Connection> connection = connectionFactory.create();
-----
-
-Supported Connection Factory Discovery options:
-
-[cols="1,5",options="header"]
-|===
-|Option
-|Description
-
-|`driver`
-|Must be `h2`
-
-|`protocol`
-|Must be `file`, mem`, or `tcp`. Requires `database` if set. _(Optional)_ if `url` set.
-
-|`url`
-|A fully qualified H2 URL. _(Optional)_ if `procotol` and `database` are set.
-
-|`username`
-|Login username
-
-|`password`
-|Login password
-
-|`options`
-|A semicolon-delimited list of configuration options. _(Optional)_
-|===
-
-=== Programmatic
-
-[source,java]
-----
-ConnectionFactory connectionFactory = new H2ConnectionFactory(H2ConnectionConfiguration.builder()
-    .inMemory("...")
-    .option(H2ConnectionOption.DB_CLOSE_DELAY, "-1")
-    .build());
-
-Mono<Connection> connection = connectionFactory.create();
+<repository>
+  <id>spring-libs-snapshot</id>
+  <name>Spring Snapshot Repository</name>
+  <url>https://repo.spring.io/libs-snapshot</url>
+</repository>
 ----
 
-==== Setting query params
+== Setting query params
 
 H2 uses index parameters that are prefixed with `$`.
 The following SQL statement makes use of parameters:
@@ -110,7 +156,7 @@ connection
     .execute()
 ----
 
-===== Geometry support
+== Geometry support
 
 `r2dbc-h2` will automatically register support for https://locationtech.github.io/jts/[JTS Toplogy Suite] and handle it's `Geometry` types if `org.locationtech.jts:jts-core` is on the classpath.
 
@@ -129,7 +175,7 @@ IMPORTANT: Be sure to plug in your version of JTS!
 
 Also read https://h2database.com/html/datatypes.html#geometry_type[H2's reference documentation] on `GEOMETRY` types.
 
-===== We also support params binding as
+== We also support params binding as
 
 * index `bind(1, "Walter")`.
 Notice that passing an integer means index (zero-based) references.
