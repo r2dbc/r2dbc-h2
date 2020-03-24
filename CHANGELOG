@@ -1,6 +1,13 @@
 R2DBC H2 Changelog
 =============================
 
+0.8.3.RELEASE
+------------------
+* Upgrade build and test dependencies #154
+* Upgrade to Reactor Dysprosium-SR6 #153
+* Stage releases directly on maven central  #152
+* Add an example for r2dbc connection URL #150
+
 0.8.2.RELEASE
 ------------------
 * Use different container to publish to maven central #147.
