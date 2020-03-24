@@ -38,10 +38,10 @@
         <jmh.version>1.23</jmh.version>
         <jsr305.version>3.0.2</jsr305.version>
         <jts.version>1.16.1</jts.version>
-        <junit.version>5.6.0</junit.version>
+        <junit.version>5.6.1</junit.version>
         <logback.version>1.2.3</logback.version>
         <mbr.version>0.2.0.RELEASE</mbr.version>
-        <mockito.version>3.2.4</mockito.version>
+        <mockito.version>3.3.3</mockito.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <r2dbc-spi.version>0.8.0.RELEASE</r2dbc-spi.version>
@@ -213,7 +213,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.2.0</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -235,7 +235,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.1</version>
+                <version>3.2.0</version>
                 <configuration>
                     <excludePackageNames>
                         io.r2dbc.h2.client,io.r2dbc.h2.util
@@ -258,7 +258,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.2.1</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -283,7 +283,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.1.0</version>
+                <version>1.2.1</version>
                 <executions>
                     <execution>
                         <id>flatten</id>
@@ -357,7 +357,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>build-helper-maven-plugin</artifactId>
-                        <version>3.0.0</version>
+                        <version>3.1.0</version>
                         <executions>
                             <execution>
                                 <id>add-source</id>
