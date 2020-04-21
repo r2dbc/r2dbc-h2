@@ -16,7 +16,10 @@
 
 package io.r2dbc.h2.util;
 
-import com.jayway.jsonpath.JsonPath;
+import java.time.Duration;
+import java.util.Iterator;
+import java.util.List;
+
 import net.minidev.json.JSONArray;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.Links;
@@ -24,16 +27,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.Duration;
-import java.util.Iterator;
-import java.util.List;
+import com.jayway.jsonpath.JsonPath;
 
 /**
  * Changelog report generator.
  */
 final class ChangeLogReportGenerator {
 
-    private static final int MILESTONE_ID = 4;
+    private static final int MILESTONE_ID = 8;
     private static final String URI_TEMPLATE = "https://api.github.com/repos/r2dbc/r2dbc-h2/issues?milestone={id}&state=closed";
 
     public static void main(String... args) {

@@ -86,6 +86,7 @@ final class DefaultCodecsTest {
             StringCodec.class,
             UuidCodec.class,
             ZonedDateTimeCodec.class,
+            InstantCodec.class,
             ArrayCodec.class
         );
     }
@@ -121,6 +122,7 @@ final class DefaultCodecsTest {
             StringCodec.class,
             UuidCodec.class,
             ZonedDateTimeCodec.class,
+            InstantCodec.class,
             ArrayCodec.class
         );
     }

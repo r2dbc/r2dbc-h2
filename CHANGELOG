@@ -1,6 +1,41 @@
 R2DBC H2 Changelog
 =============================
 
+0.8.3.RELEASE
+------------------
+* Upgrade build and test dependencies #154
+* Upgrade to Reactor Dysprosium-SR6 #153
+* Stage releases directly on maven central  #152
+* Add an example for r2dbc connection URL #150
+
+0.8.2.RELEASE
+------------------
+* Use different container to publish to maven central #147.
+* Upgrade r2dbc-spi to 0.8.1.RELEASE #146.
+* Release 0.8.2.RELEASE #145.
+* Update CHANGELOG for 0.8.2.RELEASE #144.
+* Backport Instance support to 0.8.2 #142.
+* Update dependencies #141.
+* Improve documentation of `H2ConnectionConfiguration.Builder. inMemory(…)` #140.
+
+0.8.1.RELEASE
+------------------
+* Backport Travis CI support to 0.8.x #137.
+* Backport upstream CI trigger to 0.8.x #135.
+* Improve unit testing by using /tmp for all file-based databases. #132.
+* Fix ClobToStringCodec.encode and simplify decode #128.
+* ClobToStringCodec.encode(…) fails with IllegalStateException due to blocking #127.
+
+0.8.0.RELEASE
+------------------
+* Upgrade to Reactor Dysprosium SR2 #126.
+* Upgrade to R2DBC SPI 0.8.0.RELEASE #125.
+* Drop SLF4J in favor of Reactor's Logger utilities #124.
+* Release 0.8.0.RELEASE #123.
+* Upgrade to latest SPI changes #119.
+* Upgrade to H2 1.4.200 #114.
+* Adds tests for checking existence of Codecs in DefaultCodecs #108.
+
 0.8.0.RC1
 ------------------
 * Release 0.8.0.RC1 #113.
