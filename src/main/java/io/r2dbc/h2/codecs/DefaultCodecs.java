@@ -127,6 +127,9 @@ public final class DefaultCodecs implements Codecs {
                 new UuidCodec(),
                 new ZonedDateTimeCodec(client),
                 new InstantCodec(client),
+                new IntervalCodec(),
+                new PeriodCodec(),
+                new DurationCodec(),
 
                 // De-prioritized codecs
                 new ClobToStringCodec(client)

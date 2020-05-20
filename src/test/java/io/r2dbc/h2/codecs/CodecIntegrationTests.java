@@ -19,6 +19,7 @@ package io.r2dbc.h2.codecs;
 import io.r2dbc.h2.H2Connection;
 import io.r2dbc.h2.H2Result;
 import io.r2dbc.h2.util.IntegrationTestSupport;
+import org.h2.api.Interval;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
@@ -27,12 +28,7 @@ import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -149,6 +145,138 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
     }
 
     @Test
+    void shouldEncodeIntervalAsIntervalYear() {
+        testType(connection, "INTERVAL YEAR(18)", Interval.ofYears(1234567891011L));
+    }
+
+    @Test
+    void shouldEncodePeriodAsIntervalYear() {
+        testType(connection, "INTERVAL YEAR(18)", Period.ofYears(987654321), Interval.ofYears(987654321));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalMonth() {
+        testType(connection, "INTERVAL MONTH(18)", Interval.ofMonths(314159265358979323L));
+    }
+
+    @Test
+    void shouldEncodePeriodAsIntervalMonth() {
+        testType(connection, "INTERVAL MONTH(18)", Period.ofMonths(Integer.MAX_VALUE), Interval.ofMonths(Integer.MAX_VALUE));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalDay() {
+        testType(connection, "INTERVAL DAY(18)", Interval.ofDays(271828182845904523L));
+    }
+
+    @Test
+    void shouldEncodeDurationAsIntervalDay() {
+        testType(connection, "INTERVAL Day(18)", Duration.ofDays(271828182845904523L), Interval.ofDays(271828182845904523L));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalHour() {
+        testType(connection, "INTERVAL HOUR(18)", Interval.ofHours(361056));
+    }
+
+    @Test
+    void shouldEncodeDurationAsIntervalHour() {
+        testType(connection, "INTERVAL HOUR(18)", Duration.ofHours(154869), Interval.ofHours(154869));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalMinute() {
+        testType(connection, "INTERVAL MINUTE(18)", Interval.ofMinutes(328));
+    }
+
+    @Test
+    void shouldEncodeDurationAsIntervalMinute() {
+        testType(connection, "INTERVAL MINUTE(18)", Duration.ofMinutes(Integer.MAX_VALUE), Interval.ofMinutes(Integer.MAX_VALUE));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalSecond() {
+        testType(connection, "INTERVAL SECOND(18,9)", Interval.ofSeconds(3, 141592654));
+    }
+
+    @Test
+    void shouldEncodeDurationAsIntervalSecond() {
+        testType(connection, "INTERVAL SECOND(18,9)", Duration.ofSeconds(3, 141592654), Interval.ofSeconds(3, 141592654));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsYearToMonth() {
+        testType(connection, "INTERVAL YEAR(18) TO MONTH", Interval.ofYearsMonths(1024, 2));
+    }
+
+    @Test
+    void shouldEncodePeriodAsYearToMonth() {
+        testType(connection, "INTERVAL YEAR(18) TO MONTH", Period.of(1024, 2, 0), Interval.ofYearsMonths(1024, 2));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalDayToHour() {
+        testType(connection, "INTERVAL DAY(18) TO HOUR", Interval.ofDaysHours(365, 23));
+    }
+
+    @Test
+    void shouldEncodeDurationAsIntervalDayToHour() {
+        testType(connection, "INTERVAL DAY(18) TO HOUR", Duration.ofDays(365).plusHours(23), Interval.ofDaysHours(365, 23));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalDayToMinute() {
+        testType(connection, "INTERVAL DAY(18) TO MINUTE", Interval.ofDaysHoursMinutes(666, 7, 42));
+    }
+
+    @Test
+    void shouldEncodeDurationAsIntervalDayToMinute() {
+        testType(connection, "INTERVAL DAY(18) TO MINUTE", Duration.ofDays(666).plusHours(6).plusMinutes(42), Interval.ofDaysHoursMinutes(666, 7, 42));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalDayToSecond() {
+        testType(connection, "INTERVAL DAY(18) TO SECOND(9)", Interval.ofDaysHoursMinutesNanos(666, 13, 7, 31415926535L));
+    }
+
+    @Test
+    void shouldEncodeDurationAsIntervalDayToSecond() {
+        testType(connection, "INTERVAL DAY(18) TO SECOND(9)", Duration.ofDays(666).plusHours(13).plusMinutes(7).plusSeconds(31).plusNanos(415926535), Interval.ofDaysHoursMinutesNanos(666, 13, 7, 31415926535L));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalHourToMinute() {
+        testType(connection, "INTERVAL HOUR(18) TO MINUTE", Interval.ofHoursMinutes(Integer.MAX_VALUE, 59));
+    }
+
+    @Test
+    void shouldEncodeDurationAsIntervalHourToMinute() {
+        testType(connection, "INTERVAL HOUR(18) TO MINUTE", Duration.ofHours(Integer.MAX_VALUE).plusMinutes(59), Interval.ofHoursMinutes(Integer.MAX_VALUE, 59));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalHourToSecond() {
+        testType(connection, "INTERVAL HOUR(18) TO SECOND(9)", Interval.ofHoursMinutesNanos(13, 7, 31415926535L));
+    }
+
+    @Test
+    void shouldEncodeDurationAsIntervalHourToSecond() {
+        testType(connection, "INTERVAL HOUR(18) TO SECOND(9)", Duration.ofHours(13).plusMinutes(7).plusSeconds(31).plusNanos(415926535L), Interval.ofHoursMinutesNanos(13, 7, 31415926535L));
+    }
+
+    @Test
+    void shouldEncodeIntervalAsIntervalMinuteToSecond() {
+        testType(connection, "INTERVAL MINUTE(18) TO SECOND(9)", Interval.ofMinutesNanos(Integer.MAX_VALUE, 31415926535L));
+
+    }
+
+    @Test
+    void shouldEncodeDurationAsIntervalMinuteToSecond() {
+        testType(connection, "INTERVAL MINUTE(18) TO SECOND(9)", Duration.ofMinutes(Integer.MAX_VALUE).plusNanos(31415926535L), Interval.ofYears(1234567891011L));
+
+    }
+
+    @Test
     void shouldEncodeOffsetDateTimeAsTimestampWithTimeZone() {
         testType(connection, "TIMESTAMP(2) WITH TIME ZONE", OffsetDateTime.parse("2018-08-27T17:41:14.890+00:45"));
     }
@@ -157,13 +285,15 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
     void shouldEncodeZonedDateTimeAsTimestampWithTimeZone() {
         ZonedDateTime value = ZonedDateTime.of(LocalDateTime.parse("2018-11-08T11:08:28.2"), ZoneId.of("UT"));
 
-        testType(connection, "TIMESTAMP(1) WITH TIME ZONE", value, OffsetDateTime.class, actual -> {
-            assertThat((OffsetDateTime) actual).isEqualTo(value.toOffsetDateTime());
-        });
+        testType(connection, "TIMESTAMP(1) WITH TIME ZONE", value, value.toOffsetDateTime());
     }
 
     private void testType(H2Connection connection, String columnType, Object value) {
         testType(connection, columnType, value, value.getClass(), value);
+    }
+
+    private void testType(H2Connection connection, String columnType, Object value, Object expectedGetObjectValue) {
+        testType(connection, columnType, value, value.getClass(), expectedGetObjectValue);
     }
 
     private void testType(H2Connection connection, String columnType, Object value, Class<?> valueClass, Object expectedGetObjectValue) {
@@ -175,57 +305,57 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
         createTable(connection, columnType);
 
         Flux.from(connection.createStatement("INSERT INTO codec_test values($1)")
-            .bind("$1", value)
-            .execute())
-            .flatMap(H2Result::getRowsUpdated)
-            .as(StepVerifier::create)
-            .expectNext(1)
-            .verifyComplete();
+                .bind("$1", value)
+                .execute())
+                .flatMap(H2Result::getRowsUpdated)
+                .as(StepVerifier::create)
+                .expectNext(1)
+                .verifyComplete();
 
         if (value instanceof ByteBuffer) {
             ((ByteBuffer) value).rewind();
         }
 
         connection.createStatement("SELECT my_col FROM codec_test")
-            .execute()
-            .flatMap(it -> it.map((row, rowMetadata) -> row.get("my_col")))
-            .as(StepVerifier::create)
-            .consumeNextWith(nativeValueConsumer)
-            .verifyComplete();
+                .execute()
+                .flatMap(it -> it.map((row, rowMetadata) -> row.get("my_col")))
+                .as(StepVerifier::create)
+                .consumeNextWith(nativeValueConsumer)
+                .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM codec_test")
-            .execute()
-            .flatMap(it -> it.map((row, rowMetadata) -> row.get("my_col")))
-            .as(StepVerifier::create)
-            .consumeNextWith(nativeValueConsumer)
-            .verifyComplete();
+                .execute()
+                .flatMap(it -> it.map((row, rowMetadata) -> row.get("my_col")))
+                .as(StepVerifier::create)
+                .consumeNextWith(nativeValueConsumer)
+                .verifyComplete();
 
         Flux.from(connection.createStatement("UPDATE codec_test SET my_col = $1")
-            .bindNull("$1", value.getClass())
-            .execute())
-            .flatMap(H2Result::getRowsUpdated)
-            .as(StepVerifier::create)
-            .expectNext(1)
-            .verifyComplete();
+                .bindNull("$1", value.getClass())
+                .execute())
+                .flatMap(H2Result::getRowsUpdated)
+                .as(StepVerifier::create)
+                .expectNext(1)
+                .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM codec_test")
-            .execute()
-            .flatMap(it -> it.map((row, rowMetadata) -> Optional.ofNullable((Object) row.get("my_col", valueClass))))
-            .as(StepVerifier::create)
-            .expectNext(Optional.empty())
-            .verifyComplete();
+                .execute()
+                .flatMap(it -> it.map((row, rowMetadata) -> Optional.ofNullable((Object) row.get("my_col", valueClass))))
+                .as(StepVerifier::create)
+                .expectNext(Optional.empty())
+                .verifyComplete();
     }
 
     private void createTable(H2Connection connection, String columnType) {
 
         connection.createStatement("DROP TABLE IF EXISTS codec_test").execute()
-            .flatMap(H2Result::getRowsUpdated)
-            .onErrorResume(e -> Mono.empty())
-            .thenMany(connection.createStatement("CREATE TABLE codec_test (my_col " + columnType + ")")
-                .execute().flatMap(H2Result::getRowsUpdated))
-            .as(StepVerifier::create)
-            .expectNext(0)
-            .verifyComplete();
+                .flatMap(H2Result::getRowsUpdated)
+                .onErrorResume(e -> Mono.empty())
+                .thenMany(connection.createStatement("CREATE TABLE codec_test (my_col " + columnType + ")")
+                        .execute().flatMap(H2Result::getRowsUpdated))
+                .as(StepVerifier::create)
+                .expectNext(0)
+                .verifyComplete();
     }
 
 }
