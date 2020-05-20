@@ -171,7 +171,7 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
 
     @Test
     void shouldEncodeDurationAsIntervalDay() {
-        testType(connection, "INTERVAL Day(18)", Duration.ofDays(271828182845904523L), Interval.ofDays(271828182845904523L));
+        testType(connection, "INTERVAL Day(18)", Duration.ofDays(2718281828459L), Interval.ofDays(2718281828459L));
     }
 
     @Test
@@ -231,7 +231,7 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
 
     @Test
     void shouldEncodeDurationAsIntervalDayToMinute() {
-        testType(connection, "INTERVAL DAY(18) TO MINUTE", Duration.ofDays(666).plusHours(6).plusMinutes(42), Interval.ofDaysHoursMinutes(666, 7, 42));
+        testType(connection, "INTERVAL DAY(18) TO MINUTE", Duration.ofDays(666).plusHours(7).plusMinutes(42), Interval.ofDaysHoursMinutes(666, 7, 42));
     }
 
     @Test
@@ -272,7 +272,7 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
 
     @Test
     void shouldEncodeDurationAsIntervalMinuteToSecond() {
-        testType(connection, "INTERVAL MINUTE(18) TO SECOND(9)", Duration.ofMinutes(Integer.MAX_VALUE).plusNanos(31415926535L), Interval.ofYears(1234567891011L));
+        testType(connection, "INTERVAL MINUTE(18) TO SECOND(9)", Duration.ofMinutes(Integer.MAX_VALUE).plusNanos(31415926535L), Interval.ofMinutesNanos(Integer.MAX_VALUE, 31415926535L));
 
     }
 
