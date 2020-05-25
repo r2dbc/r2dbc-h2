@@ -23,6 +23,7 @@ import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.result.ResultInterface;
 import org.h2.table.Column;
 import org.h2.value.TypeInfo;
+import org.h2.value.Value;
 import org.junit.jupiter.api.Test;
 
 import static io.r2dbc.spi.Nullability.NULLABLE;
@@ -70,23 +71,23 @@ final class H2ColumnMetadataTest {
 
     @Test
     void toColumnMetadata() {
-        TypeInfo typeInfo = TypeInfo.TYPE_INT;
+        TypeInfo typeInfo = TypeInfo.TYPE_VARCHAR;
         when(this.result.getColumnName(0)).thenReturn("test-name");
         when(this.result.getAlias(0)).thenReturn("test-alias");
         when(this.result.getColumnType(0)).thenReturn(typeInfo);
         when(this.result.getNullable(0)).thenReturn(Column.NULLABLE);
 
         MockCodecs codecs = MockCodecs.builder()
-            .preferredType(4, String.class)
+            .preferredType(Value.VARCHAR, String.class)
             .build();
 
         H2ColumnMetadata columnMetadata = H2ColumnMetadata.toColumnMetadata(codecs, this.result, 0);
 
         assertThat(columnMetadata.getJavaType()).isEqualTo(String.class);
         assertThat(columnMetadata.getName()).isEqualTo("test-alias");
-        assertThat(columnMetadata.getNativeTypeMetadata()).isEqualTo(4);
+        assertThat(columnMetadata.getNativeTypeMetadata()).isEqualTo(Value.VARCHAR);
         assertThat(columnMetadata.getNullability()).isEqualTo(NULLABLE);
-        assertThat(columnMetadata.getPrecision()).isEqualTo(10);
+        assertThat(columnMetadata.getPrecision()).isEqualTo(Integer.MAX_VALUE);
         assertThat(columnMetadata.getScale()).isEqualTo(0);
     }
 

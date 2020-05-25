@@ -20,6 +20,7 @@ import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Blob;
 import org.h2.value.Value;
+import org.h2.value.ValueLob;
 import org.h2.value.ValueNull;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
@@ -62,7 +63,7 @@ final class BlobToByteBufferCodec extends AbstractCodec<ByteBuffer> {
     Value doEncode(ByteBuffer value) {
         Assert.requireNonNull(value, "value must not be null");
 
-        Value blob = this.client.getSession().getDataHandler().getLobStorage().createBlob(
+        ValueLob blob = this.client.getSession().getDataHandler().getLobStorage().createBlob(
             new SequenceInputStream(
                 new BlobInputStreamEnumeration(value)), -1);
 

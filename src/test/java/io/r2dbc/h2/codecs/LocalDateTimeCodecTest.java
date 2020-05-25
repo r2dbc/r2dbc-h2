@@ -1,7 +1,7 @@
 package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.client.Client;
-import org.h2.engine.Session;
+import io.r2dbc.h2.util.TestCastDataProvider;
 import org.h2.value.Value;
 import org.h2.value.ValueNull;
 import org.h2.value.ValueTimestamp;
@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 final class LocalDateTimeCodecTest {
 
@@ -21,14 +19,12 @@ final class LocalDateTimeCodecTest {
 
     @BeforeEach
     void setUp() {
-        this.client = mock(Client.class);
-
-        when(this.client.getSession()).thenReturn(mock(Session.class));
+        this.client = TestCastDataProvider.mockedClient();
     }
 
     @Test
     void decode() {
-        assertThat(new LocalDateTimeCodec(client).decode(ValueTimestamp.parse("2018-10-31 11:59:59"), LocalDateTime.class))
+        assertThat(new LocalDateTimeCodec(client).decode(ValueTimestamp.parse("2018-10-31 11:59:59", TestCastDataProvider.INSTANCE), LocalDateTime.class))
                 .isEqualTo(LocalDateTime.of(2018, 10, 31, 11, 59, 59));
     }
 
@@ -38,13 +34,13 @@ final class LocalDateTimeCodecTest {
 
         assertThat(codec.doCanDecode(Value.TIMESTAMP)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
     void doEncode() {
         assertThat(new LocalDateTimeCodec(client).doEncode(LocalDateTime.of(2018, 10, 31, 11, 59, 59)))
-                .isEqualTo(ValueTimestamp.parse("2018-10-31 11:59:59"));
+            .isEqualTo(ValueTimestamp.parse("2018-10-31 11:59:59", TestCastDataProvider.INSTANCE));
     }
 
     @Test

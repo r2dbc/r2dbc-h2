@@ -25,7 +25,7 @@ final class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime> {
     @Override
     OffsetDateTime doDecode(Value value, Class<? extends OffsetDateTime> type) {
         Assert.requireType(this.client.getSession(), CastDataProvider.class, "The session must implement CastDataProvider.");
-        return (OffsetDateTime) JSR310Utils.valueToOffsetDateTime(value, (CastDataProvider) this.client.getSession());
+        return (OffsetDateTime) JSR310Utils.valueToOffsetDateTime(value, this.client.getSession());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.client.Client;
+import io.r2dbc.h2.util.TestCastDataProvider;
 import org.h2.engine.Session;
 import org.h2.value.Value;
 import org.h2.value.ValueNull;
@@ -29,7 +30,7 @@ final class ZonedDateTimeCodecTest {
 
     @Test
     void decode() {
-        assertThat(new ZonedDateTimeCodec(client).doDecode(ValueTimestampTimeZone.parse("2018-10-31 11:59:59+05:00"), ZonedDateTime.class))
+        assertThat(new ZonedDateTimeCodec(client).doDecode(ValueTimestampTimeZone.parse("2018-10-31 11:59:59+05:00", TestCastDataProvider.INSTANCE), ZonedDateTime.class))
                 .isEqualTo(ZonedDateTime.of(2018, 10, 31, 11, 59, 59, 0, ZoneOffset.ofHours(5)));
     }
 
@@ -39,13 +40,13 @@ final class ZonedDateTimeCodecTest {
 
         assertThat(codec.doCanDecode(Value.TIMESTAMP_TZ)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
     void doEncode() {
         assertThat(new ZonedDateTimeCodec(client).doEncode(ZonedDateTime.of(2018, 10, 31, 11, 59, 59, 0, ZoneOffset.ofHours(5))))
-                .isEqualTo(ValueTimestampTimeZone.parse("2018-10-31 11:59:59+05:00"));
+            .isEqualTo(ValueTimestampTimeZone.parse("2018-10-31 11:59:59+05:00", TestCastDataProvider.INSTANCE));
     }
 
     @Test

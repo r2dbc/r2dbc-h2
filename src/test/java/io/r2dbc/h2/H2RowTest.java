@@ -53,22 +53,22 @@ final class H2RowTest {
 
     @BeforeEach
     void createTable() {
-        getJdbcOperations().execute("CREATE TABLE test ( value INTEGER )");
+        getJdbcOperations().execute("CREATE TABLE my_table ( my_value INTEGER )");
     }
 
     @AfterEach
     void dropTable() {
-        getJdbcOperations().execute("DROP TABLE test");
+        getJdbcOperations().execute("DROP TABLE IF EXISTS my_table");
     }
 
     @Test
     void selectWithAliases() {
-        getJdbcOperations().execute("INSERT INTO test VALUES (100)");
+        getJdbcOperations().execute("INSERT INTO my_table VALUES (100)");
 
         Mono.from(this.connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement("SELECT value as ALIASED_VALUE FROM test")
+                .createStatement("SELECT my_value as ALIASED_VALUE FROM my_table")
                 .execute())
                 .flatMap(result -> Flux.from(result
                     .map((row, rowMetadata) -> row.get("ALIASED_VALUE", Integer.class)))
@@ -82,12 +82,12 @@ final class H2RowTest {
 
     @Test
     void selectWithoutAliases() {
-        getJdbcOperations().execute("INSERT INTO test VALUES (100)");
+        getJdbcOperations().execute("INSERT INTO my_table VALUES (100)");
 
         Mono.from(this.connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement("SELECT value FROM test")
+                .createStatement("SELECT my_value AS \"value\" FROM my_table")
                 .execute())
                 .flatMap(TestKit::extractColumns)
 

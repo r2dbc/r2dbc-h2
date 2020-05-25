@@ -16,10 +16,6 @@
 
 package io.r2dbc.h2.codecs;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-
 import io.r2dbc.spi.Clob;
 import org.h2.value.Value;
 import reactor.core.publisher.Flux;
@@ -27,12 +23,17 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
 import reactor.core.scheduler.Schedulers;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Implement {@link Clob}.
  */
 class ValueLobClob implements Clob {
 
-	private static final Charset ENCODING = Charset.forName("UTF-8");
+	private static final Charset ENCODING = StandardCharsets.UTF_8;
 
 	private final Value lobDb;
 

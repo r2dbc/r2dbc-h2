@@ -1,5 +1,6 @@
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.util.TestCastDataProvider;
 import org.h2.value.Value;
 import org.h2.value.ValueNull;
 import org.h2.value.ValueTime;
@@ -14,34 +15,34 @@ final class LocalTimeCodecTest {
 
     @Test
     void decode() {
-        assertThat(new LocalTimeCodec().decode(ValueTime.parse("11:59:59"), LocalTime.class))
+        assertThat(new LocalTimeCodec(TestCastDataProvider.mockedClient()).decode(ValueTime.parse("11:59:59"), LocalTime.class))
                 .isEqualTo(LocalTime.of(11, 59, 59));
     }
 
     @Test
     void doCanDecode() {
-        LocalTimeCodec codec = new LocalTimeCodec();
+        LocalTimeCodec codec = new LocalTimeCodec(TestCastDataProvider.mockedClient());
 
         assertThat(codec.doCanDecode(Value.TIME)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
     void doEncode() {
-        assertThat(new LocalTimeCodec().doEncode(LocalTime.of(11, 59, 59)))
+        assertThat(new LocalTimeCodec(TestCastDataProvider.mockedClient()).doEncode(LocalTime.of(11, 59, 59)))
                 .isEqualTo(ValueTime.parse("11:59:59"));
     }
 
     @Test
     void doEncodeNoValue() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new LocalTimeCodec().doEncode(null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new LocalTimeCodec(TestCastDataProvider.mockedClient()).doEncode(null))
                 .withMessage("value must not be null");
     }
 
     @Test
     void encodeNull() {
-        assertThat(new LocalTimeCodec().encodeNull())
+        assertThat(new LocalTimeCodec(TestCastDataProvider.mockedClient()).encodeNull())
                 .isEqualTo(ValueNull.INSTANCE);
     }
 }

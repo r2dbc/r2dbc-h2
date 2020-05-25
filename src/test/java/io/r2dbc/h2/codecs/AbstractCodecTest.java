@@ -17,7 +17,7 @@
 package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
-import org.h2.value.ValueString;
+import org.h2.value.ValueVarchar;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,7 +49,7 @@ public class AbstractCodecTest {
 
         @Override
         Value doEncode(String value) {
-            return ValueString.get("test");
+            return ValueVarchar.get("test");
         }
     }
 

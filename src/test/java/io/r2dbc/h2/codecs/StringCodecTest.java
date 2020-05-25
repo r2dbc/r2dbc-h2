@@ -18,7 +18,7 @@ package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
 import org.h2.value.ValueNull;
-import org.h2.value.ValueString;
+import org.h2.value.ValueVarchar;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +28,7 @@ final class StringCodecTest {
 
     @Test
     void decode() {
-        assertThat(new StringCodec().decode(ValueString.get("test"), String.class))
+        assertThat(new StringCodec().decode(ValueVarchar.get("test"), String.class))
             .isEqualTo("test");
     }
 
@@ -36,11 +36,11 @@ final class StringCodecTest {
     void doCanDecode() {
         StringCodec codec = new StringCodec();
 
-        assertThat(codec.doCanDecode(Value.STRING)).isTrue();
-        assertThat(codec.doCanDecode(Value.STRING_FIXED)).isTrue();
-        assertThat(codec.doCanDecode(Value.STRING_IGNORECASE)).isTrue();
+        assertThat(codec.doCanDecode(Value.VARCHAR)).isTrue();
+        assertThat(codec.doCanDecode(Value.CHAR)).isTrue();
+        assertThat(codec.doCanDecode(Value.VARCHAR_IGNORECASE)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
@@ -48,7 +48,7 @@ final class StringCodecTest {
         String string = "test";
 
         assertThat(new StringCodec().doEncode(string))
-            .isEqualTo(ValueString.get("test"));
+            .isEqualTo(ValueVarchar.get("test"));
     }
 
     @Test

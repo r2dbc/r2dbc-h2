@@ -2,7 +2,6 @@ package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
 import org.h2.value.ValueGeometry;
-
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -22,7 +21,7 @@ final class GeometryCodec extends AbstractCodec<Geometry> {
 
     @Override
     Geometry doDecode(Value value, Class<? extends Geometry> type) {
-        return (Geometry) value.convertTo(Value.GEOMETRY).getObject();
+        return ((ValueGeometry) value).getGeometry();
     }
 
     @Override

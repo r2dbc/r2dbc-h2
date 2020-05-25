@@ -91,7 +91,7 @@ final class H2RowMetadataTest {
 
     @Test
     void toRowMetadata() {
-        TypeInfo typeInfo = TypeInfo.TYPE_FLOAT;
+        TypeInfo typeInfo = TypeInfo.TYPE_REAL;
         when(this.result.getVisibleColumnCount()).thenReturn(1);
         when(this.result.getColumnName(0)).thenReturn("test-name");
         when(this.result.getColumnType(0)).thenReturn(typeInfo);

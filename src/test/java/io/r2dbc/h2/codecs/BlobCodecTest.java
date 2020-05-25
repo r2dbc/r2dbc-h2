@@ -19,7 +19,7 @@ package io.r2dbc.h2.codecs;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.spi.Blob;
 import org.h2.value.Value;
-import org.h2.value.ValueLobDb;
+import org.h2.value.ValueLobInMemory;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -37,7 +37,7 @@ final class BlobCodecTest {
 
     @Test
     void decode() {
-        Flux.from(new BlobCodec(mock(Client.class)).decode(ValueLobDb.createSmallLob(Value.BLOB , TEST_BYTES), Blob.class).stream())
+        Flux.from(new BlobCodec(mock(Client.class)).decode(ValueLobInMemory.createSmallLob(Value.BLOB, TEST_BYTES), Blob.class).stream())
             .as(StepVerifier::create)
             .expectNextMatches(byteBuffer -> {
                 assertThat(Arrays.copyOfRange(byteBuffer.array(), 0, byteBuffer.remaining())).isEqualTo(TEST_BYTES);
@@ -57,7 +57,7 @@ final class BlobCodecTest {
 
         assertThat(codec.doCanDecode(Value.BLOB)).isTrue();
         assertThat(codec.doCanDecode(Value.CLOB)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test

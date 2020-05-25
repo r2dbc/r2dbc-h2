@@ -18,7 +18,7 @@ final class GeometryCodecTest {
 
         assertThat(codec.doCanDecode(Value.GEOMETRY)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test

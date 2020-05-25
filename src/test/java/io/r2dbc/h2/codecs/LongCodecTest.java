@@ -17,7 +17,7 @@
 package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
-import org.h2.value.ValueLong;
+import org.h2.value.ValueBigint;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +28,7 @@ final class LongCodecTest {
 
     @Test
     void decode() {
-        assertThat(new LongCodec().decode(ValueLong.get(100), Long.class))
+        assertThat(new LongCodec().decode(ValueBigint.get(100), Long.class))
             .isEqualTo(100);
     }
 
@@ -36,14 +36,14 @@ final class LongCodecTest {
     void doCanDecode() {
         LongCodec codec = new LongCodec();
 
-        assertThat(codec.doCanDecode(Value.LONG)).isTrue();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.BIGINT)).isTrue();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
     void doEncode() {
         assertThat(new LongCodec().doEncode(100L))
-            .isEqualTo(ValueLong.get(100));
+            .isEqualTo(ValueBigint.get(100));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package io.r2dbc.h2.codecs;
 
+import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
 import org.h2.util.JSR310Utils;
 import org.h2.value.Value;
@@ -8,8 +9,11 @@ import java.time.LocalTime;
 
 final class LocalTimeCodec extends AbstractCodec<LocalTime> {
 
-    LocalTimeCodec() {
+    private final Client client;
+
+    LocalTimeCodec(Client client) {
         super(LocalTime.class);
+        this.client = client;
     }
 
     @Override
@@ -19,7 +23,7 @@ final class LocalTimeCodec extends AbstractCodec<LocalTime> {
 
     @Override
     LocalTime doDecode(Value value, Class<? extends LocalTime> type) {
-        return (LocalTime) JSR310Utils.valueToLocalTime(value);
+        return (LocalTime) JSR310Utils.valueToLocalTime(value, this.client.getSession());
     }
 
     @Override

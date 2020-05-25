@@ -17,8 +17,8 @@
 package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
-import org.h2.value.ValueBytes;
 import org.h2.value.ValueNull;
+import org.h2.value.ValueVarbinary;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +30,7 @@ final class BytesCodecTest {
 
     @Test
     void decode() {
-        assertThat(new BytesCodec().decode(ValueBytes.get(TEST_BYTE), byte[].class))
+        assertThat(new BytesCodec().decode(ValueVarbinary.get(TEST_BYTE), byte[].class))
             .isEqualTo(TEST_BYTE);
     }
 
@@ -38,14 +38,14 @@ final class BytesCodecTest {
     void doCanDecode() {
         BytesCodec codec = new BytesCodec();
 
-        assertThat(codec.doCanDecode(Value.BYTES)).isTrue();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.VARBINARY)).isTrue();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
     void doEncode() {
         assertThat(new BytesCodec().doEncode(TEST_BYTE))
-            .isEqualTo(ValueBytes.get(TEST_BYTE));
+            .isEqualTo(ValueVarbinary.get(TEST_BYTE));
     }
 
     @Test

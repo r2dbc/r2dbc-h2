@@ -42,7 +42,7 @@ final class UuidCodecTest {
 
         assertThat(codec.doCanDecode(Value.UUID)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test

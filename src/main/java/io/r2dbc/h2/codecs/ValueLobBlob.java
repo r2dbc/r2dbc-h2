@@ -16,20 +16,19 @@
 
 package io.r2dbc.h2.codecs;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
 import io.r2dbc.spi.Blob;
 import org.h2.value.Value;
 import org.h2.value.ValueLob;
-import org.h2.value.ValueLobDb;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
 import reactor.core.scheduler.Schedulers;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Implement {@link Blob}.

@@ -20,7 +20,7 @@ import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.value.Value;
-import org.h2.value.ValueInt;
+import org.h2.value.ValueInteger;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -86,7 +86,7 @@ final class H2ResultTest {
     @Test
     void toResultRowDescription() {
         when(this.result.hasNext()).thenReturn(true, true, false);
-        when(this.result.currentRow()).thenReturn(new Value[]{ValueInt.get(100)}, new Value[]{ValueInt.get(200)});
+        when(this.result.currentRow()).thenReturn(new Value[]{ValueInteger.get(100)}, new Value[]{ValueInteger.get(200)});
 
         H2Result result = H2Result.toResult(MockCodecs.empty(), this.result, Integer.MAX_VALUE);
 

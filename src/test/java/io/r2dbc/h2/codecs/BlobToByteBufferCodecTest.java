@@ -18,7 +18,7 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.client.Client;
 import org.h2.value.Value;
-import org.h2.value.ValueLobDb;
+import org.h2.value.ValueLobInMemory;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +35,7 @@ final class BlobToByteBufferCodecTest {
     @Test
     void decode() {
 
-        ByteBuffer decoded = new BlobToByteBufferCodec(mock(Client.class)).decode(ValueLobDb.createSmallLob(Value.BLOB, TEST_BYTES), ByteBuffer.class);
+        ByteBuffer decoded = new BlobToByteBufferCodec(mock(Client.class)).decode(ValueLobInMemory.createSmallLob(Value.BLOB, TEST_BYTES), ByteBuffer.class);
         assertThat(decoded).isEqualTo(ByteBuffer.wrap(TEST_BYTES));
     }
 
@@ -50,7 +50,7 @@ final class BlobToByteBufferCodecTest {
 
         assertThat(codec.doCanDecode(Value.BLOB)).isTrue();
         assertThat(codec.doCanDecode(Value.CLOB)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test

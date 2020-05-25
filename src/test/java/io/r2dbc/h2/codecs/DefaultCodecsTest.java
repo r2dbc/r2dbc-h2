@@ -16,17 +16,21 @@
 
 package io.r2dbc.h2.codecs;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.*;
+import io.r2dbc.h2.client.Client;
+import org.h2.value.Value;
+import org.h2.value.ValueInteger;
+import org.h2.value.ValueNull;
+import org.junit.jupiter.api.Test;
 
 import java.util.stream.Stream;
 
-import io.r2dbc.h2.client.Client;
-import org.h2.value.Value;
-import org.h2.value.ValueInt;
-import org.h2.value.ValueNull;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.mock;
+import static org.mockito.BDDMockito.willReturn;
+import static org.mockito.BDDMockito.willThrow;
 
 final class DefaultCodecsTest {
 
@@ -127,31 +131,31 @@ final class DefaultCodecsTest {
 
     @Test
     void decode() {
-        assertThat(new DefaultCodecs(mock(Client.class)).decode(ValueInt.get(100), ValueInt.INT, Integer.class))
+        assertThat(new DefaultCodecs(mock(Client.class)).decode(ValueInteger.get(100), ValueInteger.INTEGER, Integer.class))
             .isEqualTo(100);
     }
 
     @Test
     void decodeDefaultType() {
-        assertThat(new DefaultCodecs(mock(Client.class)).decode(ValueInt.get(100), ValueInt.INT, Object.class))
+        assertThat(new DefaultCodecs(mock(Client.class)).decode(ValueInteger.get(100), ValueInteger.INTEGER, Object.class))
             .isEqualTo(100);
     }
 
     @Test
     void decodeNoType() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new DefaultCodecs(mock(Client.class)).decode(ValueInt.get(100), ValueInt.INT, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new DefaultCodecs(mock(Client.class)).decode(ValueInteger.get(100), ValueInteger.INTEGER, null))
             .withMessage("type must not be null");
     }
 
     @Test
     void decodeNull() {
-        assertThat(new DefaultCodecs(mock(Client.class)).decode(null, ValueInt.INT, Integer.class))
+        assertThat(new DefaultCodecs(mock(Client.class)).decode(null, ValueInteger.INTEGER, Integer.class))
             .isNull();
     }
 
     @Test
     void decodeUnsupportedType() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new DefaultCodecs(mock(Client.class)).decode(ValueInt.get(100), ValueInt.INT, Void.class))
+        assertThatIllegalArgumentException().isThrownBy(() -> new DefaultCodecs(mock(Client.class)).decode(ValueInteger.get(100), ValueInteger.INTEGER, Void.class))
             .withMessage("Cannot decode value of type java.lang.Void");
     }
 
@@ -159,7 +163,7 @@ final class DefaultCodecsTest {
     void encode() {
         Value parameter = new DefaultCodecs(mock(Client.class)).encode(100);
 
-        assertThat(parameter).isEqualTo(ValueInt.get(100));
+        assertThat(parameter).isEqualTo(ValueInteger.get(100));
     }
 
     @Test

@@ -25,10 +25,10 @@ import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import io.r2dbc.spi.R2dbcBadGrammarException;
 import org.h2.command.CommandInterface;
-import org.h2.result.LocalResultImpl;
+import org.h2.result.LocalResult;
 import org.h2.result.ResultWithGeneratedKeys;
 import org.h2.value.Value;
-import org.h2.value.ValueInt;
+import org.h2.value.ValueInteger;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -55,7 +55,7 @@ final class H2StatementTest {
 
     private final Client client = mock(Client.class, RETURNS_SMART_NULLS);
 
-    private final Value parameter = ValueInt.get(100);
+    private final Value parameter = ValueInteger.get(100);
 
     private final MockCodecs codecs = MockCodecs.builder().encoding(100, this.parameter).build();
 
@@ -75,13 +75,13 @@ final class H2StatementTest {
 
     @Test
     void bind() {
-        assertThat(this.statement.bind("$1", 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
+        assertThat(this.statement.bind("$1", 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInteger.get(100)));
     }
 
     @Test
     void bindWithPositionNumberAsObject() {
         assertThat(this.statement.bind(0, 100).getCurrentBinding())
-            .isEqualTo(new Binding().add(0, ValueInt.get(100)));
+            .isEqualTo(new Binding().add(0, ValueInteger.get(100)));
     }
 
     @Test
@@ -89,12 +89,12 @@ final class H2StatementTest {
         H2Statement questionMarkStatement = new H2Statement(this.client, this.codecs, "test-query-?1");
 
         assertThat(questionMarkStatement.bind("?1", 100).getCurrentBinding())
-            .isEqualTo(new Binding().add(0, ValueInt.get(100)));
+            .isEqualTo(new Binding().add(0, ValueInteger.get(100)));
     }
 
     @Test
     void bindIndex() {
-        assertThat(this.statement.bind(0, 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInt.get(100)));
+        assertThat(this.statement.bind(0, 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInteger.get(100)));
     }
 
     @Test
@@ -162,17 +162,17 @@ final class H2StatementTest {
         CommandInterface command1 = mock(CommandInterface.class);
         CommandInterface command2 = mock(CommandInterface.class);
         when(this.client.prepareCommand("select test-query-$1 from my_table", Arrays.asList(
-            new Binding().add(0, ValueInt.get(100)),
-            new Binding().add(0, ValueInt.get(200))
+            new Binding().add(0, ValueInteger.get(100)),
+            new Binding().add(0, ValueInteger.get(200))
         ))).thenReturn(Arrays.asList(command1, command2).iterator());
         when(command1.isQuery()).thenReturn(true);
         when(command2.isQuery()).thenReturn(true);
-        when(this.client.query(command1)).thenReturn(new LocalResultImpl());
-        when(this.client.query(command2)).thenReturn(new LocalResultImpl());
+        when(this.client.query(command1)).thenReturn(new LocalResult());
+        when(this.client.query(command2)).thenReturn(new LocalResult());
 
         MockCodecs codecs = MockCodecs.builder()
-            .encoding(100, ValueInt.get(100))
-            .encoding(200, ValueInt.get(200))
+            .encoding(100, ValueInteger.get(100))
+            .encoding(200, ValueInteger.get(200))
             .build();
 
         new H2Statement(this.client, codecs, "select test-query-$1 from my_table")
@@ -190,9 +190,9 @@ final class H2StatementTest {
     void executeWithoutAdd() {
         CommandInterface command = mock(CommandInterface.class);
         when(this.client.prepareCommand("insert test-query-$1", Arrays.asList(
-            new Binding().add(0, ValueInt.get(100))
+            new Binding().add(0, ValueInteger.get(100))
         ))).thenReturn(Collections.singleton(command).iterator());
-        when(this.client.update(command, false)).thenReturn(new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl()));
+        when(this.client.update(command, false)).thenReturn(new ResultWithGeneratedKeys.WithKeys(0, new LocalResult()));
 
         new H2Statement(this.client, this.codecs, "insert test-query-$1")
             .bind("$1", 100)
@@ -206,7 +206,7 @@ final class H2StatementTest {
     void returnGeneratedValues() {
         CommandInterface command = mock(CommandInterface.class);
         when(this.client.prepareCommand("INSERT test-query", Collections.emptyList())).thenReturn(Collections.singleton(command).iterator());
-        when(this.client.update(command, new String[]{"foo", "bar"})).thenReturn(new ResultWithGeneratedKeys.WithKeys(0, new LocalResultImpl()));
+        when(this.client.update(command, new String[]{"foo", "bar"})).thenReturn(new ResultWithGeneratedKeys.WithKeys(0, new LocalResult()));
 
         new H2Statement(this.client, MockCodecs.empty(), "INSERT test-query")
             .returnGeneratedValues("foo", "bar")
@@ -229,12 +229,12 @@ final class H2StatementTest {
 
         SERVER.beforeAll(null);
 
-        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, value INTEGER);");
+        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, my_value INTEGER);");
 
         Mono.from(connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement(String.format("INSERT INTO test (value) VALUES (200)"))
+                .createStatement(String.format("INSERT INTO test (my_value) VALUES (200)"))
                 .returnGeneratedValues()
                 .execute())
 
@@ -267,12 +267,12 @@ final class H2StatementTest {
 
         SERVER.beforeAll(null);
 
-        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, value INTEGER);");
+        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, my_value INTEGER);");
 
         Mono.from(connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement(String.format("INSERT INTO test (value) VALUES (200)"))
+                .createStatement(String.format("INSERT INTO test (my_value) VALUES (200)"))
                 .execute())
 
                 .concatWith(Mono.from(connection.close()).then(Mono.empty())))
@@ -299,12 +299,12 @@ final class H2StatementTest {
 
         SERVER.beforeAll(null);
 
-        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, value INTEGER);");
+        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, my_value INTEGER);");
 
         Mono.from(connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement(String.format("INSERT INTO test (value) VALUES (200)"))
+                .createStatement(String.format("INSERT INTO test (my_value) VALUES (200)"))
                 .returnGeneratedValues("id2")
                 .execute())
 

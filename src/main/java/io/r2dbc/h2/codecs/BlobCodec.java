@@ -16,18 +16,19 @@
 
 package io.r2dbc.h2.codecs;
 
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.util.Enumeration;
-import java.util.Iterator;
-
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Blob;
 import org.h2.value.Value;
+import org.h2.value.ValueLob;
 import org.h2.value.ValueNull;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
+
+import java.io.InputStream;
+import java.io.SequenceInputStream;
+import java.util.Enumeration;
+import java.util.Iterator;
 
 final class BlobCodec extends AbstractCodec<Blob> {
 
@@ -56,12 +57,12 @@ final class BlobCodec extends AbstractCodec<Blob> {
     Value doEncode(Blob value) {
         Assert.requireNonNull(value, "value must not be null");
 
-        Value blob = this.client.getSession().getDataHandler().getLobStorage().createBlob(
+        ValueLob blob = this.client.getSession().getDataHandler().getLobStorage().createBlob(
             new SequenceInputStream(
                 new BlobInputStreamEnumeration(value)), -1);
 
         this.client.getSession().addTemporaryLob(blob);
-        
+
         return blob;
     }
 
