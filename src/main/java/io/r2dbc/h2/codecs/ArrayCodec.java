@@ -40,7 +40,7 @@ final class ArrayCodec extends AbstractCodec<Object[]> {
     Object[] doDecode(Value value, Class<? extends Object[]> type) {
         ValueArray valueArray = (ValueArray) value.convertTo(Value.ARRAY);
         return Arrays.stream(valueArray.getList())
-                .map(val -> codecs.decode(val, val.getValueType(), Object.class)).toArray();
+            .map(val -> codecs.decode(val, val.getValueType(), Object.class)).toArray();
     }
 
     @Override
