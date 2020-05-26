@@ -291,7 +291,7 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
     private void testType(H2Connection connection, String columnType, Object value) {
         testType(connection, columnType, value, value.getClass(), value);
         testType(connection, "ARRAY", new Object[]{value}, Object[].class,
-                actual -> assertThat(((Object[]) actual)).containsExactly(value));
+            actual -> assertThat(((Object[]) actual)).containsExactly(value));
     }
 
     private void testType(H2Connection connection, String columnType, Object value, Object expectedGetObjectValue) {
@@ -307,57 +307,56 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
         createTable(connection, columnType);
 
         Flux.from(connection.createStatement("INSERT INTO codec_test values($1)")
-                .bind("$1", value)
-                .execute())
-                .flatMap(H2Result::getRowsUpdated)
-                .as(StepVerifier::create)
-                .expectNext(1)
-                .verifyComplete();
+            .bind("$1", value)
+            .execute())
+            .flatMap(H2Result::getRowsUpdated)
+            .as(StepVerifier::create)
+            .expectNext(1)
+            .verifyComplete();
 
         if (value instanceof ByteBuffer) {
             ((ByteBuffer) value).rewind();
         }
 
         connection.createStatement("SELECT my_col FROM codec_test")
-                .execute()
-                .flatMap(it -> it.map((row, rowMetadata) -> row.get("my_col")))
-                .as(StepVerifier::create)
-                .consumeNextWith(nativeValueConsumer)
-                .verifyComplete();
+            .execute()
+            .flatMap(it -> it.map((row, rowMetadata) -> row.get("my_col")))
+            .as(StepVerifier::create)
+            .consumeNextWith(nativeValueConsumer)
+            .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM codec_test")
-                .execute()
-                .flatMap(it -> it.map((row, rowMetadata) -> row.get("my_col")))
-                .as(StepVerifier::create)
-                .consumeNextWith(nativeValueConsumer)
-                .verifyComplete();
+            .execute()
+            .flatMap(it -> it.map((row, rowMetadata) -> row.get("my_col")))
+            .as(StepVerifier::create)
+            .consumeNextWith(nativeValueConsumer)
+            .verifyComplete();
 
         Flux.from(connection.createStatement("UPDATE codec_test SET my_col = $1")
-                .bindNull("$1", value.getClass())
-                .execute())
-                .flatMap(H2Result::getRowsUpdated)
-                .as(StepVerifier::create)
-                .expectNext(1)
-                .verifyComplete();
+            .bindNull("$1", value.getClass())
+            .execute())
+            .flatMap(H2Result::getRowsUpdated)
+            .as(StepVerifier::create)
+            .expectNext(1)
+            .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM codec_test")
-                .execute()
-                .flatMap(it -> it.map((row, rowMetadata) -> Optional.ofNullable((Object) row.get("my_col", valueClass))))
-                .as(StepVerifier::create)
-                .expectNext(Optional.empty())
-                .verifyComplete();
+            .execute()
+            .flatMap(it -> it.map((row, rowMetadata) -> Optional.ofNullable((Object) row.get("my_col", valueClass))))
+            .as(StepVerifier::create)
+            .expectNext(Optional.empty())
+            .verifyComplete();
     }
 
     private void createTable(H2Connection connection, String columnType) {
 
         connection.createStatement("DROP TABLE IF EXISTS codec_test").execute()
-                .flatMap(H2Result::getRowsUpdated)
-                .onErrorResume(e -> Mono.empty())
-                .thenMany(connection.createStatement("CREATE TABLE codec_test (my_col " + columnType + ")")
-                        .execute().flatMap(H2Result::getRowsUpdated))
-                .as(StepVerifier::create)
-                .expectNext(0)
-                .verifyComplete();
+            .flatMap(H2Result::getRowsUpdated)
+            .onErrorResume(e -> Mono.empty())
+            .thenMany(connection.createStatement("CREATE TABLE codec_test (my_col " + columnType + ")")
+                .execute().flatMap(H2Result::getRowsUpdated))
+            .as(StepVerifier::create)
+            .expectNext(0)
+            .verifyComplete();
     }
-
 }
