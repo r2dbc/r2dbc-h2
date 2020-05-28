@@ -3,6 +3,12 @@ R2DBC H2 Changelog
 
 0.8.3.RELEASE
 ------------------
+* Upgrade dependencies #162
+* Add Interval Codecs #159
+* Add basic array support #117
+
+0.8.3.RELEASE
+------------------
 * Upgrade build and test dependencies #154
 * Upgrade to Reactor Dysprosium-SR6 #153
 * Stage releases directly on maven central  #152
