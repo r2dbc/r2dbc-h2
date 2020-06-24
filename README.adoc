@@ -1,6 +1,6 @@
 = Reactive Relational Database Connectivity H2 Implementation
 
-image:https://travis-ci.org/r2dbc/r2dbc-h2.svg?branch=master["Build Status", link="https://travis-ci.org/r2dbc/r2dbc-h2"]
+image:https://travis-ci.org/r2dbc/r2dbc-h2.svg?branch=main["Build Status", link="https://travis-ci.org/r2dbc/r2dbc-h2"]
 
 image::https://maven-badges.herokuapp.com/maven-central/io.r2dbc/r2dbc-h2/badge.svg[Maven Central, link="https://maven-badges.herokuapp.com/maven-central/io.r2dbc/r2dbc-h2"]
 
@@ -79,7 +79,7 @@ Mono<Connection> connectionMono = Mono.from(connectionFactory.create());
 | `username`        | Login username.
 | `password`        | Login password.
 | `database`        | Database to use. For `file` protocol: Relative (`r2dbc:h2:file//../relative/file/name`) or absolute (`r2dbc:h2:file///absolute/file/name`) file name. For `mem` protocol: In-memory database name (`r2dbc:h2:mem:///testdb`).
-| `<well-known-h2-option>`         | Pass-thru of well-known H2 options such as `DB_CLOSE_DELAY=10&MODE=DB2`. See https://github.com/r2dbc/r2dbc-h2/blob/master/src/main/java/io/r2dbc/h2/H2ConnectionOption.java[`io.r2dbc.h2.H2ConnectionOption`] for all options. _(Optional)_
+| `<well-known-h2-option>`         | Pass-thru of well-known H2 options such as `DB_CLOSE_DELAY=10&MODE=DB2`. See https://github.com/r2dbc/r2dbc-h2/blob/main/src/main/java/io/r2dbc/h2/H2ConnectionOption.java[`io.r2dbc.h2.H2ConnectionOption`] for all options. _(Optional)_
 | `options`         | A semicolon-delimited list of H2 configuration options(`options=DB_CLOSE_DELAY=10;DB_CLOSE_ON_EXIT=true;…)`. _(Optional)_
 |===
 
