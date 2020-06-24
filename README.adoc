@@ -22,7 +22,7 @@ Nevertheless, `r2dbc-h2` is a great way to warm up to the usage of R2DBC with a 
 
 == Code of Conduct
 
-This project is governed by the [Spring Code of Conduct](CODE_OF_CONDUCT.adoc). By participating, you are expected to uphold this code of conduct. Please report unacceptable behavior to [spring-code-of-conduct@pivotal.io](mailto:spring-code-of-conduct@pivotal.io).
+This project is governed by the https://github.com/r2dbc/.github/blob/main/CODE_OF_CONDUCT.adoc[R2DBC Code of Conduct]. By participating, you are expected to uphold this code of conduct. Please report unacceptable behavior to mailto:info@r2dbc.io[info@r2dbc.io].
 
 == Getting Started
 
@@ -193,7 +193,43 @@ Running the JMH benchmarks builds and runs the benchmarks without running tests.
  $ ./mvnw clean install -Pjmh
 ----
 
-== License
+== Getting Help
 
+Having trouble with R2DBC? We'd love to help!
+
+* Check the https://r2dbc.io/spec/0.8.1.RELEASE/spec/html/[spec documentation], and https://r2dbc.io/spec/0.8.1.RELEASE/api/[Javadoc].
+* If you are upgrading, check out the https://r2dbc.io/spec/0.8.1.RELEASE/CHANGELOG.txt[changelog] for "new and noteworthy" features.
+* Ask a question - we monitor https://stackoverflow.com[stackoverflow.com] for questions
+  tagged with https://stackoverflow.com/tags/r2dbc[`r2dbc`].
+  You can also chat with the community on https://gitter.im/r2dbc/r2dbc[Gitter]
+* Report bugs with R2DBC H2 at https://github.com/r2dbc/r2dbc-h2/issues[github.com/r2dbc/r2dbc-h2/issues].
+
+== Reporting Issues
+
+R2DBC uses GitHub as issue tracking system to record bugs and feature requests.
+If you want to raise an issue, please follow the recommendations below:
+
+* Before you log a bug, please search the https://github.com/r2dbc/r2dbc-h2/issues[issue tracker] to see if someone has already reported the problem.
+* If the issue doesn't already exist, https://github.com/r2dbc/r2dbc-h2/issues/new[create a new issue].
+* Please provide as much information as possible with the issue report, we like to know the version of R2DBC H2 that you are using and JVM version.
+* If you need to paste code, or include a stack trace use Markdown +++```+++ escapes before and after your text.
+* If possible try to create a test-case or project that replicates the issue.
+Attach a link to your code or a compressed file containing your code.
+
+== Building from Source
+
+You don't need to build from source to use R2DBC H2 (binaries in Maven Central), but if you want to try out the latest and greatest, R2DBC H2 can be easily built with the
+https://github.com/takari/maven-wrapper[maven wrapper]. You also need JDK 1.8.
+
+[source,bash]
+----
+ $ ./mvnw clean install
+----
+
+If you want to build with the regular `mvn` command, you will need https://maven.apache.org/run-maven/index.html[Maven v3.5.0 or above].
+
+_Also see https://github.com/r2dbc/.github/blob/main/CONTRIBUTING.adoc[CONTRIBUTING.adoc] if you wish to submit pull requests, and in particular please sign the https://cla.pivotal.io/sign/reactor[Contributor's Agreement] before your first change, however trivial._
+
+== License
 This project is released under version 2.0 of the https://www.apache.org/licenses/LICENSE-2.0[Apache License].
 
