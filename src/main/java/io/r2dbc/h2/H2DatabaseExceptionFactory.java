@@ -49,6 +49,9 @@ public final class H2DatabaseExceptionFactory {
 
     /**
      * Convert {@link DbException} to {@link SQLException} before converting to {@link R2dbcException}.
+     *
+     * @param dbException root cause to be translated.
+     * @return the translated {@link R2dbcException}.
      */
     public static R2dbcException convert(DbException dbException) {
         SQLException e = DbException.toSQLException(dbException);
