@@ -19,6 +19,7 @@ package io.r2dbc.h2.codecs;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
+import org.h2.value.ValueNull;
 import reactor.util.annotation.Nullable;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public final class DefaultCodecs implements Codecs {
     public <T> T decode(Value value, int dataType, Class<? extends T> type) {
         Assert.requireNonNull(type, "type must not be null");
 
-        if (value == null) {
+        if (value == null || value instanceof ValueNull) {
             return null;
         }
 
@@ -88,6 +89,11 @@ public final class DefaultCodecs implements Codecs {
 
     @Override
     public Class<?> preferredType(int dataType) {
+
+        if (dataType == Value.NULL) {
+            return Void.class;
+        }
+
         for (Codec<?> codec : this.codecs) {
             if (codec.canDecode(dataType, Object.class)) {
                 return codec.type();

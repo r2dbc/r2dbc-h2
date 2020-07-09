@@ -28,7 +28,14 @@ import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -273,7 +280,6 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
     @Test
     void shouldEncodeDurationAsIntervalMinuteToSecond() {
         testType(connection, "INTERVAL MINUTE(18) TO SECOND(9)", Duration.ofMinutes(Integer.MAX_VALUE).plusNanos(31415926535L), Interval.ofMinutesNanos(Integer.MAX_VALUE, 31415926535L));
-
     }
 
     @Test
@@ -286,6 +292,33 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
         ZonedDateTime value = ZonedDateTime.of(LocalDateTime.parse("2018-11-08T11:08:28.2"), ZoneId.of("UT"));
 
         testType(connection, "TIMESTAMP(1) WITH TIME ZONE", value, value.toOffsetDateTime());
+    }
+
+    @Test
+    void shouldDecodeScalarNull() {
+        createTable(connection, "VARCHAR");
+
+        Flux.from(connection.createStatement("INSERT INTO codec_test values($1)")
+            .bind("$1", "foo")
+            .execute())
+            .flatMap(H2Result::getRowsUpdated)
+            .as(StepVerifier::create)
+            .expectNext(1)
+            .verifyComplete();
+
+        connection.createStatement("SELECT null, my_col FROM codec_test")
+            .execute()
+            .flatMap(it -> it.map((row, rowMetadata) -> Optional.ofNullable(row.get(0))))
+            .as(StepVerifier::create)
+            .expectNext(Optional.empty())
+            .verifyComplete();
+
+        connection.createStatement("SELECT null, my_col FROM codec_test")
+            .execute()
+            .flatMap(it -> it.map((row, rowMetadata) -> Optional.ofNullable(row.get(0, String.class))))
+            .as(StepVerifier::create)
+            .expectNext(Optional.empty())
+            .verifyComplete();
     }
 
     private void testType(H2Connection connection, String columnType, Object value) {
