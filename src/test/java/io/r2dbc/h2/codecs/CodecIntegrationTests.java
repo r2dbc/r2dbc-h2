@@ -33,6 +33,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -292,6 +293,11 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
         ZonedDateTime value = ZonedDateTime.of(LocalDateTime.parse("2018-11-08T11:08:28.2"), ZoneId.of("UT"));
 
         testType(connection, "TIMESTAMP(1) WITH TIME ZONE", value, value.toOffsetDateTime());
+    }
+
+    @Test
+    void shouldEncodeOffsetTimeAsTimeWithTimeZone() {
+        testType(connection, "TIME WITH TIME ZONE", OffsetTime.parse("10:20:30+04:50"));
     }
 
     @Test
