@@ -1,6 +1,6 @@
 = Reactive Relational Database Connectivity H2 Implementation
 
-image:https://travis-ci.org/r2dbc/r2dbc-h2.svg?branch=0.8.x["Build Status", link="https://travis-ci.org/r2dbc/r2dbc-h2"]
+image:https://github.com/r2dbc/r2dbc-h2/workflows/Java%20CI%20with%20Maven/badge.svg?branch=0.8.x["Java CI with Maven",link="https://github.com/r2dbc/r2dbc-h2/actions?query=workflow%3A%22Java+CI+with+Maven%22+branch%3A0.8.x"]
 
 image::https://maven-badges.herokuapp.com/maven-central/io.r2dbc/r2dbc-h2/badge.svg[Maven Central, link="https://maven-badges.herokuapp.com/maven-central/io.r2dbc/r2dbc-h2"]
 
@@ -128,9 +128,9 @@ If you'd rather like the latest snapshots of the upcoming major version, use our
 </dependency>
 
 <repository>
-  <id>spring-libs-snapshot</id>
-  <name>Spring Snapshot Repository</name>
-  <url>https://repo.spring.io/libs-snapshot</url>
+  <id>sonatype-nexus-snapshots</id>
+  <name>Sonatype OSS Snapshot Repository</name>
+  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
 </repository>
 ----
 
@@ -219,7 +219,8 @@ Attach a link to your code or a compressed file containing your code.
 == Building from Source
 
 You don't need to build from source to use R2DBC H2 (binaries in Maven Central), but if you want to try out the latest and greatest, R2DBC H2 can be easily built with the
-https://github.com/takari/maven-wrapper[maven wrapper]. You also need JDK 1.8.
+https://github.com/takari/maven-wrapper[maven wrapper].
+You also need JDK 1.8.
 
 [source,bash]
 ----
@@ -230,6 +231,12 @@ If you want to build with the regular `mvn` command, you will need https://maven
 
 _Also see https://github.com/r2dbc/.github/blob/main/CONTRIBUTING.adoc[CONTRIBUTING.adoc] if you wish to submit pull requests, and in particular please sign the https://cla.pivotal.io/sign/reactor[Contributor's Agreement] before your first change, however trivial._
 
+== Staging to Maven Central
+
+To stage a release to Maven Central, you need to create a release tag (release version) that contains the desired state and version numbers (`mvn versions:set versions:commit -q -o -DgenerateBackupPoms=false -DnewVersion=x.y.z.(RELEASE|Mnnn|RCnnn`) and force-push it to the `release-0.x` branch.
+This push will trigger a Maven staging build (see `build-and-deploy-to-maven-central.sh`).
+
 == License
+
 This project is released under version 2.0 of the https://www.apache.org/licenses/LICENSE-2.0[Apache License].
 
