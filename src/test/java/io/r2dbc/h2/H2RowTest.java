@@ -89,7 +89,9 @@ final class H2RowTest {
 
                 .createStatement("SELECT value FROM test")
                 .execute())
-                .flatMap(TestKit::extractColumns)
+                .flatMap(result -> Flux.from(result
+                    .map((row, rowMetadata) -> row.get("value", Integer.class)))
+                    .collectList())
 
                 .concatWith(close(connection)))
             .as(StepVerifier::create)

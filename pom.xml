@@ -32,21 +32,21 @@
     <url>https://github.com/r2dbc/r2dbc-h2</url>
 
     <properties>
-        <assertj.version>3.16.1</assertj.version>
+        <assertj.version>3.17.2</assertj.version>
         <h2.version>1.4.200</h2.version>
         <java.version>1.8</java.version>
         <jmh.version>1.23</jmh.version>
         <jsr305.version>3.0.2</jsr305.version>
         <jts.version>1.16.1</jts.version>
-        <junit.version>5.6.1</junit.version>
+        <junit.version>5.7.0</junit.version>
         <logback.version>1.2.3</logback.version>
         <mbr.version>0.2.0.RELEASE</mbr.version>
-        <mockito.version>3.3.3</mockito.version>
+        <mockito.version>3.5.15</mockito.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <r2dbc-spi.version>0.8.2.RELEASE</r2dbc-spi.version>
-        <reactor.version>Dysprosium-SR7</reactor.version>
-        <spring-boot.version>2.3.0.RELEASE</spring-boot.version>
+        <r2dbc-spi.version>0.8.3.RELEASE</r2dbc-spi.version>
+        <reactor.version>Dysprosium-SR12</reactor.version>
+        <spring-boot.version>2.3.7.RELEASE</spring-boot.version>
     </properties>
 
     <licenses>

@@ -120,6 +120,7 @@ public final class DefaultCodecs implements Codecs {
                 new BooleanCodec(),
                 new ByteCodec(),
                 new BytesCodec(),
+                new ClobToStringCodec(client),
                 new ClobCodec(client),
                 new DoubleCodec(),
                 new FloatCodec(),
@@ -139,7 +140,6 @@ public final class DefaultCodecs implements Codecs {
                 new DurationCodec(),
 
                 // De-prioritized codecs
-                new ClobToStringCodec(client),
                 new ArrayCodec(codecs)
             ),
             addOptionalCodecs(classLoader)
