@@ -32,7 +32,7 @@
     <url>https://github.com/r2dbc/r2dbc-h2</url>
 
     <properties>
-        <assertj.version>3.16.1</assertj.version>
+        <assertj.version>3.17.2</assertj.version>
         <h2.version>1.4.200</h2.version>
         <java.version>1.8</java.version>
         <jmh.version>1.23</jmh.version>
