@@ -46,7 +46,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <r2dbc-spi.version>0.8.3.RELEASE</r2dbc-spi.version>
         <reactor.version>Dysprosium-SR18</reactor.version>
-        <spring-boot.version>2.3.7.RELEASE</spring-boot.version>
+        <spring-boot.version>2.3.9.RELEASE</spring-boot.version>
     </properties>
 
     <licenses>
