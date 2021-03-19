@@ -22,6 +22,7 @@ import io.r2dbc.spi.R2dbcNonTransientException;
 import io.r2dbc.spi.R2dbcNonTransientResourceException;
 import io.r2dbc.spi.R2dbcRollbackException;
 import org.h2.engine.Constants;
+import org.h2.message.DbException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -33,17 +34,10 @@ import java.sql.SQLNonTransientConnectionException;
 import java.sql.SQLTransactionRollbackException;
 import java.util.Collections;
 
-import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
-import static io.r2dbc.spi.IsolationLevel.READ_UNCOMMITTED;
-import static io.r2dbc.spi.IsolationLevel.REPEATABLE_READ;
-import static io.r2dbc.spi.IsolationLevel.SERIALIZABLE;
+import static io.r2dbc.spi.IsolationLevel.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.mockito.Mockito.RETURNS_SMART_NULLS;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 final class H2ConnectionTest {
 
@@ -65,10 +59,10 @@ final class H2ConnectionTest {
     }
 
     @Test
-    @Disabled("see https://github.com/r2dbc/r2dbc-h2/issues/83")
     void beginTransactionErrorResponse() {
         when(this.client.inTransaction()).thenReturn(false);
-        doThrow(new SQLNonTransientConnectionException("Unable to disable autocommits", "some state", 999)).when(this.client).disableAutoCommit();
+        doThrow(DbException.convert(new SQLNonTransientConnectionException("Unable to disable autocommits", "some state", 999)))
+            .when(this.client).disableAutoCommit();
 
         new H2Connection(this.client, MockCodecs.empty())
             .beginTransaction()
@@ -83,6 +77,16 @@ final class H2ConnectionTest {
 
         new H2Connection(this.client, MockCodecs.empty())
             .beginTransaction()
+            .as(StepVerifier::create)
+            .verifyComplete();
+    }
+
+    @Test
+    void beginTransactionWithReadOnly() {
+        when(this.client.inTransaction()).thenReturn(false);
+
+        new H2Connection(this.client, MockCodecs.empty())
+            .beginTransaction(H2TransactionDefinition.EMPTY.with(H2TransactionDefinition.READ_ONLY, true))
             .as(StepVerifier::create)
             .verifyComplete();
     }
@@ -108,10 +112,10 @@ final class H2ConnectionTest {
     }
 
     @Test
-    @Disabled("see https://github.com/r2dbc/r2dbc-h2/issues/83")
     void commitTransactionErrorResponse() {
         when(this.client.inTransaction()).thenReturn(true);
-        doThrow(new SQLTransactionRollbackException("can't commit", "some state", 999)).when(this.client).execute("COMMIT");
+        doThrow(DbException.convert(new SQLTransactionRollbackException("can't commit", "some state", 999)))
+            .when(this.client).execute("COMMIT");
 
         new H2Connection(this.client, MockCodecs.empty())
             .commitTransaction()
@@ -158,10 +162,10 @@ final class H2ConnectionTest {
     }
 
     @Test
-    @Disabled("see https://github.com/r2dbc/r2dbc-h2/issues/83")
     void createSavepointErrorResponse() {
         when(this.client.inTransaction()).thenReturn(true);
-        doThrow(new SQLFeatureNotSupportedException("can't savepoint", "some state", 999)).when(this.client).execute("SAVEPOINT test-name");
+        doThrow(DbException.convert(new SQLFeatureNotSupportedException("can't savepoint", "some state", 999)))
+            .when(this.client).execute("SAVEPOINT test-name");
 
         new H2Connection(this.client, MockCodecs.empty())
             .createSavepoint("test-name")
@@ -202,10 +206,10 @@ final class H2ConnectionTest {
     }
 
     @Test
-    @Disabled("see https://github.com/r2dbc/r2dbc-h2/issues/83")
     void releaseSavepointErrorResponse() {
         when(this.client.inTransaction()).thenReturn(true);
-        doThrow(new SQLFeatureNotSupportedException("can't savepoint", "some state", 999)).when(this.client).execute("RELEASE SAVEPOINT test-name");
+        doThrow(DbException.convert(new SQLFeatureNotSupportedException("can't savepoint", "some state", 999)))
+            .when(this.client).execute("RELEASE SAVEPOINT test-name");
 
         new H2Connection(this.client, MockCodecs.empty())
             .releaseSavepoint("test-name")
@@ -241,10 +245,10 @@ final class H2ConnectionTest {
     }
 
     @Test
-    @Disabled("see https://github.com/r2dbc/r2dbc-h2/issues/83")
     void rollbackTransactionErrorResponse() {
         when(this.client.inTransaction()).thenReturn(true);
-        doThrow(new SQLFeatureNotSupportedException("can't savepoint", "some state", 999)).when(this.client).execute("ROLLBACK");
+        doThrow(DbException.convert(new SQLTransactionRollbackException("can't savepoint", "some state", 999)))
+            .when(this.client).execute("ROLLBACK");
 
         new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransaction()
@@ -274,10 +278,10 @@ final class H2ConnectionTest {
     }
 
     @Test
-    @Disabled("see https://github.com/r2dbc/r2dbc-h2/issues/83")
     void rollbackTransactionToSavepointErrorResponse() {
         when(this.client.inTransaction()).thenReturn(true);
-        doThrow(new SQLFeatureNotSupportedException("can't savepoint", "some state", 999)).when(this.client).execute("ROLLBACK TO SAVEPOINT test-name");
+        doThrow(DbException.convert(new SQLTransactionRollbackException("can't savepoint", "some state", 999)))
+            .when(this.client).execute("ROLLBACK TO SAVEPOINT test-name");
 
         new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransactionToSavepoint("test-name")

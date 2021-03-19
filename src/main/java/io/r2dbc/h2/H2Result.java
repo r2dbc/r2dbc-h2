@@ -24,12 +24,15 @@ import io.r2dbc.spi.RowMetadata;
 import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.value.Value;
+import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.Nullable;
 
 import java.util.Iterator;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * An implementation of {@link Result} representing the results of a query against an H2 database.
@@ -42,21 +45,54 @@ public final class H2Result implements Result {
 
     private final Mono<Integer> rowsUpdated;
 
-    private H2Result(Mono<Integer> rowsUpdated) {
-        this.rowMetadata = null;
-        this.rows = Flux.empty();
-        this.rowsUpdated = Assert.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
-    }
+    private final Flux<Segment> segments;
 
-    H2Result(H2RowMetadata rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated) {
+    H2Result(H2RowMetadata rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated, Flux<Segment> segments) {
         this.rowMetadata = Assert.requireNonNull(rowMetadata, "rowMetadata must not be null");
         this.rows = Assert.requireNonNull(rows, "rows must not be null");
         this.rowsUpdated = Assert.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
+        this.segments = Assert.requireNonNull(segments, "segments must not be null");
+    }
+
+    private H2Result(Mono<Integer> rowsUpdated, Flux<Segment> segments) {
+        this.rowMetadata = null;
+        this.rows = Flux.empty();
+        this.rowsUpdated = Assert.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
+        this.segments = Assert.requireNonNull(segments, "segments must not be null");
     }
 
     @Override
     public Mono<Integer> getRowsUpdated() {
         return this.rowsUpdated;
+    }
+
+    @Override
+    public H2Result filter(Predicate<Segment> filter) {
+        Assert.requireNonNull(filter, "predicate must not be null");
+
+        Flux<Segment> filteredSegments = this.segments.filter(filter::test);
+
+        return new H2Result(this.rowMetadata, this.rows, this.rowsUpdated, filteredSegments);
+    }
+
+    @Override
+    public <T> Flux<T> flatMap(Function<Segment, ? extends Publisher<? extends T>> f) {
+        Assert.requireNonNull(f, "f must not be null");
+
+        return this.segments
+            .flatMap(segment -> {
+                Publisher<? extends T> result = f.apply(segment);
+
+                if (result == null) {
+                    return Mono.error(new IllegalStateException("The mapper returned a null Publisher"));
+                }
+
+                if (result instanceof Mono) {
+                    return result;
+                }
+
+                return Flux.from(result);
+            });
     }
 
     @Override
@@ -79,7 +115,7 @@ public final class H2Result implements Result {
     static H2Result toResult(Codecs codecs, @Nullable Integer rowsUpdated) {
         Assert.requireNonNull(codecs, "codecs must not be null");
 
-        return new H2Result(Mono.justOrEmpty(rowsUpdated));
+        return new H2Result(Mono.justOrEmpty(rowsUpdated), Flux.empty());
     }
 
     static H2Result toResult(Codecs codecs, ResultInterface result, @Nullable Integer rowsUpdated) {
@@ -109,9 +145,9 @@ public final class H2Result implements Result {
         };
 
         Flux<H2Row> rows = Flux.fromIterable(iterable)
-            .map(values -> H2Row.toRow(values, result, codecs))
+            .map(values -> H2Row.toRow(values, result, codecs, rowMetadata))
             .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
 
-        return new H2Result(rowMetadata, rows, Mono.justOrEmpty(rowsUpdated));
+        return new H2Result(rowMetadata, rows, Mono.justOrEmpty(rowsUpdated), Flux.empty());
     }
 }

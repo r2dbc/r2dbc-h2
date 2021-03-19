@@ -19,9 +19,7 @@ package io.r2dbc.h2;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
-import io.r2dbc.spi.Connection;
-import io.r2dbc.spi.IsolationLevel;
-import io.r2dbc.spi.ValidationDepth;
+import io.r2dbc.spi.*;
 import org.h2.command.CommandInterface;
 import org.h2.engine.Constants;
 import org.h2.message.DbException;
@@ -32,17 +30,13 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Function;
 
-import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
-import static io.r2dbc.spi.IsolationLevel.READ_UNCOMMITTED;
-import static io.r2dbc.spi.IsolationLevel.REPEATABLE_READ;
-import static io.r2dbc.spi.IsolationLevel.SERIALIZABLE;
-import static org.h2.engine.Constants.LOCK_MODE_OFF;
-import static org.h2.engine.Constants.LOCK_MODE_READ_COMMITTED;
-import static org.h2.engine.Constants.LOCK_MODE_TABLE;
+import static io.r2dbc.spi.IsolationLevel.*;
+import static org.h2.engine.Constants.*;
 
 /**
  * An implementation of {@link Connection} for connecting to an H2 database.
@@ -82,15 +76,36 @@ public final class H2Connection implements Connection {
 
     @Override
     public Mono<Void> beginTransaction() {
+        return beginTransaction(EmptyTransactionDefinition.INSTANCE);
+    }
+
+    @Override
+    public Mono<Void> beginTransaction(TransactionDefinition definition) {
         return useTransactionStatus(inTransaction -> {
             if (!inTransaction) {
-                this.client.disableAutoCommit();
+
+                IsolationLevel isolationLevel = definition.getAttribute(TransactionDefinition.ISOLATION_LEVEL);
+                Boolean readOnly = definition.getAttribute(TransactionDefinition.READ_ONLY);
+
+                Mono<Void> startTransaction = Mono.fromRunnable(() -> this.client.disableAutoCommit());
+
+                if (isolationLevel != null) {
+                    startTransaction = startTransaction.then(setTransactionIsolationLevel(isolationLevel));
+                }
+
+                if (readOnly != null) {
+                    logger.warn(TransactionDefinition.READ_ONLY + " + isn't supported in H2 at the transaction level. " +
+                        "You must set it on conenction URL. See http://www.h2database.com/html/features.html#read_only");
+                }
+
+                return startTransaction;
+
             } else {
                 this.logger.debug("Skipping begin transaction because already in one");
+                return Mono.empty();
             }
-            return Mono.empty();
-        })
-            .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
+        }).onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
+
     }
 
     @Override
@@ -199,6 +214,16 @@ public final class H2Connection implements Connection {
     }
 
     @Override
+    public Mono<Void> setLockWaitTimeout(Duration duration) {
+        return Mono.empty();
+    }
+
+    @Override
+    public Mono<Void> setStatementTimeout(Duration duration) {
+        return Mono.empty();
+    }
+
+    @Override
     public Mono<Void> setTransactionIsolationLevel(IsolationLevel isolationLevel) {
         Assert.requireNonNull(isolationLevel, "isolationLevel must not be null");
 
@@ -222,14 +247,14 @@ public final class H2Connection implements Connection {
         Assert.requireNonNull(depth, "depth must not be null");
 
         return Mono.fromCallable(() -> {
-            if (this.client.getSession().isClosed()) {
-                return false;
-            }
+                if (this.client.getSession().isClosed()) {
+                    return false;
+                }
 
-            this.client.query(this.client.prepareCommand("SELECT CURRENT_TIMESTAMP", Collections.emptyList()).next());
+                this.client.query(this.client.prepareCommand("SELECT CURRENT_TIMESTAMP", Collections.emptyList()).next());
 
-            return true;
-        })
+                return true;
+            })
             .switchIfEmpty(Mono.just(false));
     }
 
@@ -251,4 +276,13 @@ public final class H2Connection implements Connection {
             .then();
     }
 
+    private enum EmptyTransactionDefinition implements TransactionDefinition {
+
+        INSTANCE;
+
+        @Override
+        public <T> T getAttribute(Option<T> option) {
+            return null;
+        }
+    }
 }

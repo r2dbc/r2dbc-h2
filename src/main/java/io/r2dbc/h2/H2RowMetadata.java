@@ -22,11 +22,7 @@ import io.r2dbc.spi.ColumnMetadata;
 import io.r2dbc.spi.RowMetadata;
 import org.h2.result.ResultInterface;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * An implementation of {@link RowMetadata} for an H2 database.

@@ -24,11 +24,7 @@ import org.h2.value.TypeInfo;
 import org.h2.value.Value;
 import reactor.util.annotation.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * An implementation of {@link Row} for an H2 database.
@@ -39,12 +35,14 @@ public final class H2Row implements Row {
 
     private final List<Column> columns;
 
+    private final H2RowMetadata metadata;
+
     private final Map<String, Column> nameKeyedColumns;
 
-    H2Row(List<Column> columns, Codecs codecs) {
+    H2Row(List<Column> columns, Codecs codecs, H2RowMetadata metadata) {
         this.columns = Assert.requireNonNull(columns, "columns must not be null");
         this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
-
+        this.metadata = Assert.requireNonNull(metadata, "metadata must not be null");
         this.nameKeyedColumns = getNameKeyedColumns(this.columns);
     }
 
@@ -73,6 +71,17 @@ public final class H2Row implements Row {
         return this.codecs.decode(column.getValue(), column.getTypeInfo().getValueType(), type);
     }
 
+    /**
+     * Returns the {@link H2RowMetadata} associated with this {@link Row}.
+     *
+     * @return the {@link H2RowMetadata} associate with this {@link Row}.
+     */
+    @Override
+    public H2RowMetadata getMetadata() {
+        return this.metadata;
+    }
+
+
     @Override
     public int hashCode() {
         return Objects.hash(this.columns);
@@ -86,14 +95,14 @@ public final class H2Row implements Row {
             '}';
     }
 
-    static H2Row toRow(Value[] values, ResultInterface result, Codecs codecs) {
+    static H2Row toRow(Value[] values, ResultInterface result, Codecs codecs, H2RowMetadata metadata) {
         Assert.requireNonNull(values, "values must not be null");
         Assert.requireNonNull(result, "result must not be null");
         Assert.requireNonNull(codecs, "codecs must not null");
 
         List<Column> columns = getColumns(values, result);
 
-        return new H2Row(columns, codecs);
+        return new H2Row(columns, codecs, metadata);
     }
 
     private static List<Column> getColumns(Value[] values, ResultInterface result) {

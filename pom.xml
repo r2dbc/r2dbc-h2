@@ -15,9 +15,9 @@
   -->
 
 <project
-        xmlns="http://maven.apache.org/POM/4.0.0"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
                 http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
@@ -32,21 +32,21 @@
     <url>https://github.com/r2dbc/r2dbc-h2</url>
 
     <properties>
-        <assertj.version>3.17.2</assertj.version>
+        <assertj.version>3.20.2</assertj.version>
         <h2.version>1.4.200</h2.version>
         <java.version>1.8</java.version>
-        <jmh.version>1.23</jmh.version>
+        <jmh.version>1.32</jmh.version>
         <jsr305.version>3.0.2</jsr305.version>
         <jts.version>1.16.1</jts.version>
         <junit.version>5.7.0</junit.version>
         <logback.version>1.2.3</logback.version>
         <mbr.version>0.2.0.RELEASE</mbr.version>
-        <mockito.version>3.5.15</mockito.version>
+        <mockito.version>3.11.2</mockito.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <r2dbc-spi.version>0.8.0.RELEASE</r2dbc-spi.version>
-        <reactor.version>Dysprosium-SR18</reactor.version>
-        <spring-boot.version>2.3.9.RELEASE</spring-boot.version>
+        <r2dbc-spi.version>0.9.0.M2</r2dbc-spi.version>
+        <reactor.version>Dysprosium-SR22</reactor.version>
+        <spring-boot.version>2.5.3</spring-boot.version>
     </properties>
 
     <licenses>
@@ -65,11 +65,11 @@
     <developers>
         <developer>
             <name>Ben Hale</name>
-            <email>bhale@pivotal.io</email>
+            <email>bhale@vmware.com</email>
         </developer>
         <developer>
             <name>Greg Turnquist</name>
-            <email>gturnquist@pivotal.io</email>
+            <email>gturnquist@vmware.com</email>
         </developer>
     </developers>
 
@@ -198,13 +198,6 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
-                    <compilerArgs>
-                        <arg>-Werror</arg>
-                        <arg>-Xlint:all</arg>
-                        <arg>-Xlint:-options</arg>
-                        <arg>-Xlint:-processing</arg>
-                        <arg>-Xlint:-serial</arg>
-                    </compilerArgs>
                     <showWarnings>true</showWarnings>
                     <source>${java.version}</source>
                     <target>${java.version}</target>

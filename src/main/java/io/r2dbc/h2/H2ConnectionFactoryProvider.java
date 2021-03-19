@@ -27,11 +27,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.r2dbc.spi.ConnectionFactoryOptions.DATABASE;
-import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
-import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
-import static io.r2dbc.spi.ConnectionFactoryOptions.PROTOCOL;
-import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
+import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 
 /**
  * An implementation of {@link ConnectionFactoryProvider} for creating {@link H2ConnectionFactory}s.
@@ -73,43 +69,43 @@ public final class H2ConnectionFactoryProvider implements ConnectionFactoryProvi
 
         H2ConnectionConfiguration.Builder builder = H2ConnectionConfiguration.builder();
 
-        String protocol = connectionFactoryOptions.getValue(PROTOCOL);
+        String protocol = (String) connectionFactoryOptions.getValue(PROTOCOL);
         if (PROTOCOL_FILE.equals(protocol)) {
-            builder.file(connectionFactoryOptions.getRequiredValue(DATABASE));
+            builder.file((String) connectionFactoryOptions.getRequiredValue(DATABASE));
         } else if (PROTOCOL_MEM.equals(protocol)) {
-            builder.inMemory(connectionFactoryOptions.getRequiredValue(DATABASE));
+            builder.inMemory((String) connectionFactoryOptions.getRequiredValue(DATABASE));
         } else if (protocol != null) {
             throw new IllegalArgumentException(String.format("protocol option %s is unsupported (%s, %s)", protocol, PROTOCOL_FILE, PROTOCOL_MEM));
         }
 
-        String url = connectionFactoryOptions.getValue(URL);
+        String url = (String) connectionFactoryOptions.getValue(URL);
         if (url != null) {
             builder.url(url);
         }
 
-        String options = connectionFactoryOptions.getValue(OPTIONS);
+        String options = (String) connectionFactoryOptions.getValue(OPTIONS);
         if (options != null) {
             for (String option : options.split(";")) {
                 builder.option(option);
             }
         }
 
-        CharSequence password = connectionFactoryOptions.getValue(PASSWORD);
+        CharSequence password = (CharSequence) connectionFactoryOptions.getValue(PASSWORD);
         if (password != null) {
             builder.password(password.toString());
         }
 
-        builder.username(connectionFactoryOptions.getValue(USER));
+        builder.username((String) connectionFactoryOptions.getValue(USER));
 
         for (String knownOptionKey : KNOWN_OPTION_KEYS) {
 
             Option<String> uc = Option.valueOf(knownOptionKey);
             if (connectionFactoryOptions.hasOption(uc)) {
-                builder.property(uc.name(), connectionFactoryOptions.getRequiredValue(uc));
+                builder.property(uc.name(), (String) connectionFactoryOptions.getRequiredValue(uc));
             } else {
                 Option<String> lc = Option.valueOf(knownOptionKey.toLowerCase(Locale.ENGLISH));
                 if (connectionFactoryOptions.hasOption(lc)) {
-                    builder.property(lc.name(), connectionFactoryOptions.getRequiredValue(lc));
+                    builder.property(lc.name(), (String) connectionFactoryOptions.getRequiredValue(lc));
                 }
             }
         }
@@ -121,7 +117,7 @@ public final class H2ConnectionFactoryProvider implements ConnectionFactoryProvi
     public boolean supports(ConnectionFactoryOptions connectionFactoryOptions) {
         Assert.requireNonNull(connectionFactoryOptions, "connectionFactoryOptions must not be null");
 
-        String driver = connectionFactoryOptions.getValue(DRIVER);
+        String driver = (String) connectionFactoryOptions.getValue(DRIVER);
         if (driver == null || !driver.equals(H2_DRIVER)) {
             return false;
         }

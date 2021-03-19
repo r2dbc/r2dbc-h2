@@ -37,19 +37,19 @@ final class H2ResultTest {
 
     @Test
     void constructorNoRowMetadata() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(null, Flux.empty(), Mono.empty()))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(null, Flux.empty(), Mono.empty(), Flux.empty()))
             .withMessage("rowMetadata must not be null");
     }
 
     @Test
     void constructorNoRows() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(mock(H2RowMetadata.class), null, Mono.empty()))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(mock(H2RowMetadata.class), null, Mono.empty(), Flux.empty()))
             .withMessage("rows must not be null");
     }
 
     @Test
     void constructorNoRowsUpdated() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(mock(H2RowMetadata.class), Flux.empty(), null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2Result(mock(H2RowMetadata.class), Flux.empty(), null, Flux.empty()))
             .withMessage("rowsUpdated must not be null");
     }
 

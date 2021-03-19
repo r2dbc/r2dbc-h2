@@ -31,9 +31,7 @@ import java.util.List;
 import static io.r2dbc.spi.Nullability.NULLABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.mockito.Mockito.RETURNS_SMART_NULLS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 final class H2RowMetadataTest {
 
@@ -42,8 +40,8 @@ final class H2RowMetadataTest {
     Codecs codecs = new DefaultCodecs(client);
 
     private final List<H2ColumnMetadata> columnMetadatas = Arrays.asList(
-        new H2ColumnMetadata(codecs, "TEST-NAME-1", 200, NULLABLE, 100L, 500),
-        new H2ColumnMetadata(codecs, "TEST-NAME-2", 400, NULLABLE, 300L, 600)
+        new H2ColumnMetadata(codecs, "TEST-NAME-1", TypeInfo.TYPE_STRING, NULLABLE, 100L, 500),
+        new H2ColumnMetadata(codecs, "TEST-NAME-2", TypeInfo.TYPE_BOOLEAN, NULLABLE, 300L, 600)
     );
 
     private final ResultInterface result = mock(ResultInterface.class, RETURNS_SMART_NULLS);
@@ -57,7 +55,7 @@ final class H2RowMetadataTest {
     @Test
     void getColumnMetadataIndex() {
         assertThat(new H2RowMetadata(this.columnMetadatas).getColumnMetadata(1))
-            .isEqualTo(new H2ColumnMetadata(codecs, "TEST-NAME-2", 400, NULLABLE, 300L, 600));
+            .isEqualTo(new H2ColumnMetadata(codecs, "TEST-NAME-2", TypeInfo.TYPE_BOOLEAN, NULLABLE, 300L, 600));
     }
 
     @Test
@@ -75,7 +73,7 @@ final class H2RowMetadataTest {
     @Test
     void getColumnMetadataName() {
         assertThat(new H2RowMetadata(this.columnMetadatas).getColumnMetadata("test-name-2"))
-            .isEqualTo(new H2ColumnMetadata(codecs, "TEST-NAME-2", 400, NULLABLE, 300L, 600));
+            .isEqualTo(new H2ColumnMetadata(codecs, "TEST-NAME-2", TypeInfo.TYPE_BOOLEAN, NULLABLE, 300L, 600));
     }
 
     @Test

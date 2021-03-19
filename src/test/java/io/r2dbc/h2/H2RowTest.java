@@ -17,10 +17,10 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.h2.util.H2ServerExtension;
+import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
-import io.r2dbc.spi.test.TestKit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,10 +34,8 @@ import java.util.Collections;
 
 import static io.r2dbc.h2.H2ConnectionFactoryProvider.H2_DRIVER;
 import static io.r2dbc.h2.H2ConnectionFactoryProvider.URL;
-import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
-import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
-import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
-import static io.r2dbc.spi.test.TestKit.close;
+import static io.r2dbc.spi.ConnectionFactoryOptions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 final class H2RowTest {
 
@@ -68,10 +66,10 @@ final class H2RowTest {
         Mono.from(this.connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement("SELECT value as ALIASED_VALUE FROM test")
-                .execute())
+                    .createStatement("SELECT value as ALIASED_VALUE FROM test")
+                    .execute())
                 .flatMap(result -> Flux.from(result
-                    .map((row, rowMetadata) -> row.get("ALIASED_VALUE", Integer.class)))
+                        .map((row, rowMetadata) -> row.get("ALIASED_VALUE", Integer.class)))
                     .collectList())
 
                 .concatWith(close(connection)))
@@ -87,15 +85,19 @@ final class H2RowTest {
         Mono.from(this.connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement("SELECT value FROM test")
-                .execute())
-                .flatMap(TestKit::extractColumns)
+                    .createStatement("SELECT value FROM test")
+                    .execute())
+                .flatMap(new H2PostgresqlTestKit()::extractColumns)
 
                 .concatWith(close(connection)))
             .as(StepVerifier::create)
-            .expectNext(Collections.singletonList(100))
+            .expectNextMatches(integers -> {
+                assertThat(integers).containsExactly(100);
+                return true;
+            })
             .verifyComplete();
     }
+
 
     private JdbcOperations getJdbcOperations() {
         JdbcOperations jdbcOperations = SERVER.getJdbcOperations();
@@ -105,6 +107,12 @@ final class H2RowTest {
         }
 
         return jdbcOperations;
+    }
+
+    static <T> Mono<T> close(Connection connection) {
+        return Mono.from(connection
+                .close())
+            .then(Mono.empty());
     }
 
 //    private final List<Column> columns = Arrays.asList(

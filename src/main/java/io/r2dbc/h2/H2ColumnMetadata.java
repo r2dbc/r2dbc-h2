@@ -27,9 +27,7 @@ import org.h2.value.TypeInfo;
 
 import java.util.Objects;
 
-import static io.r2dbc.spi.Nullability.NON_NULL;
-import static io.r2dbc.spi.Nullability.NULLABLE;
-import static io.r2dbc.spi.Nullability.UNKNOWN;
+import static io.r2dbc.spi.Nullability.*;
 
 /**
  * An implementation of {@link ColumnMetadata} for an H2 database.
@@ -40,7 +38,7 @@ public final class H2ColumnMetadata implements ColumnMetadata {
 
     private final String name;
 
-    private final Integer nativeType;
+    private final H2Type type;
 
     private final Nullability nullability;
 
@@ -48,13 +46,14 @@ public final class H2ColumnMetadata implements ColumnMetadata {
 
     private final Integer scale;
 
-    H2ColumnMetadata(Codecs codecs, String name, Integer nativeType, Nullability nullability, Long precision, Integer scale) {
+    H2ColumnMetadata(Codecs codecs, String name, TypeInfo typeInfo, Nullability nullability, Long precision, Integer scale) {
         this.codecs = Assert.requireNonNull(codecs, "codecs must not be null");
         this.name = Assert.requireNonNull(name, "name must not be null");
-        this.nativeType = Assert.requireNonNull(nativeType, "nativeType must not be null");
         this.nullability = Assert.requireNonNull(nullability, "nullability must not be null");
         this.precision = Assert.requireNonNull(precision, "precision must not be null");
         this.scale = Assert.requireNonNull(scale, "scale must not be null");
+        this.type = new H2Type(Assert.requireNonNull(typeInfo, "typeInfo must not be null"), codecs.preferredType(typeInfo.getValueType()));
+
     }
 
     @Override
@@ -68,7 +67,7 @@ public final class H2ColumnMetadata implements ColumnMetadata {
         H2ColumnMetadata that = (H2ColumnMetadata) o;
         return Objects.equals(this.codecs, that.codecs) &&
             this.name.equals(that.name) &&
-            this.nativeType.equals(that.nativeType) &&
+            this.type.equals(that.type) &&
             this.nullability == that.nullability &&
             this.precision.equals(that.precision) &&
             this.scale.equals(that.scale);
@@ -76,7 +75,7 @@ public final class H2ColumnMetadata implements ColumnMetadata {
 
     @Override
     public Class<?> getJavaType() {
-        return codecs.preferredType(this.nativeType);
+        return this.type.getJavaType();
     }
 
     @Override
@@ -86,7 +85,7 @@ public final class H2ColumnMetadata implements ColumnMetadata {
 
     @Override
     public Object getNativeTypeMetadata() {
-        return this.nativeType;
+        return this.type.getTypeInfo().getValueType();
     }
 
     @Override
@@ -105,8 +104,13 @@ public final class H2ColumnMetadata implements ColumnMetadata {
     }
 
     @Override
+    public H2Type getType() {
+        return this.type;
+    }
+
+    @Override
     public int hashCode() {
-        return Objects.hash(this.codecs, this.name, this.nativeType, this.nullability, this.precision, this.scale);
+        return Objects.hash(this.codecs, this.name, this.type, this.nullability, this.precision, this.scale);
     }
 
     @Override
@@ -114,7 +118,7 @@ public final class H2ColumnMetadata implements ColumnMetadata {
         return "H2ColumnMetadata{" +
             "codecs=" + this.codecs +
             ", name='" + this.name + '\'' +
-            ", nativeType=" + this.nativeType +
+            ", type=" + this.type +
             ", nullability=" + this.nullability +
             ", precision=" + this.precision +
             ", scale=" + this.scale +
@@ -129,7 +133,7 @@ public final class H2ColumnMetadata implements ColumnMetadata {
             TypeInfo typeInfo = result.getColumnType(index);
             String alias = result.getAlias(index);
 
-            return new H2ColumnMetadata(codecs, alias, typeInfo.getValueType(), toNullability(result.getNullable(index)),
+            return new H2ColumnMetadata(codecs, alias, typeInfo, toNullability(result.getNullable(index)),
                 typeInfo.getPrecision(), typeInfo.getScale());
         } catch (DbException e) {
             throw H2DatabaseExceptionFactory.convert(e);
