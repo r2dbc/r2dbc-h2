@@ -41,7 +41,7 @@ Publisher<? extends Connection> connectionPublisher = connectionFactory.create()
 
 [source,java]
 ----
-ConnectionFactory connectionFactory = ConnectionFactories.get("r2dbc:h2:file//my/relative/path");
+ConnectionFactory connectionFactory = ConnectionFactories.get("r2dbc:h2:file///my/relative/path");
 
 Publisher<? extends Connection> connectionPublisher = connectionFactory.create();
 ----
