@@ -130,6 +130,7 @@ public final class DefaultCodecs implements Codecs {
                 new LocalTimeCodec(),
                 new LongCodec(),
                 new OffsetDateTimeCodec(client),
+                new OffsetTimeCodec(client),
                 new ShortCodec(),
                 new StringCodec(),
                 new UuidCodec(),
