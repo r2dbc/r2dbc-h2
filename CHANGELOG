@@ -1,6 +1,23 @@
 R2DBC H2 Changelog
 =============================
 
+0.9.0.M1
+------------------
+* Align Spring Boot version with Reactor version #200.
+* Upgrade to Spring Boot 2.3.9.RELEASE. #186.
+* Upgrade to Reactor Dysprosium-SR18. #185.
+* Upgrade to Mockito 3.5.15. #184.
+* Upgrade to JUnit 5.7.0. #183.
+* Upgrade main branch to AssertJ 3.17.2. #182.
+* Restrict CI and release task to r2dbc/r2dbc-h2 repo #175.
+* Stage releases directly on maven central #151.
+* InstantCodec added #139.
+* Codes for a java.time.Instant  #138.
+* Use Travis CI for pull requests #136.
+* Trigger CI jobs based on SPI changes #134.
+* Forward port tweaks to fix Jenkins build jobs. #133.
+* Migrate to Jenkins #130.
+
 0.8.1.RELEASE
 ------------------
 * Backport Travis CI support to 0.8.x #137.
