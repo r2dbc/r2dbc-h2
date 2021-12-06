@@ -23,6 +23,7 @@ import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.result.ResultInterface;
 import org.h2.table.Column;
 import org.h2.value.TypeInfo;
+import org.h2.value.Value;
 import org.junit.jupiter.api.Test;
 
 import static io.r2dbc.spi.Nullability.NULLABLE;
@@ -38,7 +39,7 @@ final class H2ColumnMetadataTest {
 
     @Test
     void constructorNoName() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, null, TypeInfo.TYPE_STRING, NULLABLE, 100L, 500))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, null, TypeInfo.TYPE_VARCHAR, NULLABLE, 100L, 500))
             .withMessage("name must not be null");
     }
 
@@ -50,41 +51,41 @@ final class H2ColumnMetadataTest {
 
     @Test
     void constructorNoNullability() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, "test-name", TypeInfo.TYPE_STRING, null, 100L, 500))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, "test-name", TypeInfo.TYPE_VARCHAR, null, 100L, 500))
             .withMessage("nullability must not be null");
     }
 
     @Test
     void constructorNoPrecision() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, "test-name", TypeInfo.TYPE_STRING, NULLABLE, null, 500))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, "test-name", TypeInfo.TYPE_VARCHAR, NULLABLE, null, 500))
             .withMessage("precision must not be null");
     }
 
     @Test
     void constructorNoScale() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, "test-name", TypeInfo.TYPE_STRING, NULLABLE, 100L, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new H2ColumnMetadata(codecs, "test-name", TypeInfo.TYPE_VARCHAR, NULLABLE, 100L, null))
             .withMessage("scale must not be null");
     }
 
     @Test
     void toColumnMetadata() {
-        TypeInfo typeInfo = TypeInfo.TYPE_INT;
+        TypeInfo typeInfo = TypeInfo.TYPE_INTEGER;
         when(this.result.getColumnName(0)).thenReturn("test-name");
         when(this.result.getAlias(0)).thenReturn("test-alias");
         when(this.result.getColumnType(0)).thenReturn(typeInfo);
         when(this.result.getNullable(0)).thenReturn(Column.NULLABLE);
 
         MockCodecs codecs = MockCodecs.builder()
-            .preferredType(4, String.class)
+            .preferredType(Value.INTEGER, String.class)
             .build();
 
         H2ColumnMetadata columnMetadata = H2ColumnMetadata.toColumnMetadata(codecs, this.result, 0);
 
         assertThat(columnMetadata.getJavaType()).isEqualTo(String.class);
         assertThat(columnMetadata.getName()).isEqualTo("test-alias");
-        assertThat(columnMetadata.getNativeTypeMetadata()).isEqualTo(4);
+        assertThat(columnMetadata.getNativeTypeMetadata()).isEqualTo(Value.INTEGER);
         assertThat(columnMetadata.getNullability()).isEqualTo(NULLABLE);
-        assertThat(columnMetadata.getPrecision()).isEqualTo(10);
+        assertThat(columnMetadata.getPrecision()).isEqualTo(32);
         assertThat(columnMetadata.getScale()).isEqualTo(0);
     }
 

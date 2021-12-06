@@ -47,6 +47,6 @@ final class ArrayCodec extends AbstractCodec<Object[]> {
     Value doEncode(Object[] value) {
         return ValueArray.get(Arrays.stream(Assert.requireNonNull(value, "value must not be null"))
             .map(codecs::encode)
-            .toArray(Value[]::new));
+            .toArray(Value[]::new), null);
     }
 }

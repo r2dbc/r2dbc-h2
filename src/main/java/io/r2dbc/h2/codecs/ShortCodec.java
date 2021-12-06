@@ -18,7 +18,7 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
-import org.h2.value.ValueShort;
+import org.h2.value.ValueSmallint;
 
 final class ShortCodec extends AbstractCodec<Short> {
 
@@ -28,7 +28,7 @@ final class ShortCodec extends AbstractCodec<Short> {
 
     @Override
     boolean doCanDecode(int dataType) {
-        return dataType == Value.SHORT;
+        return dataType == Value.SMALLINT;
     }
 
     @Override
@@ -38,6 +38,6 @@ final class ShortCodec extends AbstractCodec<Short> {
 
     @Override
     Value doEncode(Short value) {
-        return ValueShort.get(Assert.requireNonNull(value, "value must not be null"));
+        return ValueSmallint.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

@@ -18,7 +18,7 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
-import org.h2.value.ValueString;
+import org.h2.value.ValueVarchar;
 
 final class StringCodec extends AbstractCodec<String> {
 
@@ -28,9 +28,7 @@ final class StringCodec extends AbstractCodec<String> {
 
     @Override
     boolean doCanDecode(int dataType) {
-        return Value.STRING == dataType ||
-            Value.STRING_FIXED == dataType ||
-            Value.STRING_IGNORECASE == dataType;
+        return Value.VARCHAR == dataType || Value.VARCHAR_IGNORECASE == dataType;
     }
 
     @Override
@@ -40,6 +38,6 @@ final class StringCodec extends AbstractCodec<String> {
 
     @Override
     Value doEncode(String value) {
-        return ValueString.get(Assert.requireNonNull(value, "value must not be null"));
+        return ValueVarchar.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

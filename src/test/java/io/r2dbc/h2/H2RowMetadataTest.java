@@ -23,6 +23,7 @@ import io.r2dbc.h2.codecs.MockCodecs;
 import org.h2.result.ResultInterface;
 import org.h2.table.Column;
 import org.h2.value.TypeInfo;
+import org.h2.value.Value;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -40,7 +41,7 @@ final class H2RowMetadataTest {
     Codecs codecs = new DefaultCodecs(client);
 
     private final List<H2ColumnMetadata> columnMetadatas = Arrays.asList(
-        new H2ColumnMetadata(codecs, "TEST-NAME-1", TypeInfo.TYPE_STRING, NULLABLE, 100L, 500),
+        new H2ColumnMetadata(codecs, "TEST-NAME-1", TypeInfo.TYPE_VARCHAR, NULLABLE, 100L, 500),
         new H2ColumnMetadata(codecs, "TEST-NAME-2", TypeInfo.TYPE_BOOLEAN, NULLABLE, 300L, 600)
     );
 
@@ -89,14 +90,14 @@ final class H2RowMetadataTest {
 
     @Test
     void toRowMetadata() {
-        TypeInfo typeInfo = TypeInfo.TYPE_FLOAT;
+        TypeInfo typeInfo = TypeInfo.TYPE_REAL;
         when(this.result.getVisibleColumnCount()).thenReturn(1);
         when(this.result.getColumnName(0)).thenReturn("test-name");
         when(this.result.getColumnType(0)).thenReturn(typeInfo);
         when(this.result.getNullable(0)).thenReturn(Column.NULLABLE);
 
         MockCodecs codecs = MockCodecs.builder()
-            .preferredType(8, String.class)
+            .preferredType(Value.REAL, String.class)
             .build();
 
         H2RowMetadata rowMetadata = H2RowMetadata.toRowMetadata(codecs, this.result);

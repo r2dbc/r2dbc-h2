@@ -45,10 +45,10 @@ public final class H2Result implements Result {
 
     private final Mono<Integer> rowsUpdated;
 
-    private final Flux<Segment> segments;
+    private final Flux<? extends Segment> segments;
 
-    H2Result(H2RowMetadata rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated, Flux<Segment> segments) {
-        this.rowMetadata = Assert.requireNonNull(rowMetadata, "rowMetadata must not be null");
+    H2Result(H2RowMetadata rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated, Flux<? extends Segment> segments) {
+        this.rowMetadata = rowMetadata;
         this.rows = Assert.requireNonNull(rows, "rows must not be null");
         this.rowsUpdated = Assert.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
         this.segments = Assert.requireNonNull(segments, "segments must not be null");
@@ -70,7 +70,7 @@ public final class H2Result implements Result {
     public H2Result filter(Predicate<Segment> filter) {
         Assert.requireNonNull(filter, "predicate must not be null");
 
-        Flux<Segment> filteredSegments = this.segments.filter(filter::test);
+        Flux<? extends Segment> filteredSegments = this.segments.filter(filter::test);
 
         return new H2Result(this.rowMetadata, this.rows, this.rowsUpdated, filteredSegments);
     }
@@ -115,7 +115,7 @@ public final class H2Result implements Result {
     static H2Result toResult(Codecs codecs, @Nullable Integer rowsUpdated) {
         Assert.requireNonNull(codecs, "codecs must not be null");
 
-        return new H2Result(Mono.justOrEmpty(rowsUpdated), Flux.empty());
+        return new H2Result(Mono.justOrEmpty(rowsUpdated), Flux.just((UpdateCount) () -> rowsUpdated));
     }
 
     static H2Result toResult(Codecs codecs, ResultInterface result, @Nullable Integer rowsUpdated) {
@@ -148,6 +148,6 @@ public final class H2Result implements Result {
             .map(values -> H2Row.toRow(values, result, codecs, rowMetadata))
             .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
 
-        return new H2Result(rowMetadata, rows, Mono.justOrEmpty(rowsUpdated), Flux.empty());
+        return new H2Result(rowMetadata, rows, Mono.justOrEmpty(rowsUpdated), rows);
     }
 }

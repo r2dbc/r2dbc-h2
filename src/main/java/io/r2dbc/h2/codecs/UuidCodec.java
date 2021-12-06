@@ -35,7 +35,7 @@ final class UuidCodec extends AbstractCodec<UUID> {
 
     @Override
     UUID doDecode(Value value, Class<? extends UUID> type) {
-        return (UUID) value.convertTo(Value.UUID).getObject();
+        return value.convertToUuid().getUuid();
     }
 
     @Override

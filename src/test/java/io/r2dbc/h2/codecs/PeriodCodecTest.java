@@ -69,7 +69,7 @@ public class PeriodCodecTest {
         assertThat(codec.doCanDecode(Value.TIMESTAMP_TZ)).isFalse();
         assertThat(codec.doCanDecode(Value.TIMESTAMP)).isFalse();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test

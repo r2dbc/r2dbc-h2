@@ -29,8 +29,8 @@ final class ZonedDateTimeCodecTest {
 
     @Test
     void decode() {
-        assertThat(new ZonedDateTimeCodec(client).doDecode(ValueTimestampTimeZone.parse("2018-10-31 11:59:59+05:00"), ZonedDateTime.class))
-                .isEqualTo(ZonedDateTime.of(2018, 10, 31, 11, 59, 59, 0, ZoneOffset.ofHours(5)));
+        assertThat(new ZonedDateTimeCodec(client).doDecode(ValueTimestampTimeZone.parse("2018-10-31 11:59:59+05:00", null), ZonedDateTime.class))
+            .isEqualTo(ZonedDateTime.of(2018, 10, 31, 11, 59, 59, 0, ZoneOffset.ofHours(5)));
     }
 
     @Test
@@ -39,24 +39,24 @@ final class ZonedDateTimeCodecTest {
 
         assertThat(codec.doCanDecode(Value.TIMESTAMP_TZ)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
     void doEncode() {
         assertThat(new ZonedDateTimeCodec(client).doEncode(ZonedDateTime.of(2018, 10, 31, 11, 59, 59, 0, ZoneOffset.ofHours(5))))
-                .isEqualTo(ValueTimestampTimeZone.parse("2018-10-31 11:59:59+05:00"));
+            .isEqualTo(ValueTimestampTimeZone.parse("2018-10-31 11:59:59+05:00", null));
     }
 
     @Test
     void doEncodeNoValue() {
         assertThatIllegalArgumentException().isThrownBy(() -> new ZonedDateTimeCodec(client).doEncode(null))
-                .withMessage("value must not be null");
+            .withMessage("value must not be null");
     }
 
     @Test
     void encodeNull() {
         assertThat(new ZonedDateTimeCodec(client).encodeNull())
-                .isEqualTo(ValueNull.INSTANCE);
+            .isEqualTo(ValueNull.INSTANCE);
     }
 }

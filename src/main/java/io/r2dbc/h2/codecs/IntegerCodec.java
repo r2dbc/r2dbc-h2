@@ -18,7 +18,7 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
-import org.h2.value.ValueInt;
+import org.h2.value.ValueInteger;
 
 final class IntegerCodec extends AbstractCodec<Integer> {
 
@@ -28,7 +28,7 @@ final class IntegerCodec extends AbstractCodec<Integer> {
 
     @Override
     boolean doCanDecode(int dataType) {
-        return dataType == ValueInt.INT;
+        return dataType == Value.INTEGER;
     }
 
     @Override
@@ -38,6 +38,6 @@ final class IntegerCodec extends AbstractCodec<Integer> {
 
     @Override
     Value doEncode(Integer value) {
-        return ValueInt.get(Assert.requireNonNull(value, "value must not be null"));
+        return ValueInteger.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

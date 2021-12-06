@@ -17,7 +17,7 @@
 package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
-import org.h2.value.ValueInt;
+import org.h2.value.ValueInteger;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +28,7 @@ final class IntegerCodecTest {
 
     @Test
     void decode() {
-        assertThat(new IntegerCodec().decode(ValueInt.get(100), Integer.class))
+        assertThat(new IntegerCodec().decode(ValueInteger.get(100), Integer.class))
             .isEqualTo(100);
     }
 
@@ -36,14 +36,14 @@ final class IntegerCodecTest {
     void doCanDecode() {
         IntegerCodec codec = new IntegerCodec();
 
-        assertThat(codec.doCanDecode(Value.INT)).isTrue();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isTrue();
         assertThat(codec.doCanDecode(Value.DOUBLE)).isFalse();
     }
 
     @Test
     void doEncode() {
         assertThat(new IntegerCodec().doEncode(100))
-            .isEqualTo(ValueInt.get(100));
+            .isEqualTo(ValueInteger.get(100));
     }
 
     @Test

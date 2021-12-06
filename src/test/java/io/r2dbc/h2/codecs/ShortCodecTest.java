@@ -18,7 +18,7 @@ package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
 import org.h2.value.ValueNull;
-import org.h2.value.ValueShort;
+import org.h2.value.ValueSmallint;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +28,7 @@ final class ShortCodecTest {
 
     @Test
     void decode() {
-        assertThat(new ShortCodec().decode(ValueShort.get((short) 100), Short.class))
+        assertThat(new ShortCodec().decode(ValueSmallint.get((short) 100), Short.class))
             .isEqualTo((short) 100);
     }
 
@@ -36,14 +36,14 @@ final class ShortCodecTest {
     void doCanDecode() {
         ShortCodec codec = new ShortCodec();
 
-        assertThat(codec.doCanDecode(Value.SHORT)).isTrue();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.SMALLINT)).isTrue();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
     void doEncode() {
         assertThat(new ShortCodec().doEncode((short) 100))
-            .isEqualTo(ValueShort.get((short) 100));
+            .isEqualTo(ValueSmallint.get((short) 100));
     }
 
     @Test

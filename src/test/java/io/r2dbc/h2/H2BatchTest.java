@@ -21,7 +21,7 @@ import io.r2dbc.h2.codecs.MockCodecs;
 import io.r2dbc.spi.R2dbcBadGrammarException;
 import org.h2.command.CommandInterface;
 import org.h2.message.DbException;
-import org.h2.result.LocalResultImpl;
+import org.h2.result.LocalResult;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -29,9 +29,7 @@ import reactor.test.StepVerifier;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.mockito.Mockito.RETURNS_SMART_NULLS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 final class H2BatchTest {
 
@@ -74,8 +72,8 @@ final class H2BatchTest {
         ).iterator());
         when(command1.isQuery()).thenReturn(true);
         when(command2.isQuery()).thenReturn(true);
-        when(this.client.query(command1)).thenReturn(new LocalResultImpl());
-        when(this.client.query(command2)).thenReturn(new LocalResultImpl());
+        when(this.client.query(command1)).thenReturn(new LocalResult());
+        when(this.client.query(command2)).thenReturn(new LocalResult());
 
         new H2Batch(this.client, MockCodecs.empty())
             .add("select test-query-1")

@@ -45,6 +45,14 @@ public final class Assert {
         return t;
     }
 
+    public static boolean requireTrue(boolean b, String message) {
+        if (!b) {
+            throw new IllegalArgumentException(message);
+        }
+
+        return b;
+    }
+
     /**
      * Checks that the specified value is of a specific type.
      *

@@ -51,7 +51,7 @@ final class H2RowTest {
 
     @BeforeEach
     void createTable() {
-        getJdbcOperations().execute("CREATE TABLE test ( value INTEGER )");
+        getJdbcOperations().execute("CREATE TABLE test ( test_value INTEGER )");
     }
 
     @AfterEach
@@ -66,7 +66,7 @@ final class H2RowTest {
         Mono.from(this.connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
-                    .createStatement("SELECT value as ALIASED_VALUE FROM test")
+                    .createStatement("SELECT test_value as ALIASED_VALUE FROM test")
                     .execute())
                 .flatMap(result -> Flux.from(result
                         .map((row, rowMetadata) -> row.get("ALIASED_VALUE", Integer.class)))
@@ -85,7 +85,7 @@ final class H2RowTest {
         Mono.from(this.connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
-                    .createStatement("SELECT value FROM test")
+                    .createStatement("SELECT test_value FROM test")
                     .execute())
                 .flatMap(new H2PostgresqlTestKit()::extractColumns)
 

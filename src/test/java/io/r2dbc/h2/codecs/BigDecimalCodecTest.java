@@ -17,8 +17,8 @@
 package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
-import org.h2.value.ValueDecimal;
 import org.h2.value.ValueNull;
+import org.h2.value.ValueNumeric;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -32,7 +32,7 @@ final class BigDecimalCodecTest {
 
     @Test
     void decode() {
-        assertThat(new BigDecimalCodec().decode(ValueDecimal.get(BIG), BigDecimal.class))
+        assertThat(new BigDecimalCodec().decode(ValueNumeric.get(BIG), BigDecimal.class))
             .isEqualTo(BIG);
     }
 
@@ -40,15 +40,15 @@ final class BigDecimalCodecTest {
     void doCanDecode() {
         BigDecimalCodec codec = new BigDecimalCodec();
 
-        assertThat(codec.doCanDecode(Value.DECIMAL)).isTrue();
+        assertThat(codec.doCanDecode(Value.NUMERIC)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
     void doEncode() {
         assertThat(new BigDecimalCodec().doEncode(BIG))
-            .isEqualTo(ValueDecimal.get(BIG));
+            .isEqualTo(ValueNumeric.get(BIG));
     }
 
     @Test

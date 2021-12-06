@@ -19,7 +19,7 @@ final class LocalDateCodec extends AbstractCodec<LocalDate> {
 
     @Override
     LocalDate doDecode(Value value, Class<? extends LocalDate> type) {
-        return (LocalDate) JSR310Utils.valueToLocalDate(value);
+        return (LocalDate) JSR310Utils.valueToLocalDate(value, null);
     }
 
     @Override

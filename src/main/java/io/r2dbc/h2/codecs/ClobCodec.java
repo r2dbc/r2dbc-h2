@@ -20,6 +20,7 @@ import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Clob;
 import org.h2.value.Value;
+import org.h2.value.ValueClob;
 import org.h2.value.ValueNull;
 import reactor.core.publisher.Flux;
 
@@ -56,7 +57,7 @@ final class ClobCodec extends AbstractCodec<Clob> {
     Value doEncode(Clob value) {
         Assert.requireNonNull(value, "value must not be null");
 
-        Value clob = this.client.getSession().getDataHandler().getLobStorage().createClob(
+        ValueClob clob = this.client.getSession().getDataHandler().getLobStorage().createClob(
             new AggregateCharArrayReader(value), -1);
 
         this.client.getSession().addTemporaryLob(clob);

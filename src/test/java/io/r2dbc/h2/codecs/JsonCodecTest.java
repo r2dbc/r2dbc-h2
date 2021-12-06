@@ -17,7 +17,6 @@
 package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
-import org.h2.value.ValueInt;
 import org.h2.value.ValueJson;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;

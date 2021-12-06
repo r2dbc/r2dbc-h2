@@ -18,6 +18,7 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
+import io.r2dbc.spi.Result;
 import io.r2dbc.spi.Row;
 import org.h2.result.ResultInterface;
 import org.h2.value.TypeInfo;
@@ -29,7 +30,7 @@ import java.util.*;
 /**
  * An implementation of {@link Row} for an H2 database.
  */
-public final class H2Row implements Row {
+public final class H2Row implements Row, Result.RowSegment {
 
     private final Codecs codecs;
 
@@ -88,6 +89,11 @@ public final class H2Row implements Row {
     }
 
     @Override
+    public H2Row row() {
+        return this;
+    }
+
+    @Override
     public String toString() {
         return "H2Row{" +
             "columns=" + this.columns +
@@ -120,7 +126,7 @@ public final class H2Row implements Row {
         String normalized = name.toUpperCase();
 
         if (!this.nameKeyedColumns.containsKey(normalized)) {
-            throw new IllegalArgumentException(String.format("Column name '%s' does not exist in column names %s", normalized, this.nameKeyedColumns.keySet()));
+            throw new NoSuchElementException(String.format("Column name '%s' does not exist in column names %s", normalized, this.nameKeyedColumns.keySet()));
         }
 
         return this.nameKeyedColumns.get(normalized);
@@ -128,7 +134,7 @@ public final class H2Row implements Row {
 
     private Column getColumn(int index) {
         if (index >= this.columns.size()) {
-            throw new IllegalArgumentException(String.format("Column index %d is larger than the number of columns %d", index, this.columns.size()));
+            throw new IndexOutOfBoundsException(String.format("Column index %d is larger than the number of columns %d", index, this.columns.size()));
         }
 
         return this.columns.get(index);

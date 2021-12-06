@@ -37,7 +37,7 @@ final class BooleanCodecTest {
         BooleanCodec codec = new BooleanCodec();
 
         assertThat(codec.doCanDecode(Value.BOOLEAN)).isTrue();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test

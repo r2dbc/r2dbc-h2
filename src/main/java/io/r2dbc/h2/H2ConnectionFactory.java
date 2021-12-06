@@ -151,7 +151,7 @@ public final class H2ConnectionFactory implements ConnectionFactory {
             Properties properties = new Properties();
             properties.putAll(configuration.getProperties());
 
-            return new ConnectionInfo(sb.toString(), properties);
+            return new ConnectionInfo(sb.toString(), properties, null, null);
         } catch (DbException e) {
             throw H2DatabaseExceptionFactory.convert(e);
         }

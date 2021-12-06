@@ -28,8 +28,8 @@ final class LocalDateTimeCodecTest {
 
     @Test
     void decode() {
-        assertThat(new LocalDateTimeCodec(client).decode(ValueTimestamp.parse("2018-10-31 11:59:59"), LocalDateTime.class))
-                .isEqualTo(LocalDateTime.of(2018, 10, 31, 11, 59, 59));
+        assertThat(new LocalDateTimeCodec(client).decode(ValueTimestamp.parse("2018-10-31 11:59:59", null), LocalDateTime.class))
+            .isEqualTo(LocalDateTime.of(2018, 10, 31, 11, 59, 59));
     }
 
     @Test
@@ -38,24 +38,24 @@ final class LocalDateTimeCodecTest {
 
         assertThat(codec.doCanDecode(Value.TIMESTAMP)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
     void doEncode() {
         assertThat(new LocalDateTimeCodec(client).doEncode(LocalDateTime.of(2018, 10, 31, 11, 59, 59)))
-                .isEqualTo(ValueTimestamp.parse("2018-10-31 11:59:59"));
+            .isEqualTo(ValueTimestamp.parse("2018-10-31 11:59:59", null));
     }
 
     @Test
     void doEncodeNoValue() {
         assertThatIllegalArgumentException().isThrownBy(() -> new LocalDateTimeCodec(client).doEncode(null))
-                .withMessage("value must not be null");
+            .withMessage("value must not be null");
     }
 
     @Test
     void encodeNull() {
         assertThat(new LocalDateTimeCodec(client).encodeNull())
-                .isEqualTo(ValueNull.INSTANCE);
+            .isEqualTo(ValueNull.INSTANCE);
     }
 }

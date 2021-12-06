@@ -42,7 +42,7 @@ final class OffsetTimeCodecTest {
         assertThat(codec.doCanDecode(Value.TIME_TZ)).isTrue();
         assertThat(codec.doCanDecode(Value.TIME)).isFalse();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test

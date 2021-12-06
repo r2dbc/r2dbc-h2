@@ -19,7 +19,7 @@ package io.r2dbc.h2.client;
 import io.r2dbc.h2.util.Assert;
 import org.h2.command.Command;
 import org.h2.command.CommandInterface;
-import org.h2.engine.SessionInterface;
+import org.h2.engine.Session;
 import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
 import reactor.core.publisher.Mono;
@@ -113,7 +113,7 @@ public interface Client {
     ResultWithGeneratedKeys update(CommandInterface command, Object generatedColumns);
 
     /**
-     * Return back the current {@link SessionInterface} to the database.
+     * Return back the current {@link Session} to the database.
      */
-    SessionInterface getSession();
+    Session getSession();
 }

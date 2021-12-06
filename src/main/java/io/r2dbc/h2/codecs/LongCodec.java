@@ -18,7 +18,7 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
-import org.h2.value.ValueLong;
+import org.h2.value.ValueBigint;
 
 final class LongCodec extends AbstractCodec<Long> {
 
@@ -28,7 +28,7 @@ final class LongCodec extends AbstractCodec<Long> {
 
     @Override
     boolean doCanDecode(int dataType) {
-        return dataType == Value.LONG;
+        return dataType == Value.BIGINT;
     }
 
     @Override
@@ -38,6 +38,6 @@ final class LongCodec extends AbstractCodec<Long> {
 
     @Override
     Value doEncode(Long value) {
-        return ValueLong.get(Assert.requireNonNull(value, "value must not be null"));
+        return ValueBigint.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

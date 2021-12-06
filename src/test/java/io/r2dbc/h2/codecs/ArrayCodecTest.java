@@ -16,32 +16,32 @@
 
 package io.r2dbc.h2.codecs;
 
+import org.h2.value.Value;
+import org.h2.value.ValueArray;
+import org.h2.value.ValueNull;
+import org.h2.value.ValueVarchar;
+import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.mock;
 
-import java.util.Arrays;
-
-import org.h2.value.Value;
-import org.h2.value.ValueArray;
-import org.h2.value.ValueNull;
-import org.h2.value.ValueString;
-import org.junit.jupiter.api.Test;
-
 final class ArrayCodecTest {
 
-    private final String[] TEST_ARRAY = { "Element1", "Element2", "Element3" };
+    private final String[] TEST_ARRAY = {"Element1", "Element2", "Element3"};
 
     @Test
     void decode() {
-        Value[] values = Arrays.stream(TEST_ARRAY).map(ValueString::get).toArray(Value[]::new);
-        ValueArray valueArray = ValueArray.get(values);
+        Value[] values = Arrays.stream(TEST_ARRAY).map(ValueVarchar::get).toArray(Value[]::new);
+        ValueArray valueArray = ValueArray.get(values, null);
 
         MockCodecs codecs = MockCodecs.builder()
-                .decoding(ValueString.get(TEST_ARRAY[0]), Value.STRING, Object.class, TEST_ARRAY[0])
-                .decoding(ValueString.get(TEST_ARRAY[1]), Value.STRING, Object.class, TEST_ARRAY[1])
-                .decoding(ValueString.get(TEST_ARRAY[2]), Value.STRING, Object.class, TEST_ARRAY[2])
-                .build();
+            .decoding(ValueVarchar.get(TEST_ARRAY[0]), Value.VARCHAR, Object.class, TEST_ARRAY[0])
+            .decoding(ValueVarchar.get(TEST_ARRAY[1]), Value.VARCHAR, Object.class, TEST_ARRAY[1])
+            .decoding(ValueVarchar.get(TEST_ARRAY[2]), Value.VARCHAR, Object.class, TEST_ARRAY[2])
+            .build();
 
         Object[] decoded = new ArrayCodec(codecs).decode(valueArray, String[].class);
 
@@ -58,15 +58,15 @@ final class ArrayCodecTest {
     void doCanDecode() {
         ArrayCodec codec = new ArrayCodec(mock(Codecs.class));
         assertThat(codec.doCanDecode(Value.ARRAY)).isTrue();
-        assertThat(codec.doCanDecode(Value.STRING)).isFalse();
+        assertThat(codec.doCanDecode(Value.VARCHAR)).isFalse();
         assertThat(codec.doCanDecode(Value.JAVA_OBJECT)).isFalse();
     }
 
     @Test
     void doEncodeNoValue() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new ArrayCodec(mock(Codecs.class)).doEncode(null))
-                .withMessage("value must not be null");
+            .isThrownBy(() -> new ArrayCodec(mock(Codecs.class)).doEncode(null))
+            .withMessage("value must not be null");
     }
 
     @Test
@@ -78,18 +78,18 @@ final class ArrayCodecTest {
     @Test
     void encode() {
         MockCodecs codecs = MockCodecs.builder()
-                .encoding(TEST_ARRAY[0], ValueString.get(TEST_ARRAY[0]))
-                .encoding(TEST_ARRAY[1], ValueString.get(TEST_ARRAY[1]))
-                .encoding(TEST_ARRAY[2], ValueString.get(TEST_ARRAY[2]))
-                .build();
+            .encoding(TEST_ARRAY[0], ValueVarchar.get(TEST_ARRAY[0]))
+            .encoding(TEST_ARRAY[1], ValueVarchar.get(TEST_ARRAY[1]))
+            .encoding(TEST_ARRAY[2], ValueVarchar.get(TEST_ARRAY[2]))
+            .build();
 
         Value value = new ArrayCodec(codecs).doEncode(TEST_ARRAY);
         assertThat(value).isInstanceOf(ValueArray.class);
 
         Value[] list = ((ValueArray) value).getList();
 
-        assertThat(list).containsExactly(ValueString.get(TEST_ARRAY[0]), ValueString.get(TEST_ARRAY[1]),
-                ValueString.get(TEST_ARRAY[2]));
+        assertThat(list).containsExactly(ValueVarchar.get(TEST_ARRAY[0]), ValueVarchar.get(TEST_ARRAY[1]),
+            ValueVarchar.get(TEST_ARRAY[2]));
     }
 
 }

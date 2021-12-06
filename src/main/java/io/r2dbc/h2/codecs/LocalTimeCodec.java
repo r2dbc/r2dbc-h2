@@ -19,7 +19,7 @@ final class LocalTimeCodec extends AbstractCodec<LocalTime> {
 
     @Override
     LocalTime doDecode(Value value, Class<? extends LocalTime> type) {
-        return (LocalTime) JSR310Utils.valueToLocalTime(value);
+        return (LocalTime) JSR310Utils.valueToLocalTime(value, null);
     }
 
     @Override

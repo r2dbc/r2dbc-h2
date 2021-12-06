@@ -19,42 +19,43 @@ package io.r2dbc.h2.codecs;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
+import org.h2.value.ValueClob;
 import org.h2.value.ValueNull;
 
 import java.io.StringReader;
 
 final class ClobToStringCodec extends AbstractCodec<String> {
 
-	private final Client client;
+    private final Client client;
 
-	ClobToStringCodec(Client client) {
-		super(String.class);
-		this.client = client;
-	}
+    ClobToStringCodec(Client client) {
+        super(String.class);
+        this.client = client;
+    }
 
-	@Override
-	boolean doCanDecode(int dataType) {
-		return dataType == Value.CLOB;
-	}
+    @Override
+    boolean doCanDecode(int dataType) {
+        return dataType == Value.CLOB;
+    }
 
-	@Override
-	String doDecode(Value value, Class<? extends String> type) {
-		if (value == null || value instanceof ValueNull) {
-			return null;
-		}
+    @Override
+    String doDecode(Value value, Class<? extends String> type) {
+        if (value == null || value instanceof ValueNull) {
+            return null;
+        }
 
-		return value.getString();
-	}
+        return value.getString();
+    }
 
-	@Override
-	Value doEncode(String value) {
-		Assert.requireNonNull(value, "value must not be null");
+    @Override
+    Value doEncode(String value) {
+        Assert.requireNonNull(value, "value must not be null");
 
-		Value clob = this.client.getSession().getDataHandler().getLobStorage()
-			.createClob(new StringReader(value), value.length());
+        ValueClob clob = this.client.getSession().getDataHandler().getLobStorage()
+            .createClob(new StringReader(value), value.length());
 
-		this.client.getSession().addTemporaryLob(clob);
+        this.client.getSession().addTemporaryLob(clob);
 
-		return clob;
-	}
+        return clob;
+    }
 }

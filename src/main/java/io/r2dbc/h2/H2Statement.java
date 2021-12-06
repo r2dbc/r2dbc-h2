@@ -65,13 +65,14 @@ public final class H2Statement implements Statement {
     @Override
     public H2Statement add() {
         this.bindings.finish();
+        this.bindings.open = true;
         return this;
     }
 
     @Override
     public H2Statement bind(String name, Object value) {
         Assert.requireNonNull(name, "name must not be null");
-
+        this.bindings.open = false;
         return addIndex(getIndex(name), value);
     }
 
@@ -98,6 +99,8 @@ public final class H2Statement implements Statement {
 
     @Override
     public Flux<H2Result> execute() {
+        Assert.requireTrue(!this.bindings.open, "No unfinished bindings!");
+
         return Flux.fromArray(this.sql.split(";"))
             .flatMap(sql -> {
                 if (this.generatedColumns == null) {
@@ -146,9 +149,11 @@ public final class H2Statement implements Statement {
                         ResultWithGeneratedKeys result = client.update(command, generatedColumns);
                         CommandUtil.clearForReuse(command);
                         if (GeneratedKeysMode.valueOf(generatedColumns) == GeneratedKeysMode.NONE) {
-                            return H2Result.toResult(codecs, result.getUpdateCount());
+                            int updatedCountInt = Long.valueOf(result.getUpdateCount()).intValue();
+                            return H2Result.toResult(codecs, updatedCountInt);
                         } else {
-                            return H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount());
+                            int updatedCountInt = Long.valueOf(result.getUpdateCount()).intValue();
+                            return H2Result.toResult(codecs, result.getGeneratedKeys(), updatedCountInt);
                         }
                     }
                 } catch (DbException e) {
@@ -173,6 +178,12 @@ public final class H2Statement implements Statement {
 
         private Binding current;
 
+        private boolean open = false;
+
+        public boolean isOpen() {
+            return open;
+        }
+
         @Override
         public String toString() {
             return "Bindings{" +
@@ -183,6 +194,7 @@ public final class H2Statement implements Statement {
 
         private void finish() {
             this.current = null;
+            this.open = false;
         }
 
         private Binding getCurrent() {

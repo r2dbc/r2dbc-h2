@@ -68,22 +68,22 @@ final class H2NamedParameterStyleTestKit implements TestKit<String> {
         Mono.from(getConnectionFactory().create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement("SELECT col1 AS value, col2 AS value FROM test_two_column")
-                .execute())
+                    .createStatement("SELECT col1 AS test_value, col2 AS test_value FROM test_two_column")
+                    .execute())
                 .flatMap(result -> {
                     return result.map((row, rowMetadata) -> {
                         Collection<String> columnNames = rowMetadata.getColumnNames();
-                        return Arrays.asList(rowMetadata.getColumnMetadata("value").getName(), rowMetadata.getColumnMetadata("VALUE").getName(), columnNames.contains("value"), columnNames.contains(
-                            "VALUE"));
+                        return Arrays.asList(rowMetadata.getColumnMetadata("test_value").getName(), rowMetadata.getColumnMetadata("TEST_VALUE").getName(), columnNames.contains("test_value"), columnNames.contains(
+                            "TEST_VALUE"));
                     });
                 })
                 .flatMapIterable(Function.identity())
                 .concatWith(close(connection)))
             .as(StepVerifier::create)
-            .expectNext("VALUE").as("Column label col1")
-            .expectNext("VALUE").as("Column label col1 (get by uppercase)")
-            .expectNext(true).as("getColumnNames.contains(value)")
-            .expectNext(true).as("getColumnNames.contains(VALUE)")
+            .expectNext("TEST_VALUE").as("Column label col1")
+            .expectNext("TEST_VALUE").as("Column label col1 (get by uppercase)")
+            .expectNext(true).as("getColumnNames.contains(test_value)")
+            .expectNext(true).as("getColumnNames.contains(TEST_VALUE)")
             .verifyComplete();
     }
 
@@ -115,8 +115,8 @@ final class H2NamedParameterStyleTestKit implements TestKit<String> {
         Mono.from(getConnectionFactory().create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement(expand(TestStatement.SELECT_VALUE_ALIASED_COLUMNS))
-                .execute())
+                    .createStatement(expand(TestStatement.SELECT_VALUE_ALIASED_COLUMNS))
+                    .execute())
                 .flatMap(result -> result.map((row, rowMetadata) -> new ArrayList<>(rowMetadata.getColumnNames())))
                 .flatMapIterable(Function.identity())
                 .concatWith(close(connection)))
@@ -129,7 +129,7 @@ final class H2NamedParameterStyleTestKit implements TestKit<String> {
 
     <T> Mono<T> close(Connection connection) {
         return Mono.from(connection
-            .close())
+                .close())
             .then(Mono.empty());
     }
 }

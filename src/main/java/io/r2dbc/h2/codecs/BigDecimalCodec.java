@@ -18,7 +18,7 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
-import org.h2.value.ValueDecimal;
+import org.h2.value.ValueNumeric;
 
 import java.math.BigDecimal;
 
@@ -30,7 +30,7 @@ final class BigDecimalCodec extends AbstractCodec<BigDecimal> {
 
     @Override
     boolean doCanDecode(int dataType) {
-        return dataType == Value.DECIMAL;
+        return dataType == Value.NUMERIC;
     }
 
     @Override
@@ -40,6 +40,6 @@ final class BigDecimalCodec extends AbstractCodec<BigDecimal> {
 
     @Override
     Value doEncode(BigDecimal value) {
-        return ValueDecimal.get(Assert.requireNonNull(value, "value must not be null"));
+        return ValueNumeric.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

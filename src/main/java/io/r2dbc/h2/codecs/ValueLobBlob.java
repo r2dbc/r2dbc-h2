@@ -16,89 +16,88 @@
 
 package io.r2dbc.h2.codecs;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
 import io.r2dbc.spi.Blob;
 import org.h2.value.Value;
 import org.h2.value.ValueLob;
-import org.h2.value.ValueLobDb;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SynchronousSink;
 import reactor.core.scheduler.Schedulers;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 /**
  * Implement {@link Blob}.
  */
 class ValueLobBlob implements Blob {
 
-	private final Value lobDb;
+    private final Value lobDb;
 
-	private SynchronousSink<ByteBuffer> valueLobHandlerSink;
+    private SynchronousSink<ByteBuffer> valueLobHandlerSink;
 
-	ValueLobBlob(Value value) {
-		this.lobDb = value;
-	}
+    ValueLobBlob(Value value) {
+        this.lobDb = value;
+    }
 
-	/**
-	 * Open the {@link ValueLobDb}/{@link ValueLob}'s {@link InputStream} and pipe the bytes into a {@link Flux}.
-	 */
-	@Override
-	public Flux<ByteBuffer> stream() {
-		return Flux.<ByteBuffer, InputStream> generate(
-			this.lobDb::getInputStream,
-			(source, sink) -> {
-				this.valueLobHandlerSink = sink;
-				try {
-					byte[] data = new byte[1024];
-					int readBytes = source.read(data);
+    /**
+     * Open the {@link org.h2.value.ValueBlob}/{@link V}'s {@link InputStream} and pipe the bytes into a {@link Flux}.
+     */
+    @Override
+    public Flux<ByteBuffer> stream() {
+        return Flux.<ByteBuffer, InputStream>generate(
+                this.lobDb::getInputStream,
+                (source, sink) -> {
+                    this.valueLobHandlerSink = sink;
+                    try {
+                        byte[] data = new byte[1024];
+                        int readBytes = source.read(data);
 
-					// End of the source's data.
-					if (readBytes == -1) {
-						sink.complete();
-						return source;
-					}
+                        // End of the source's data.
+                        if (readBytes == -1) {
+                            sink.complete();
+                            return source;
+                        }
 
-					// Wrap the data buffer into a ByteBuffer of proper length.
-					sink.next(wrap(data, readBytes));
-				} catch (IOException e) {
-					sink.error(e);
-				}
+                        // Wrap the data buffer into a ByteBuffer of proper length.
+                        sink.next(wrap(data, readBytes));
+                    } catch (IOException e) {
+                        sink.error(e);
+                    }
 
-				return source;
-			},
-			source -> {
-				// When the Flux is terminated or cancelled
-				try {
-					source.close();
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			})
-			.subscribeOn(Schedulers.elastic())
-			.cancelOn(Schedulers.elastic());
-	}
+                    return source;
+                },
+                source -> {
+                    // When the Flux is terminated or cancelled
+                    try {
+                        source.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+            .subscribeOn(Schedulers.elastic())
+            .cancelOn(Schedulers.elastic());
+    }
 
-	@Override
-	public Publisher<Void> discard() {
-		return Mono.fromRunnable(() -> this.valueLobHandlerSink.complete()).then();
-	}
+    @Override
+    public Publisher<Void> discard() {
+        return Mono.fromRunnable(() -> this.valueLobHandlerSink.complete()).then();
+    }
 
-	/**
-	 * Transform a raw {@link byte[]} into a {@link ByteBuffer}.
-	 *
-	 * @param data
-	 * @param readBytes
-	 */
-	ByteBuffer wrap(byte[] data, int readBytes) {
-		if (readBytes < data.length) {
-			return ByteBuffer.wrap(Arrays.copyOfRange(data, 0, readBytes));
-		}
+    /**
+     * Transform a raw {@link byte[]} into a {@link ByteBuffer}.
+     *
+     * @param data
+     * @param readBytes
+     */
+    ByteBuffer wrap(byte[] data, int readBytes) {
+        if (readBytes < data.length) {
+            return ByteBuffer.wrap(Arrays.copyOfRange(data, 0, readBytes));
+        }
 
-		return ByteBuffer.wrap(data, 0, readBytes);
-	}
+        return ByteBuffer.wrap(data, 0, readBytes);
+    }
 }

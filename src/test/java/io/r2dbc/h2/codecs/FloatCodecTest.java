@@ -17,8 +17,8 @@
 package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
-import org.h2.value.ValueFloat;
 import org.h2.value.ValueNull;
+import org.h2.value.ValueReal;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +28,7 @@ final class FloatCodecTest {
 
     @Test
     void decode() {
-        assertThat(new FloatCodec().decode(ValueFloat.get(100.0f), Float.class))
+        assertThat(new FloatCodec().decode(ValueReal.get(100.0f), Float.class))
             .isEqualTo(100.0f);
     }
 
@@ -36,15 +36,15 @@ final class FloatCodecTest {
     void doCanDecode() {
         FloatCodec codec = new FloatCodec();
 
-        assertThat(codec.doCanDecode(Value.FLOAT)).isTrue();
+        assertThat(codec.doCanDecode(Value.REAL)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
-        assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
     }
 
     @Test
     void doEncode() {
         assertThat(new FloatCodec().doEncode(100f))
-            .isEqualTo(ValueFloat.get(100f));
+            .isEqualTo(ValueReal.get(100f));
     }
 
     @Test

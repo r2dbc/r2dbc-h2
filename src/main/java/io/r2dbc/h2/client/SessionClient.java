@@ -20,7 +20,7 @@ import io.r2dbc.h2.H2DatabaseExceptionFactory;
 import io.r2dbc.h2.util.Assert;
 import org.h2.command.CommandInterface;
 import org.h2.engine.ConnectionInfo;
-import org.h2.engine.SessionInterface;
+import org.h2.engine.Session;
 import org.h2.engine.SessionRemote;
 import org.h2.expression.ParameterInterface;
 import org.h2.message.DbException;
@@ -31,14 +31,10 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * An implementation of {@link Client} that wraps an H2 {@link SessionInterface}.
+ * An implementation of {@link Client} that wraps an H2 {@link Session}.
  */
 public final class SessionClient implements Client {
 
@@ -46,7 +42,7 @@ public final class SessionClient implements Client {
 
     private final Collection<Binding> emptyBinding = Collections.singleton(Binding.EMPTY);
 
-    private final SessionInterface session;
+    private final Session session;
 
     private final boolean shutdownDatabaseOnClose;
 
@@ -100,6 +96,13 @@ public final class SessionClient implements Client {
         Assert.requireNonNull(sql, "sql must not be null");
         Assert.requireNonNull(bindings, "bindings must not be null");
 
+        if (!bindings.isEmpty()) {
+            Binding binding = bindings.get(bindings.size()-1);
+            if (binding.getParameters().isEmpty()) {
+                throw new IllegalStateException("You got an unbound binder!");
+            }
+        }
+
         Iterator<Binding> bindingIterator = bindings.isEmpty() ? emptyBinding.iterator() : bindings.iterator();
 
         return new Iterator<CommandInterface>() {
@@ -142,10 +145,10 @@ public final class SessionClient implements Client {
     }
 
     /**
-     * Return back the current {@link SessionInterface} to the database.
+     * Return back the current {@link Session} to the database.
      */
     @Override
-    public SessionInterface getSession() {
+    public Session getSession() {
         return this.session;
     }
 
