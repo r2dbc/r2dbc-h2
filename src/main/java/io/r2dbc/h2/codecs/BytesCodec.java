@@ -19,6 +19,7 @@ package io.r2dbc.h2.codecs;
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
 import org.h2.value.ValueBinary;
+import org.h2.value.ValueVarbinary;
 
 final class BytesCodec extends AbstractCodec<byte[]> {
 
@@ -38,6 +39,6 @@ final class BytesCodec extends AbstractCodec<byte[]> {
 
     @Override
     Value doEncode(byte[] value) {
-        return ValueBinary.get(Assert.requireNonNull(value, "value must not be null"));
+        return ValueVarbinary.get(Assert.requireNonNull(value, "value must not be null"));
     }
 }

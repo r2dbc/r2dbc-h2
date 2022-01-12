@@ -30,7 +30,7 @@ final class BigDecimalCodec extends AbstractCodec<BigDecimal> {
 
     @Override
     boolean doCanDecode(int dataType) {
-        return dataType == Value.NUMERIC;
+        return dataType == Value.NUMERIC || dataType == Value.DECFLOAT;
     }
 
     @Override

@@ -16,11 +16,6 @@
 
 package io.r2dbc.h2;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
@@ -32,6 +27,11 @@ import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
 import reactor.core.publisher.Flux;
 import reactor.util.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * An implementation of {@link Statement} for an H2 database.
@@ -149,11 +149,9 @@ public final class H2Statement implements Statement {
                         ResultWithGeneratedKeys result = client.update(command, generatedColumns);
                         CommandUtil.clearForReuse(command);
                         if (GeneratedKeysMode.valueOf(generatedColumns) == GeneratedKeysMode.NONE) {
-                            int updatedCountInt = Long.valueOf(result.getUpdateCount()).intValue();
-                            return H2Result.toResult(codecs, updatedCountInt);
+                            return H2Result.toResult(codecs, (int) result.getUpdateCount());
                         } else {
-                            int updatedCountInt = Long.valueOf(result.getUpdateCount()).intValue();
-                            return H2Result.toResult(codecs, result.getGeneratedKeys(), updatedCountInt);
+                            return H2Result.toResult(codecs, result.getGeneratedKeys(), (int) result.getUpdateCount());
                         }
                     }
                 } catch (DbException e) {

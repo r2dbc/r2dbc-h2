@@ -46,7 +46,7 @@ final class BytesCodecTest {
     @Test
     void doEncode() {
         assertThat(new BytesCodec().doEncode(TEST_BYTE))
-            .isEqualTo(ValueBinary.get(TEST_BYTE));
+            .isEqualTo(ValueVarbinary.get(TEST_BYTE));
     }
 
     @Test
