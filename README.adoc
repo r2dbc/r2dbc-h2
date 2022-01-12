@@ -234,7 +234,13 @@ Commits require `Signed-off-by` (`git commit -s`) to ensure https://developercer
 
 == Staging to Maven Central
 
-To stage a release to Maven Central, you need to create a release tag (release version) that contains the desired state and version numbers (`mvn versions:set versions:commit -q -o -DgenerateBackupPoms=false -DnewVersion=x.y.z.(RELEASE|Mnnn|RCnnn`) and force-push it to the `release-0.x` branch.
+To stage a release to Maven Central, you need to create a release tag (release version):
+
+. `ci/create-release.sh <release-version> <next-snapshot-version>` (e.g. `ci/create-release.sh 0.8.5.RELEASE 0.8.6.BUILD-SNAPSHOT`)
+. `git checkout release-0.x`
+. `git reset --hard v<release-version>` (e.g. `git reset --hard v0.8.5.RELEASE`, observe the `v` prefix)
+. `git push --force`
+
 This push will trigger a Maven staging build (see `build-and-deploy-to-maven-central.sh`).
 
 == License
