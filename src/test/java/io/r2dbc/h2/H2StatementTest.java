@@ -155,6 +155,34 @@ final class H2StatementTest {
 
     @Test
     void execute() {
+        MockCodecs codecs = getMockCodecs();
+
+        new H2Statement(this.client, codecs, "select test-query-$1 from my_table")
+            .add()
+            .bind("$1", 100)
+            .add()
+            .bind("$1", 200)
+            .execute()
+            .as(StepVerifier::create)
+            .expectNextCount(2)
+            .verifyComplete();
+    }
+    @Test
+    void executeIndexed() {
+        MockCodecs codecs = getMockCodecs();
+
+        new H2Statement(this.client, codecs, "select test-query-$1 from my_table")
+                .add()
+                .bind(0, 100)
+                .add()
+                .bind(0, 200)
+                .execute()
+                .as(StepVerifier::create)
+                .expectNextCount(2)
+                .verifyComplete();
+    }
+
+    private MockCodecs getMockCodecs() {
         CommandInterface command1 = mock(CommandInterface.class);
         CommandInterface command2 = mock(CommandInterface.class);
         when(this.client.prepareCommand("select test-query-$1 from my_table", Arrays.asList(
@@ -166,20 +194,10 @@ final class H2StatementTest {
         when(this.client.query(command1)).thenReturn(new LocalResult());
         when(this.client.query(command2)).thenReturn(new LocalResult());
 
-        MockCodecs codecs = MockCodecs.builder()
+        return MockCodecs.builder()
             .encoding(100, ValueInteger.get(100))
             .encoding(200, ValueInteger.get(200))
             .build();
-
-        new H2Statement(this.client, codecs, "select test-query-$1 from my_table")
-            .add()
-            .bind("$1", 100)
-            .add()
-            .bind("$1", 200)
-            .execute()
-            .as(StepVerifier::create)
-            .expectNextCount(2)
-            .verifyComplete();
     }
 
     @Test

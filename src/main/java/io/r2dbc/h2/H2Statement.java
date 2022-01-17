@@ -78,6 +78,7 @@ public final class H2Statement implements Statement {
 
     @Override
     public H2Statement bind(int index, Object value) {
+        this.bindings.open = false;
         return addIndex(index, value);
     }
 
