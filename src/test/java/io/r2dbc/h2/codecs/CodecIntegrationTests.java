@@ -19,6 +19,8 @@ package io.r2dbc.h2.codecs;
 import io.r2dbc.h2.H2Connection;
 import io.r2dbc.h2.H2Result;
 import io.r2dbc.h2.util.IntegrationTestSupport;
+import io.r2dbc.spi.Parameter;
+import io.r2dbc.spi.Parameters;
 import org.h2.api.Interval;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -28,15 +30,7 @@ import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.Period;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -78,7 +72,7 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
     }
 
     @Test
-    void shouldEncodeIntegerAInt() {
+    void shouldEncodeIntegerAsInt() {
         testType(connection, "INT", Integer.MAX_VALUE);
     }
 
@@ -329,6 +323,10 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
 
     private void testType(H2Connection connection, String columnType, Object value) {
         testType(connection, columnType, value, value.getClass(), value);
+
+        // Also verify that the interaction works when wrapped as an input parameter.
+        testType(connection, columnType, Parameters.in(value), Parameter.class, Parameters.in(value));
+
 //        testType(connection, "ARRAY", new Object[]{value}, Object[].class,
 //            actual -> assertThat(((Object[]) actual)).containsExactly(value));
     }
@@ -338,7 +336,11 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
     }
 
     private void testType(H2Connection connection, String columnType, Object value, Class<?> valueClass, Object expectedGetObjectValue) {
-        testType(connection, columnType, value, valueClass, actual -> assertThat(actual).isEqualTo(expectedGetObjectValue));
+        if (value instanceof Parameter) {
+            testType(connection, columnType, value, valueClass, actual -> assertThat(actual).isEqualTo(((Parameter) expectedGetObjectValue).getValue()));
+        } else {
+            testType(connection, columnType, value, valueClass, actual -> assertThat(actual).isEqualTo(expectedGetObjectValue));
+        }
     }
 
     private void testType(H2Connection connection, String columnType, Object value, Class<?> valueClass, Consumer<Object> nativeValueConsumer) {

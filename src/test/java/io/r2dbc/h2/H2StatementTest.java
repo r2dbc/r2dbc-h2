@@ -20,10 +20,7 @@ import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.MockCodecs;
 import io.r2dbc.h2.util.H2ServerExtension;
-import io.r2dbc.spi.ConnectionFactories;
-import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.ConnectionFactoryOptions;
-import io.r2dbc.spi.R2dbcBadGrammarException;
+import io.r2dbc.spi.*;
 import org.h2.command.CommandInterface;
 import org.h2.result.LocalResult;
 import org.h2.result.ResultWithGeneratedKeys;
@@ -53,7 +50,12 @@ final class H2StatementTest {
 
     private final Value parameter = ValueInteger.get(100);
 
-    private final MockCodecs codecs = MockCodecs.builder().encoding(100, this.parameter).build();
+    private final Parameter inParameter = Parameters.in(100);
+
+    private final MockCodecs codecs = MockCodecs.builder() //
+        .encoding(100, this.parameter) //
+        .encoding(inParameter, this.parameter) //
+        .build();
 
     private final H2Statement statement = new H2Statement(this.client, this.codecs, "test-query-$1");
 
@@ -72,6 +74,11 @@ final class H2StatementTest {
     @Test
     void bind() {
         assertThat(this.statement.bind("$1", 100).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInteger.get(100)));
+    }
+
+    @Test
+    void bindWithInParameters() {
+        assertThat(this.statement.bind("$1", this.inParameter).getCurrentBinding()).isEqualTo(new Binding().add(0, ValueInteger.get(100)));
     }
 
     @Test

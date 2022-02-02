@@ -142,7 +142,8 @@ public final class DefaultCodecs implements Codecs {
                 new DurationCodec(),
 
                 // De-prioritized codecs
-                new ArrayCodec(codecs)
+                new ArrayCodec(codecs),
+                new ParameterCodec(codecs)
             ),
             addOptionalCodecs(classLoader)
         ).collect(Collectors.toList());
