@@ -16,24 +16,27 @@
 
 package io.r2dbc.h2;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.sql.SQLException;
-
 import org.h2.tools.Server;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import reactor.test.StepVerifier;
 import org.springframework.util.FileSystemUtils;
+import reactor.test.StepVerifier;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.SQLException;
 
 final class H2RemoteAccessTest {
 
     Server server;
+    Path basePath;
 
     @BeforeEach
-    void startupRemoteDatabase() throws SQLException {
+    void startupRemoteDatabase() throws SQLException, IOException {
         server = Server.createTcpServer("-tcpPort", "9123", "-ifNotExists").start();
+        basePath = Files.createTempDirectory("h2-test-");
     }
 
     @AfterEach
@@ -43,11 +46,10 @@ final class H2RemoteAccessTest {
 
     @Test
     void tcpByUrlWorks() throws IOException {
-        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.mv.db"));
-        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.trace.db"));
+        FileSystemUtils.deleteRecursively(basePath);
 
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .url("tcp://localhost:9123//tmp/test")
+            .url("tcp://localhost:9123/" + basePath)
             .username("sa")
             .password("")
             .build();
@@ -57,17 +59,15 @@ final class H2RemoteAccessTest {
             .expectNextCount(1)
             .verifyComplete();
 
-        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.mv.db"));
-        FileSystemUtils.deleteRecursively(Paths.get("/tmp", "test.trace.db"));
+        FileSystemUtils.deleteRecursively(basePath);
     }
 
     @Test
     void tcpWithHostnameAndPortWorks() throws IOException {
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.mv.db"));
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.trace.db"));
+        FileSystemUtils.deleteRecursively(basePath);
 
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .tcp("localhost", 9123, "/tmp/test")
+            .tcp("localhost", 9123, basePath.toString())
             .username("sa")
             .password("")
             .build();
@@ -77,8 +77,7 @@ final class H2RemoteAccessTest {
             .expectNextCount(1)
             .verifyComplete();
 
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.mv.db"));
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.trace.db"));
+        FileSystemUtils.deleteRecursively(basePath);
     }
 
     @Test
@@ -90,13 +89,10 @@ final class H2RemoteAccessTest {
         // ...to launch another one with the default port
         server = Server.createTcpServer("-ifNotExists").start();
 
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.mv.db"));
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.trace.db"));
-
-
+        FileSystemUtils.deleteRecursively(basePath);
 
         H2ConnectionConfiguration configuration = H2ConnectionConfiguration.builder()
-            .tcp("localhost", "/tmp/test")
+            .tcp("localhost", basePath.toString())
             .username("sa")
             .password("")
             .build();
@@ -106,7 +102,6 @@ final class H2RemoteAccessTest {
             .expectNextCount(1)
             .verifyComplete();
 
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.mv.db"));
-        FileSystemUtils.deleteRecursively(Paths.get(System.getProperty("user.home"), "test.trace.db"));
+        FileSystemUtils.deleteRecursively(basePath);
     }
 }
