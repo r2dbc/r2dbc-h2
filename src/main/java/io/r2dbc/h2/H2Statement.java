@@ -72,7 +72,6 @@ public final class H2Statement implements Statement {
     @Override
     public H2Statement bind(String name, Object value) {
         Assert.requireNonNull(name, "name must not be null");
-        this.bindings.open = false;
         return addIndex(getIndex(name), value);
     }
 
@@ -92,6 +91,7 @@ public final class H2Statement implements Statement {
 
     @Override
     public H2Statement bindNull(int index, @Nullable Class<?> type) {
+        this.bindings.open = false;
         this.bindings.getCurrent().add(index, this.codecs.encodeNull(type));
 
         return this;
@@ -130,6 +130,7 @@ public final class H2Statement implements Statement {
     private H2Statement addIndex(int index, Object value) {
         Assert.requireNonNull(value, "value must not be null");
 
+        this.bindings.open = false;
         this.bindings.getCurrent().add(index, this.codecs.encode(value));
 
         return this;

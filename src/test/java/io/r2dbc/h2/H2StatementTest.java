@@ -35,6 +35,9 @@ import reactor.util.function.Tuples;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static io.r2dbc.h2.H2ConnectionFactoryProvider.H2_DRIVER;
 import static io.r2dbc.h2.H2ConnectionFactoryProvider.URL;
@@ -162,20 +165,22 @@ final class H2StatementTest {
 
     @Test
     void execute() {
-        CommandInterface command1 = mock(CommandInterface.class);
-        CommandInterface command2 = mock(CommandInterface.class);
+        List<CommandInterface> commands = IntStream.range(0, 5).mapToObj(i -> mock(CommandInterface.class)).collect(Collectors.toList());
         when(this.client.prepareCommand("select test-query-$1 from my_table", Arrays.asList(
             new Binding().add(0, ValueInteger.get(100)),
-            new Binding().add(0, ValueInteger.get(200))
-        ))).thenReturn(Arrays.asList(command1, command2).iterator());
-        when(command1.isQuery()).thenReturn(true);
-        when(command2.isQuery()).thenReturn(true);
-        when(this.client.query(command1)).thenReturn(new LocalResult());
-        when(this.client.query(command2)).thenReturn(new LocalResult());
+            new Binding().add(0, ValueInteger.get(200)),
+            new Binding().add(0, ValueInteger.get(300)),
+            new Binding().add(0, ValueNull.INSTANCE),
+            new Binding().add(0, ValueNull.INSTANCE)
+        ))).thenReturn(commands.iterator());
+        commands.forEach(c -> when(c.isQuery()).thenReturn(true));
+        commands.forEach(c -> when(this.client.query(c)).thenReturn(new LocalResult()));
 
         MockCodecs codecs = MockCodecs.builder()
             .encoding(100, ValueInteger.get(100))
             .encoding(200, ValueInteger.get(200))
+            .encoding(300, ValueInteger.get(300))
+            .encoding(Integer.class, ValueNull.INSTANCE)
             .build();
 
         new H2Statement(this.client, codecs, "select test-query-$1 from my_table")
@@ -183,9 +188,15 @@ final class H2StatementTest {
             .bind("$1", 100)
             .add()
             .bind("$1", 200)
+            .add()
+            .bind(0,300)
+            .add()
+            .bindNull("$1", Integer.class)
+            .add()
+            .bindNull(0, Integer.class)
             .execute()
             .as(StepVerifier::create)
-            .expectNextCount(2)
+            .expectNextCount(5)
             .verifyComplete();
     }
 
