@@ -1,6 +1,21 @@
 R2DBC H2 Changelog
 =============================
 
+
+0.9.1.RELEASE
+------------------
+* Upgrade to R2DBC SPI 0.9.1.RELEASE. #222.
+* Upgrade to H2 2.1.210. #221.
+* Cannot encode parameter of type `io.r2dbc.spi.Parameters$InParameter` #219.
+
+0.9.0.RELEASE
+------------------
+* Release 0.9.0.RELEASE. #214.
+* Create release script. #213.
+* Upgrade to Reactor 2020.0.15. #212.
+* Upgrade to H2 2.0.206 #211.
+* Upgrade to H2 2.0. #210.
+
 0.9.0.M1
 ------------------
 * Align Spring Boot version with Reactor version #200.
