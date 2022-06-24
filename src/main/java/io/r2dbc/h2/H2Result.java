@@ -43,18 +43,18 @@ public final class H2Result implements Result {
 
     private final Flux<H2Row> rows;
 
-    private final Mono<Integer> rowsUpdated;
+    private final Mono<Long> rowsUpdated;
 
     private final Flux<? extends Segment> segments;
 
-    H2Result(H2RowMetadata rowMetadata, Flux<H2Row> rows, Mono<Integer> rowsUpdated, Flux<? extends Segment> segments) {
+    H2Result(H2RowMetadata rowMetadata, Flux<H2Row> rows, Mono<Long> rowsUpdated, Flux<? extends Segment> segments) {
         this.rowMetadata = rowMetadata;
         this.rows = Assert.requireNonNull(rows, "rows must not be null");
         this.rowsUpdated = Assert.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
         this.segments = Assert.requireNonNull(segments, "segments must not be null");
     }
 
-    private H2Result(Mono<Integer> rowsUpdated, Flux<Segment> segments) {
+    private H2Result(Mono<Long> rowsUpdated, Flux<Segment> segments) {
         this.rowMetadata = null;
         this.rows = Flux.empty();
         this.rowsUpdated = Assert.requireNonNull(rowsUpdated, "rowsUpdated must not be null");
@@ -62,7 +62,7 @@ public final class H2Result implements Result {
     }
 
     @Override
-    public Mono<Integer> getRowsUpdated() {
+    public Mono<Long> getRowsUpdated() {
         return this.rowsUpdated;
     }
 
@@ -112,13 +112,13 @@ public final class H2Result implements Result {
             '}';
     }
 
-    static H2Result toResult(Codecs codecs, @Nullable Integer rowsUpdated) {
+    static H2Result toResult(Codecs codecs, @Nullable Long rowsUpdated) {
         Assert.requireNonNull(codecs, "codecs must not be null");
 
         return new H2Result(Mono.justOrEmpty(rowsUpdated), Flux.just((UpdateCount) () -> rowsUpdated));
     }
 
-    static H2Result toResult(Codecs codecs, ResultInterface result, @Nullable Integer rowsUpdated) {
+    static H2Result toResult(Codecs codecs, ResultInterface result, @Nullable Long rowsUpdated) {
         Assert.requireNonNull(codecs, "codecs must not be null");
         Assert.requireNonNull(result, "result must not be null");
 

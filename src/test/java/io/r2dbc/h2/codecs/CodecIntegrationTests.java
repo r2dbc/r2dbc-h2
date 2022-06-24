@@ -303,7 +303,7 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
             .execute())
             .flatMap(H2Result::getRowsUpdated)
             .as(StepVerifier::create)
-            .expectNext(1)
+            .expectNext(1L)
             .verifyComplete();
 
         connection.createStatement("SELECT null, my_col FROM codec_test")
@@ -352,7 +352,7 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
             .execute())
             .flatMap(H2Result::getRowsUpdated)
             .as(StepVerifier::create)
-            .expectNext(1)
+            .expectNext(1L)
             .verifyComplete();
 
         if (value instanceof ByteBuffer) {
@@ -378,7 +378,7 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
             .execute())
             .flatMap(H2Result::getRowsUpdated)
             .as(StepVerifier::create)
-            .expectNext(1)
+            .expectNext(1L)
             .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM codec_test")
@@ -397,7 +397,7 @@ public class CodecIntegrationTests extends IntegrationTestSupport {
             .thenMany(connection.createStatement("CREATE TABLE codec_test (my_col " + columnType + ")")
                 .execute().flatMap(H2Result::getRowsUpdated))
             .as(StepVerifier::create)
-            .expectNext(0)
+            .expectNext(0L)
             .verifyComplete();
     }
 }

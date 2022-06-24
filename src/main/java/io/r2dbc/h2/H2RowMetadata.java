@@ -65,7 +65,7 @@ public class H2RowMetadata extends ColumnSource implements RowMetadata, Collecti
         return columnMetadatas;
     }
 
-    @Override
+    //    @Override
     public Collection<String> getColumnNames() {
         return this;
     }

@@ -68,7 +68,7 @@ public final class H2Batch implements Batch {
 
                         ResultWithGeneratedKeys result = this.client.update(command, false);
                         CommandUtil.clearForReuse(command);
-                        int updatedCountInt = Long.valueOf(result.getUpdateCount()).intValue();
+                        long updatedCountInt = result.getUpdateCount();
                         return H2Result.toResult(this.codecs, updatedCountInt);
                     }
                 } catch (DbException e) {

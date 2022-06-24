@@ -150,9 +150,9 @@ public final class H2Statement implements Statement {
                         ResultWithGeneratedKeys result = client.update(command, generatedColumns);
                         CommandUtil.clearForReuse(command);
                         if (GeneratedKeysMode.valueOf(generatedColumns) == GeneratedKeysMode.NONE) {
-                            return H2Result.toResult(codecs, (int) result.getUpdateCount());
+                            return H2Result.toResult(codecs, result.getUpdateCount());
                         } else {
-                            return H2Result.toResult(codecs, result.getGeneratedKeys(), (int) result.getUpdateCount());
+                            return H2Result.toResult(codecs, result.getGeneratedKeys(), result.getUpdateCount());
                         }
                     }
                 } catch (DbException e) {

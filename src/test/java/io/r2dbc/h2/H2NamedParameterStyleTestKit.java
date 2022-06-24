@@ -72,7 +72,7 @@ final class H2NamedParameterStyleTestKit implements TestKit<String> {
                     .execute())
                 .flatMap(result -> {
                     return result.map((row, rowMetadata) -> {
-                        Collection<String> columnNames = rowMetadata.getColumnNames();
+                        Collection<String> columnNames = ((H2RowMetadata) rowMetadata).getColumnNames();
                         return Arrays.asList(rowMetadata.getColumnMetadata("test_value").getName(), rowMetadata.getColumnMetadata("TEST_VALUE").getName(), columnNames.contains("test_value"), columnNames.contains(
                             "TEST_VALUE"));
                     });
@@ -117,7 +117,7 @@ final class H2NamedParameterStyleTestKit implements TestKit<String> {
 
                     .createStatement(expand(TestStatement.SELECT_VALUE_ALIASED_COLUMNS))
                     .execute())
-                .flatMap(result -> result.map((row, rowMetadata) -> new ArrayList<>(rowMetadata.getColumnNames())))
+                .flatMap(result -> result.map((row, rowMetadata) -> new ArrayList<>(((H2RowMetadata) rowMetadata).getColumnNames())))
                 .flatMapIterable(Function.identity())
                 .concatWith(close(connection)))
             .as(StepVerifier::create)

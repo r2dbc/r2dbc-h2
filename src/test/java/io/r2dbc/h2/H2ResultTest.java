@@ -73,13 +73,13 @@ final class H2ResultTest {
 
     @Test
     void toResultNoCodecs() {
-        assertThatIllegalArgumentException().isThrownBy(() -> H2Result.toResult(null, this.result, 0))
+        assertThatIllegalArgumentException().isThrownBy(() -> H2Result.toResult(null, this.result, 0L))
             .withMessage("codecs must not be null");
     }
 
     @Test
     void toResultNoResult() {
-        assertThatIllegalArgumentException().isThrownBy(() -> H2Result.toResult(MockCodecs.empty(), null, 0))
+        assertThatIllegalArgumentException().isThrownBy(() -> H2Result.toResult(MockCodecs.empty(), null, 0L))
             .withMessage("result must not be null");
     }
 
@@ -88,7 +88,7 @@ final class H2ResultTest {
         when(this.result.hasNext()).thenReturn(true, true, false);
         when(this.result.currentRow()).thenReturn(new Value[]{ValueInteger.get(100)}, new Value[]{ValueInteger.get(200)});
 
-        H2Result result = H2Result.toResult(MockCodecs.empty(), this.result, Integer.MAX_VALUE);
+        H2Result result = H2Result.toResult(MockCodecs.empty(), this.result, Long.MAX_VALUE);
 
         result.map((row, rowMetadata) -> row)
             .as(StepVerifier::create)
@@ -97,7 +97,7 @@ final class H2ResultTest {
 
         result.getRowsUpdated()
             .as(StepVerifier::create)
-            .expectNext(Integer.MAX_VALUE)
+            .expectNext(Long.MAX_VALUE)
             .verifyComplete();
     }
 

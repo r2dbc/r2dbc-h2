@@ -82,8 +82,8 @@ final class BlobToByteBufferCodec extends AbstractCodec<ByteBuffer> {
         BlobInputStreamEnumeration(ByteBuffer value) {
             this.inputStreams = Flux.just(value)
                 .map(ByteBufferInputStream::new)
-                .subscribeOn(Schedulers.elastic())
-                .cancelOn(Schedulers.elastic())
+                .subscribeOn(Schedulers.boundedElastic())
+                .cancelOn(Schedulers.boundedElastic())
                 .toIterable()
                 .iterator();
         }

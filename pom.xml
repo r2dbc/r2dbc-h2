@@ -24,7 +24,7 @@
 
     <groupId>io.r2dbc</groupId>
     <artifactId>r2dbc-h2</artifactId>
-    <version>0.9.2.BUILD-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>Reactive Relational Database Connectivity - H2</name>
@@ -32,21 +32,21 @@
     <url>https://github.com/r2dbc/r2dbc-h2</url>
 
     <properties>
-        <assertj.version>3.20.2</assertj.version>
+        <assertj.version>3.23.1</assertj.version>
         <h2.version>2.1.210</h2.version>
         <java.version>1.8</java.version>
-        <jmh.version>1.32</jmh.version>
+        <jmh.version>1.35</jmh.version>
         <jsr305.version>3.0.2</jsr305.version>
         <jts.version>1.16.1</jts.version>
         <junit.version>5.7.0</junit.version>
         <logback.version>1.2.3</logback.version>
         <mbr.version>0.2.0.RELEASE</mbr.version>
-        <mockito.version>3.11.2</mockito.version>
+        <mockito.version>4.6.1</mockito.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <r2dbc-spi.version>0.9.1.RELEASE</r2dbc-spi.version>
-        <reactor.version>2020.0.15</reactor.version>
-        <spring-boot.version>2.3.12.RELEASE</spring-boot.version>
+        <r2dbc-spi.version>1.0.0.RELEASE</r2dbc-spi.version>
+        <reactor.version>2022.0.0-M2</reactor.version>
+        <spring-boot.version>2.5.14</spring-boot.version>
     </properties>
 
     <licenses>
@@ -136,6 +136,12 @@
             <artifactId>r2dbc-spi-test</artifactId>
             <version>${r2dbc-spi.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-jdbc</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
@@ -174,9 +180,9 @@
         <dependency>
             <groupId>org.springframework.hateoas</groupId>
             <artifactId>spring-hateoas</artifactId>
-            <version>1.1.0.RELEASE</version>
+            <version>1.5.1</version>
             <scope>test</scope>
-        </dependency>
+         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
@@ -196,7 +202,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.10.1</version>
                 <configuration>
                     <showWarnings>true</showWarnings>
                     <source>${java.version}</source>
@@ -206,7 +212,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.2.2</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -228,7 +234,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.0.0-M3</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>enforce-no-snapshots</id>
@@ -249,7 +255,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.4.0</version>
                 <configuration>
                     <excludePackageNames>
                         io.r2dbc.h2.client,io.r2dbc.h2.util
@@ -480,7 +486,7 @@
                         <plugin>
                             <groupId>org.sonatype.plugins</groupId>
                             <artifactId>nexus-staging-maven-plugin</artifactId>
-                            <version>1.6.8</version>
+                            <version>1.6.13</version>
                             <extensions>true</extensions>
                             <configuration>
                                 <serverId>sonatype</serverId>
@@ -526,6 +532,11 @@
             <id>sonatype-nexus-snapshots</id>
             <name>Sonatype OSS Snapshot Repository</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+
+        <repository>
+            <id>spring-libs-milestone</id>
+            <url>https://repo.spring.io/libs-milestone</url>
         </repository>
     </repositories>
 

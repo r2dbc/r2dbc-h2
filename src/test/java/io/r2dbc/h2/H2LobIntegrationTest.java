@@ -59,7 +59,7 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
             .execute())
             .flatMap(Result::getRowsUpdated)
             .as(StepVerifier::create)
-            .expectNext(1)
+            .expectNext(1L)
             .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM lob_test")
@@ -79,7 +79,7 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
             .execute())
             .flatMap(Result::getRowsUpdated)
             .as(StepVerifier::create)
-            .expectNext(1)
+            .expectNext(1L)
             .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM lob_test")
@@ -102,7 +102,7 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
             .execute())
             .flatMap(Result::getRowsUpdated)
             .as(StepVerifier::create)
-            .expectNext(1)
+            .expectNext(1L)
             .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM lob_test")
@@ -125,7 +125,7 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
             .execute())
             .flatMap(Result::getRowsUpdated)
             .as(StepVerifier::create)
-            .expectNext(1)
+            .expectNext(1L)
             .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM lob_test")
@@ -145,7 +145,7 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
             .execute())
             .flatMap(Result::getRowsUpdated)
             .as(StepVerifier::create)
-            .expectNext(1)
+            .expectNext(1L)
             .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM lob_test")
@@ -170,7 +170,7 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
             .execute())
             .flatMap(Result::getRowsUpdated)
             .as(StepVerifier::create)
-            .expectNext(1)
+            .expectNext(1L)
             .verifyComplete();
 
         connection.createStatement("SELECT my_col FROM lob_test")
@@ -193,7 +193,7 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
                 .execute()
                 .flatMap(H2Result::getRowsUpdated))
             .as(StepVerifier::create)
-            .expectNext(0)
+            .expectNext(0L)
             .verifyComplete();
     }
 }

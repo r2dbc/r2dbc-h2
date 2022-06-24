@@ -18,7 +18,6 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.spi.Blob;
 import org.h2.value.Value;
-import org.h2.value.ValueLob;
 import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -78,8 +77,8 @@ class ValueLobBlob implements Blob {
                         throw new RuntimeException(e);
                     }
                 })
-            .subscribeOn(Schedulers.elastic())
-            .cancelOn(Schedulers.elastic());
+            .subscribeOn(Schedulers.boundedElastic())
+            .cancelOn(Schedulers.boundedElastic());
     }
 
     @Override

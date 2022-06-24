@@ -6,8 +6,6 @@ import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryOptions;
 import io.r2dbc.spi.test.TestKit;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.jdbc.core.JdbcOperations;
@@ -70,11 +68,11 @@ final class H2PostgresqlTestKit implements TestKit<String> {
         Mono.from(getConnectionFactory().create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement("SELECT col1 AS test_value, col2 AS test_value FROM test_two_column")
-                .execute())
+                    .createStatement("SELECT col1 AS test_value, col2 AS test_value FROM test_two_column")
+                    .execute())
                 .flatMap(result -> {
                     return result.map((row, rowMetadata) -> {
-                        Collection<String> columnNames = rowMetadata.getColumnNames();
+                        Collection<String> columnNames = ((H2RowMetadata) rowMetadata).getColumnNames();
                         return Arrays.asList(rowMetadata.getColumnMetadata("test_value").getName(), rowMetadata.getColumnMetadata("TEST_VALUE").getName(), columnNames.contains("test_value"), columnNames.contains(
                             "TEST_VALUE"));
                     });
@@ -117,9 +115,9 @@ final class H2PostgresqlTestKit implements TestKit<String> {
         Mono.from(getConnectionFactory().create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement(expand(TestStatement.SELECT_VALUE_ALIASED_COLUMNS))
-                .execute())
-                .flatMap(result -> result.map((row, rowMetadata) -> new ArrayList<>(rowMetadata.getColumnNames())))
+                    .createStatement(expand(TestStatement.SELECT_VALUE_ALIASED_COLUMNS))
+                    .execute())
+                .flatMap(result -> result.map((row, rowMetadata) -> new ArrayList<>(((H2RowMetadata) rowMetadata).getColumnNames())))
                 .flatMapIterable(Function.identity())
                 .concatWith(close(connection)))
             .as(StepVerifier::create)
@@ -131,7 +129,7 @@ final class H2PostgresqlTestKit implements TestKit<String> {
 
     <T> Mono<T> close(Connection connection) {
         return Mono.from(connection
-            .close())
+                .close())
             .then(Mono.empty());
     }
 }

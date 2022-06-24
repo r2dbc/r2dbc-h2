@@ -74,8 +74,8 @@ class ValueLobClob implements Clob {
 					throw new RuntimeException(e);
 				}
 			})
-			.subscribeOn(Schedulers.elastic())
-			.cancelOn(Schedulers.elastic());
+			.subscribeOn(Schedulers.boundedElastic())
+			.cancelOn(Schedulers.boundedElastic());
 	}
 
 	@Override

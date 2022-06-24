@@ -68,9 +68,9 @@ final class H2JdbcStyleTestKit implements TestKit<Integer> {
         Mono.from(getConnectionFactory().create())
             .flatMapMany(connection -> Flux.from(connection
 
-                .createStatement(expand(TestStatement.SELECT_VALUE_ALIASED_COLUMNS))
-                .execute())
-                .flatMap(result -> result.map((row, rowMetadata) -> new ArrayList<>(rowMetadata.getColumnNames())))
+                    .createStatement(expand(TestStatement.SELECT_VALUE_ALIASED_COLUMNS))
+                    .execute())
+                .flatMap(result -> result.map((row, rowMetadata) -> new ArrayList<>(((H2RowMetadata) rowMetadata).getColumnNames())))
                 .flatMapIterable(Function.identity())
                 .concatWith(close(connection)))
             .as(StepVerifier::create)
@@ -82,7 +82,7 @@ final class H2JdbcStyleTestKit implements TestKit<Integer> {
 
     <T> Mono<T> close(Connection connection) {
         return Mono.from(connection
-            .close())
+                .close())
             .then(Mono.empty());
     }
 }
