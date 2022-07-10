@@ -41,6 +41,7 @@ final class StringCodecTest {
         assertThat(codec.doCanDecode(Value.STRING_IGNORECASE)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
         assertThat(codec.doCanDecode(Value.INT)).isFalse();
+        assertThat(codec.doCanDecode(Value.ENUM)).isTrue();
     }
 
     @Test
