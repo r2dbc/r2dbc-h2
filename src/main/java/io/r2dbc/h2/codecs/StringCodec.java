@@ -30,7 +30,8 @@ final class StringCodec extends AbstractCodec<String> {
     boolean doCanDecode(int dataType) {
         return Value.STRING == dataType ||
             Value.STRING_FIXED == dataType ||
-            Value.STRING_IGNORECASE == dataType;
+            Value.STRING_IGNORECASE == dataType ||
+                Value.ENUM == dataType;
     }
 
     @Override
