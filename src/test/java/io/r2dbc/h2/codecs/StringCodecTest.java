@@ -17,6 +17,7 @@
 package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
+import org.h2.value.ValueEnum;
 import org.h2.value.ValueNull;
 import org.h2.value.ValueString;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,11 @@ final class StringCodecTest {
     void decode() {
         assertThat(new StringCodec().decode(ValueString.get("test"), String.class))
             .isEqualTo("test");
+    }
+    @Test
+    void decodeEnum() {
+        assertThat(new StringCodec().decode(ValueEnum.get("testEnumString", 0), String.class))
+                .isEqualTo("testEnumString");
     }
 
     @Test
