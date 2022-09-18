@@ -23,12 +23,13 @@ import org.h2.value.Value;
 import org.h2.value.ValueBlob;
 import org.h2.value.ValueNull;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.io.IOException;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.util.Enumeration;
-import java.util.Iterator;
+import java.nio.channels.Channels;
+import java.nio.channels.Pipe;
 
 final class BlobCodec extends AbstractCodec<Blob> {
 
@@ -58,8 +59,7 @@ final class BlobCodec extends AbstractCodec<Blob> {
         Assert.requireNonNull(value, "value must not be null");
 
         ValueBlob blob = this.client.getSession().getDataHandler().getLobStorage().createBlob(
-            new SequenceInputStream(
-                new BlobInputStreamEnumeration(value)), -1);
+            getInputStreamFromBlob(value), -1);
 
         this.client.getSession().addTemporaryLob(blob);
 
@@ -67,30 +67,46 @@ final class BlobCodec extends AbstractCodec<Blob> {
     }
 
     /**
-     * Converts a {@link Flux} of {@link Blob}s into an {@link Enumeration} of {@link InputStream}s.
+     * Converts a {@link Blob} into an {@link InputStream} using a {@link Pipe}.
      */
-    private final class BlobInputStreamEnumeration implements Enumeration<InputStream> {
-
-        private final Iterator<ByteBufferInputStream> inputStreams;
-
-        BlobInputStreamEnumeration(Blob value) {
-            this.inputStreams = Flux.from(value.stream())
-                .map(ByteBufferInputStream::new)
-                .subscribeOn(Schedulers.boundedElastic())
-                .cancelOn(Schedulers.boundedElastic())
-                .toIterable()
-                .iterator();
+    private InputStream getInputStreamFromBlob(Blob value) {
+        Pipe pipe;
+        try {
+            pipe = Pipe.open();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
-        @Override
-        public boolean hasMoreElements() {
-            return inputStreams.hasNext();
-        }
+        Flux.from(value.stream())
+            .subscribeOn(Schedulers.boundedElastic())
+            .cancelOn(Schedulers.boundedElastic())
+            .flatMapSequential(buffer -> {
+                try {
+                    pipe.sink().write(buffer);
+                    return Mono.empty();
+                } catch (IOException e) {
+                    return Mono.error(e);
+                }
+            })
+            .doOnError(t -> {
+                // causes an AsynchronousCloseException on the source side
+                try {
+                    pipe.source().close();
+                } catch (IOException e) {
+                    t.addSuppressed(e);
+                }
+            })
+            .doOnTerminate(() -> {
+                // causes a valid EOF signal on the source side
+                try {
+                    pipe.sink().close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .subscribe();
 
-        @Override
-        public InputStream nextElement() {
-            return inputStreams.next();
-        }
+        return Channels.newInputStream(pipe.source());
     }
 
 }
