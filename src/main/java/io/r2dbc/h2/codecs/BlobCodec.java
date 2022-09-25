@@ -82,7 +82,9 @@ final class BlobCodec extends AbstractCodec<Blob> {
             .cancelOn(Schedulers.boundedElastic())
             .concatMap(buffer -> {
                 try {
-                    pipe.sink().write(buffer);
+                    while (buffer.hasRemaining()) {
+                        pipe.sink().write(buffer);
+                    }
                     return Mono.empty();
                 } catch (IOException e) {
                     return Mono.error(e);
