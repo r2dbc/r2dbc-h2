@@ -80,7 +80,7 @@ final class BlobCodec extends AbstractCodec<Blob> {
         Flux.from(value.stream())
             .subscribeOn(Schedulers.boundedElastic())
             .cancelOn(Schedulers.boundedElastic())
-            .flatMapSequential(buffer -> {
+            .concatMap(buffer -> {
                 try {
                     pipe.sink().write(buffer);
                     return Mono.empty();
