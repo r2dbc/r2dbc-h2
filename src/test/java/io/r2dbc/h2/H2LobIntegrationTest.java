@@ -118,7 +118,7 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
 
     @Test
     void testNullClob() {
-        createTable(connection, "NTEXT");
+        createTable(connection, "CLOB");
 
         Flux.from(connection.createStatement("INSERT INTO lob_test values($1)")
             .bindNull("$1", Clob.class)
@@ -137,8 +137,8 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    void testSmallClob() {
-        createTable(connection, "NTEXT");
+    void testClob() {
+        createTable(connection, "CLOB");
 
         Flux.from(connection.createStatement("INSERT INTO lob_test values($1)")
             .bind("$1", Clob.from(Mono.just("foo你好")))
@@ -158,8 +158,8 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
-    void testBigClob() {
-        createTable(connection, "LONGTEXT");
+    void testCharacterLargeObject() {
+        createTable(connection, "CHARACTER LARGE OBJECT");
 
         int i = 50 + new Random().nextInt(1000);
 
