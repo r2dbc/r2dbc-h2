@@ -47,6 +47,7 @@
         <r2dbc-spi.version>1.0.0.RELEASE</r2dbc-spi.version>
         <reactor.version>2022.0.0-RC1</reactor.version>
         <spring-boot.version>2.7.5</spring-boot.version>
+        <spring-hateoas.version>1.5.2</spring-hateoas.version>
     </properties>
 
     <licenses>
@@ -180,7 +181,7 @@
         <dependency>
             <groupId>org.springframework.hateoas</groupId>
             <artifactId>spring-hateoas</artifactId>
-            <version>1.5.1</version>
+            <version>${spring-hateoas.version}</version>
             <scope>test</scope>
          </dependency>
         <dependency>
