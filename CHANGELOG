@@ -1,6 +1,15 @@
 R2DBC H2 Changelog
 =============================
 
+1.0.0.GA
+------------------
+* Upgrade to Reactor 2022.0.0. #237.
+* Upgrade to H2 2.1.214. #236.
+* Extract Spring HATEOAS version into a property. #235.
+* Upgrade to Spring Boot 2.7.5 for testing. #234.
+* Upgrade to Reactor 2022.0.0-RC1 #233.
+* Improve enum decoding support #231
+
 1.0.0.RC1
 ------------------
 * Update to SPI 1.0.0.RELEASE
