@@ -16,9 +16,7 @@
 
 package io.r2dbc.h2.codecs;
 
-import org.h2.value.Value;
-import org.h2.value.ValueNull;
-import org.h2.value.ValueVarchar;
+import org.h2.value.*;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +38,7 @@ final class StringCodecTest {
         assertThat(codec.doCanDecode(Value.VARCHAR_IGNORECASE)).isTrue();
         assertThat(codec.doCanDecode(Value.UNKNOWN)).isFalse();
         assertThat(codec.doCanDecode(Value.INTEGER)).isFalse();
+        assertThat(codec.doCanDecode(Value.ENUM)).isTrue();
     }
 
     @Test
@@ -60,5 +59,11 @@ final class StringCodecTest {
     void encodeNull() {
         assertThat(new StringCodec().encodeNull())
             .isEqualTo(ValueNull.INSTANCE);
+    }
+
+    @Test
+    void decodeEnum() {
+        assertThat(new StringCodec().decode(ValueEnumBase.get("testEnumString", 0), String.class))
+            .isEqualTo("testEnumString");
     }
 }

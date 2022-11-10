@@ -28,7 +28,7 @@ final class StringCodec extends AbstractCodec<String> {
 
     @Override
     boolean doCanDecode(int dataType) {
-        return Value.VARCHAR == dataType || Value.VARCHAR_IGNORECASE == dataType || Value.CHAR == dataType;
+        return Value.VARCHAR == dataType || Value.VARCHAR_IGNORECASE == dataType || Value.CHAR == dataType || Value.ENUM == dataType;
     }
 
     @Override
