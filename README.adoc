@@ -237,7 +237,7 @@ Commits require `Signed-off-by` (`git commit -s`) to ensure https://developercer
 To stage a release to Maven Central, you need to create a release tag (release version):
 
 . `ci/create-release.sh <release-version> <next-snapshot-version>` (e.g. `ci/create-release.sh 0.8.5.RELEASE 0.8.6.BUILD-SNAPSHOT`)
-. `git checkout release-0.x`
+. `git checkout release`
 . `git reset --hard v<release-version>` (e.g. `git reset --hard v0.8.5.RELEASE`, observe the `v` prefix)
 . `git push --force`
 
