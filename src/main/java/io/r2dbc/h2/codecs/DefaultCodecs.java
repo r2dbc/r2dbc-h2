@@ -113,39 +113,41 @@ public final class DefaultCodecs implements Codecs {
      */
     static List<Codec<?>> createCodecs(Client client, ClassLoader classLoader, Codecs codecs) {
         return Stream.concat(
+            Stream.concat(
+                Stream.of(
+                    new BigDecimalCodec(),
+                    new BlobToByteBufferCodec(client),
+                    new BlobCodec(client),
+                    new BooleanCodec(),
+                    new ByteCodec(),
+                    new BytesCodec(),
+                    new ClobToStringCodec(client),
+                    new ClobCodec(client),
+                    new DoubleCodec(),
+                    new FloatCodec(),
+                    new IntegerCodec(),
+                    new JsonCodec(),
+                    new LocalDateCodec(),
+                    new LocalDateTimeCodec(client),
+                    new LocalTimeCodec(),
+                    new LongCodec(),
+                    new OffsetDateTimeCodec(client),
+                    new OffsetTimeCodec(client),
+                    new ShortCodec(),
+                    new StringCodec(),
+                    new UuidCodec(),
+                    new ZonedDateTimeCodec(client),
+                    new InstantCodec(client),
+                    new IntervalCodec(),
+                    new PeriodCodec(),
+                    new DurationCodec()
+                ),
+                addOptionalCodecs(classLoader)),
             Stream.of(
-                new BigDecimalCodec(),
-                new BlobToByteBufferCodec(client),
-                new BlobCodec(client),
-                new BooleanCodec(),
-                new ByteCodec(),
-                new BytesCodec(),
-                new ClobToStringCodec(client),
-                new ClobCodec(client),
-                new DoubleCodec(),
-                new FloatCodec(),
-                new IntegerCodec(),
-                new JsonCodec(),
-                new LocalDateCodec(),
-                new LocalDateTimeCodec(client),
-                new LocalTimeCodec(),
-                new LongCodec(),
-                new OffsetDateTimeCodec(client),
-                new OffsetTimeCodec(client),
-                new ShortCodec(),
-                new StringCodec(),
-                new UuidCodec(),
-                new ZonedDateTimeCodec(client),
-                new InstantCodec(client),
-                new IntervalCodec(),
-                new PeriodCodec(),
-                new DurationCodec(),
-
-                // De-prioritized codecs
+                // De-prioritized codecs, must be added after optional codecs to avoid stack overflow
                 new ArrayCodec(codecs),
                 new ParameterCodec(codecs)
-            ),
-            addOptionalCodecs(classLoader)
+            )
         ).collect(Collectors.toList());
     }
 

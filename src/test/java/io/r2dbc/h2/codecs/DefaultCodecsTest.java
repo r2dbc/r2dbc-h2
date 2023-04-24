@@ -18,6 +18,7 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.client.Client;
 import org.h2.value.Value;
+import org.h2.value.ValueGeometry;
 import org.h2.value.ValueInteger;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,19 @@ final class DefaultCodecsTest {
         long result = DefaultCodecs.addOptionalCodecs(mockClassLoader).count();
 
         assertThat(result).isEqualTo(0L);
+    }
+
+    @Test
+    void canDecodeGeometry() throws Exception {
+        ClassLoader mockClassLoader = mock(ClassLoader.class);
+        willReturn(Object.class)
+            .given(mockClassLoader)
+            .loadClass(eq("org.locationtech.jts.geom.Geometry"));
+        ValueGeometry value = ValueGeometry.get("POINT(1 2)");
+
+        DefaultCodecs defaultCodecs = new DefaultCodecs(mock(Client.class));
+
+        assertThat(defaultCodecs.decode(value, value.getValueType(), Object.class)).isEqualTo(value.getGeometry());
     }
 
     @Test
