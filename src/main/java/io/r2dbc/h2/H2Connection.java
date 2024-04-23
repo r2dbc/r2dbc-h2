@@ -95,7 +95,7 @@ public final class H2Connection implements Connection {
 
                 if (readOnly != null) {
                     logger.warn(TransactionDefinition.READ_ONLY + " + isn't supported in H2 at the transaction level. " +
-                        "You must set it on conenction URL. See http://www.h2database.com/html/features.html#read_only");
+                        "You must set it on the connection URL. See http://www.h2database.com/html/features.html#read_only");
                 }
 
                 return startTransaction;
