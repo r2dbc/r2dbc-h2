@@ -102,6 +102,7 @@ public final class H2Statement implements Statement {
         Assert.requireTrue(!this.bindings.open, "No unfinished bindings!");
 
         return Flux.fromArray(this.sql.split(";"))
+            .filter(sql -> !sql.trim().isEmpty())
             .flatMap(sql -> {
                 if (this.generatedColumns == null) {
                     return execute(this.client, sql.trim(), this.bindings, this.codecs, this.allGeneratedColumns);
