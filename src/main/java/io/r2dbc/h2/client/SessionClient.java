@@ -65,7 +65,7 @@ public final class SessionClient implements Client {
 
             if (this.shutdownDatabaseOnClose) {
                 try {
-                    CommandInterface shutdown = this.session.prepareCommand("SHUTDOWN", 0);
+                    CommandInterface shutdown = this.session.prepareCommand("SHUTDOWN");
                     shutdown.executeUpdate(null);
                 } catch (DbException e) {
                     return Mono.error(H2DatabaseExceptionFactory.convert(e));
@@ -131,7 +131,7 @@ public final class SessionClient implements Client {
     public ResultInterface query(CommandInterface command) {
 
         try {
-            ResultInterface result = command.executeQuery(Integer.MAX_VALUE, false);
+            ResultInterface result = command.executeQuery(Integer.MAX_VALUE, Integer.MAX_VALUE, false);
             this.logger.debug("Response: {}", result);
             return result;
         } catch (DbException e) {
@@ -154,7 +154,7 @@ public final class SessionClient implements Client {
 
     private CommandInterface createCommand(String sql, Binding binding) {
         try {
-            CommandInterface command = this.session.prepareCommand(sql, Integer.MAX_VALUE);
+            CommandInterface command = this.session.prepareCommand(sql);
 
             List<? extends ParameterInterface> parameters = command.getParameters();
             for (Map.Entry<Integer, Value> entry : binding.getParameters().entrySet()) {

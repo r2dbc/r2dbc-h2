@@ -14,7 +14,7 @@ final class LocalTimeCodecTest {
 
     @Test
     void decode() {
-        assertThat(new LocalTimeCodec().decode(ValueTime.parse("11:59:59"), LocalTime.class))
+        assertThat(new LocalTimeCodec().decode(ValueTime.parse("11:59:59", null), LocalTime.class))
                 .isEqualTo(LocalTime.of(11, 59, 59));
     }
 
@@ -30,7 +30,7 @@ final class LocalTimeCodecTest {
     @Test
     void doEncode() {
         assertThat(new LocalTimeCodec().doEncode(LocalTime.of(11, 59, 59)))
-                .isEqualTo(ValueTime.parse("11:59:59"));
+                .isEqualTo(ValueTime.parse("11:59:59", null));
     }
 
     @Test

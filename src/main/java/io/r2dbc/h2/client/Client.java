@@ -72,7 +72,7 @@ public interface Client {
             update(command, false);
 
             if (command instanceof Command) {
-                ((Command) command).setCanReuse(true);
+                ((Command) command).close();
             }
         }
     }

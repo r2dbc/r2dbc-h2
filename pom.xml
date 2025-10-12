@@ -33,7 +33,7 @@
 
     <properties>
         <assertj.version>3.23.1</assertj.version>
-        <h2.version>2.1.214</h2.version>
+        <h2.version>2.4.240</h2.version>
         <java.version>1.8</java.version>
         <jmh.version>1.35</jmh.version>
         <jsr305.version>3.0.2</jsr305.version>

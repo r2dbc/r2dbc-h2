@@ -29,9 +29,9 @@ final class OffsetTimeCodecTest {
 
     @Test
     void decode() {
-        assertThat(new OffsetTimeCodec(client).decode(ValueTimeTimeZone.parse("23:59:59.999999999Z"), OffsetTime.class))
+        assertThat(new OffsetTimeCodec(client).decode(ValueTimeTimeZone.parse("23:59:59.999999999Z", null), OffsetTime.class))
             .isEqualTo(OffsetTime.of(23, 59, 59, 999999999, ZoneOffset.UTC));
-        assertThat(new OffsetTimeCodec(client).decode(ValueTimeTimeZone.parse("10:20:30+02"), OffsetTime.class))
+        assertThat(new OffsetTimeCodec(client).decode(ValueTimeTimeZone.parse("10:20:30+02", null), OffsetTime.class))
             .isEqualTo(OffsetTime.of(10, 20, 30, 0, ZoneOffset.ofHours(2)));
     }
 
@@ -48,9 +48,9 @@ final class OffsetTimeCodecTest {
     @Test
     void doEncode() {
         assertThat(new OffsetTimeCodec(client).doEncode(OffsetTime.of(23, 59, 59, 999999999, ZoneOffset.UTC)))
-            .isEqualTo(ValueTimeTimeZone.parse("23:59:59.999999999Z"));
+            .isEqualTo(ValueTimeTimeZone.parse("23:59:59.999999999Z", null));
         assertThat(new OffsetTimeCodec(client).doEncode(OffsetTime.of(10, 20, 30, 0, ZoneOffset.ofHours(2))))
-            .isEqualTo(ValueTimeTimeZone.parse("10:20:30+02"));
+            .isEqualTo(ValueTimeTimeZone.parse("10:20:30+02", null));
     }
 
     @Test
