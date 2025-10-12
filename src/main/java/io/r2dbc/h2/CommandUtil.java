@@ -28,7 +28,7 @@ final class CommandUtil {
      */
     static void clearForReuse(CommandInterface command) {
         if (command instanceof Command) {
-            ((Command) command).setCanReuse(true);
+            ((Command) command).close();
         }
     }
 
