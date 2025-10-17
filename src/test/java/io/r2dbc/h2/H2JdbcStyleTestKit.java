@@ -2,13 +2,11 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.util.H2ServerExtension;
 import io.r2dbc.spi.Connection;
-import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.ConnectionFactoryOptions;
 import io.r2dbc.spi.test.TestKit;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.jdbc.core.JdbcOperations;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,22 +15,19 @@ import reactor.test.StepVerifier;
 import java.util.ArrayList;
 import java.util.function.Function;
 
-import static io.r2dbc.h2.H2ConnectionFactoryProvider.H2_DRIVER;
-import static io.r2dbc.h2.H2ConnectionFactoryProvider.URL;
-import static io.r2dbc.spi.ConnectionFactoryOptions.*;
-
 @Disabled("TODO: Fix H2Statement so it properly handles plain JDBC placeholders.")
+@ExtendWith(H2ServerExtension.class)
 final class H2JdbcStyleTestKit implements TestKit<Integer> {
 
-    @RegisterExtension
-    static final H2ServerExtension SERVER = new H2ServerExtension();
+    private final ConnectionFactory connectionFactory;
 
-    private final ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
-        .option(DRIVER, H2_DRIVER)
-        .option(PASSWORD, SERVER.getPassword())
-        .option(URL, SERVER.getUrl())
-        .option(USER, SERVER.getUsername())
-        .build());
+    private final JdbcOperations jdbcOperations;
+
+    public H2JdbcStyleTestKit(ConnectionFactory connectionFactory, JdbcOperations jdbcOperations) {
+
+        this.connectionFactory = connectionFactory;
+        this.jdbcOperations = jdbcOperations;
+    }
 
     @Override
     public ConnectionFactory getConnectionFactory() {
@@ -46,12 +41,6 @@ final class H2JdbcStyleTestKit implements TestKit<Integer> {
 
     @Override
     public JdbcOperations getJdbcOperations() {
-        JdbcOperations jdbcOperations = SERVER.getJdbcOperations();
-
-        if (jdbcOperations == null) {
-            throw new IllegalStateException("JdbcOperations not yet initialized");
-        }
-
         return jdbcOperations;
     }
 

@@ -348,18 +348,21 @@
         <profile>
             <id>jmh</id>
             <dependencies>
+
                 <dependency>
                     <groupId>com.github.mp911de.microbenchmark-runner</groupId>
                     <artifactId>microbenchmark-runner-junit5</artifactId>
                     <version>${mbr.version}</version>
                     <scope>test</scope>
                 </dependency>
+
                 <dependency>
                     <groupId>org.openjdk.jmh</groupId>
                     <artifactId>jmh-core</artifactId>
                     <version>${jmh.version}</version>
                     <scope>test</scope>
                 </dependency>
+
                 <dependency>
                     <groupId>org.openjdk.jmh</groupId>
                     <artifactId>jmh-generator-annprocess</artifactId>
@@ -367,6 +370,7 @@
                     <scope>test</scope>
                 </dependency>
             </dependencies>
+
             <build>
                 <plugins>
                     <plugin>
@@ -388,6 +392,7 @@
                             </execution>
                         </executions>
                     </plugin>
+
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
@@ -403,6 +408,7 @@
                             <skip>true</skip>
                         </configuration>
                     </plugin>
+
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
@@ -429,6 +435,7 @@
                     </plugin>
                 </plugins>
             </build>
+
             <repositories>
                 <repository>
                     <id>jitpack.io</id>
@@ -487,7 +494,6 @@
                 </pluginManagement>
 
                 <plugins>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
@@ -497,33 +503,10 @@
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
                     </plugin>
-
                 </plugins>
-
             </build>
-
-            <distributionManagement>
-                <repository>
-                    <id>sonatype</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
-
         </profile>
 
     </profiles>
-
-    <repositories>
-        <repository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype OSS Snapshot Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-
-        <repository>
-            <id>spring-libs-milestone</id>
-            <url>https://repo.spring.io/libs-milestone</url>
-        </repository>
-    </repositories>
 
 </project>
