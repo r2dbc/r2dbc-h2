@@ -128,9 +128,9 @@ If you'd rather like the latest snapshots of the upcoming major version, use our
 </dependency>
 
 <repository>
-  <id>sonatype-nexus-snapshots</id>
-  <name>Sonatype OSS Snapshot Repository</name>
-  <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+  <id>central-portal-snapshots</id>
+  <name>Central Portal Snapshots</name>
+  <url>https://central.sonatype.com/repository/maven-snapshots/</url>
 </repository>
 ----
 
