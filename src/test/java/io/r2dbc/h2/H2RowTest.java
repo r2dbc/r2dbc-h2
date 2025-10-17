@@ -18,13 +18,11 @@ package io.r2dbc.h2;
 
 import io.r2dbc.h2.util.H2ServerExtension;
 import io.r2dbc.spi.Connection;
-import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.ConnectionFactoryOptions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.jdbc.core.JdbcOperations;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -32,36 +30,34 @@ import reactor.test.StepVerifier;
 
 import java.util.Collections;
 
-import static io.r2dbc.h2.H2ConnectionFactoryProvider.H2_DRIVER;
-import static io.r2dbc.h2.H2ConnectionFactoryProvider.URL;
-import static io.r2dbc.spi.ConnectionFactoryOptions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(H2ServerExtension.class)
 final class H2RowTest {
 
-    @RegisterExtension
-    static final H2ServerExtension SERVER = new H2ServerExtension();
+    private final ConnectionFactory connectionFactory;
 
-    private final ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
-        .option(DRIVER, H2_DRIVER)
-        .option(PASSWORD, SERVER.getPassword())
-        .option(URL, SERVER.getUrl())
-        .option(USER, SERVER.getUsername())
-        .build());
+    private final JdbcOperations jdbcOperations;
+
+    public H2RowTest(ConnectionFactory connectionFactory, JdbcOperations jdbcOperations) {
+
+        this.connectionFactory = connectionFactory;
+        this.jdbcOperations = jdbcOperations;
+    }
 
     @BeforeEach
     void createTable() {
-        getJdbcOperations().execute("CREATE TABLE test ( test_value INTEGER )");
+        jdbcOperations.execute("CREATE TABLE test ( test_value INTEGER )");
     }
 
     @AfterEach
     void dropTable() {
-        getJdbcOperations().execute("DROP TABLE test");
+        jdbcOperations.execute("DROP TABLE test");
     }
 
     @Test
     void selectWithAliases() {
-        getJdbcOperations().execute("INSERT INTO test VALUES (100)");
+        jdbcOperations.execute("INSERT INTO test VALUES (100)");
 
         Mono.from(this.connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
@@ -80,14 +76,14 @@ final class H2RowTest {
 
     @Test
     void selectWithoutAliases() {
-        getJdbcOperations().execute("INSERT INTO test VALUES (100)");
+        jdbcOperations.execute("INSERT INTO test VALUES (100)");
 
         Mono.from(this.connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
 
                     .createStatement("SELECT test_value FROM test")
                     .execute())
-                .flatMap(new H2PostgresqlTestKit()::extractColumns)
+                .flatMap(new H2PostgresqlTestKit(connectionFactory, jdbcOperations)::extractColumns)
 
                 .concatWith(close(connection)))
             .as(StepVerifier::create)
@@ -98,16 +94,6 @@ final class H2RowTest {
             .verifyComplete();
     }
 
-
-    private JdbcOperations getJdbcOperations() {
-        JdbcOperations jdbcOperations = SERVER.getJdbcOperations();
-
-        if (jdbcOperations == null) {
-            throw new IllegalStateException("JdbcOperations not yet initialized");
-        }
-
-        return jdbcOperations;
-    }
 
     static <T> Mono<T> close(Connection connection) {
         return Mono.from(connection

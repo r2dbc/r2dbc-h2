@@ -20,7 +20,12 @@ import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.MockCodecs;
 import io.r2dbc.h2.util.H2ServerExtension;
-import io.r2dbc.spi.*;
+import io.r2dbc.spi.ConnectionFactories;
+import io.r2dbc.spi.ConnectionFactory;
+import io.r2dbc.spi.ConnectionFactoryOptions;
+import io.r2dbc.spi.Parameter;
+import io.r2dbc.spi.Parameters;
+import io.r2dbc.spi.R2dbcBadGrammarException;
 import org.h2.command.CommandInterface;
 import org.h2.result.LocalResult;
 import org.h2.result.ResultWithGeneratedKeys;
@@ -28,6 +33,8 @@ import org.h2.value.Value;
 import org.h2.value.ValueInteger;
 import org.h2.value.ValueNull;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.jdbc.core.JdbcOperations;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -41,12 +48,17 @@ import java.util.stream.IntStream;
 
 import static io.r2dbc.h2.H2ConnectionFactoryProvider.H2_DRIVER;
 import static io.r2dbc.h2.H2ConnectionFactoryProvider.URL;
-import static io.r2dbc.spi.ConnectionFactoryOptions.*;
+import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
+import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
+import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.RETURNS_SMART_NULLS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static reactor.function.TupleUtils.predicate;
 
+@ExtendWith(H2ServerExtension.class)
 final class H2StatementTest {
 
     private final Client client = mock(Client.class, RETURNS_SMART_NULLS);
@@ -231,19 +243,18 @@ final class H2StatementTest {
     }
 
     @Test
-    void returnGenerateValuesNoArguments() throws Exception {
-        H2ServerExtension SERVER = new H2ServerExtension();
+    void returnGenerateValuesNoArguments(JdbcOperations jdbcOperations, H2ServerExtension extension) throws Exception {
+
+        jdbcOperations.execute("DROP TABLE IF EXISTS test;");
 
         ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
             .option(DRIVER, H2_DRIVER)
-            .option(PASSWORD, SERVER.getPassword())
-            .option(URL, SERVER.getUrl())
-            .option(USER, SERVER.getUsername())
+            .option(PASSWORD, extension.getPassword())
+            .option(URL, extension.getUrl())
+            .option(USER, extension.getUsername())
             .build());
 
-        SERVER.beforeAll(null);
-
-        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, test_value INTEGER);");
+        jdbcOperations.execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, test_value INTEGER);");
 
         Mono.from(connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
@@ -263,25 +274,22 @@ final class H2StatementTest {
             }))
             .verifyComplete();
 
-        SERVER.getJdbcOperations().execute("DROP TABLE test");
-
-        SERVER.afterAll(null);
+        jdbcOperations.execute("DROP TABLE test");
     }
 
     @Test
-    void returnGeneratedValuesNotUsed() throws Exception {
-        H2ServerExtension SERVER = new H2ServerExtension();
+    void returnGeneratedValuesNotUsed(JdbcOperations jdbcOperations, H2ServerExtension extension) throws Exception {
+
+        jdbcOperations.execute("DROP TABLE IF EXISTS test;");
 
         ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
             .option(DRIVER, H2_DRIVER)
-            .option(PASSWORD, SERVER.getPassword())
-            .option(URL, SERVER.getUrl())
-            .option(USER, SERVER.getUsername())
+            .option(PASSWORD, extension.getPassword())
+            .option(URL, extension.getUrl())
+            .option(USER, extension.getUsername())
             .build());
 
-        SERVER.beforeAll(null);
-
-        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, test_value INTEGER);");
+        jdbcOperations.execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, test_value INTEGER);");
 
         Mono.from(connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
@@ -295,25 +303,22 @@ final class H2StatementTest {
             .expectNextCount(0)
             .verifyComplete();
 
-        SERVER.getJdbcOperations().execute("DROP TABLE test");
-
-        SERVER.afterAll(null);
+        jdbcOperations.execute("DROP TABLE test");
     }
 
     @Test
-    void returnGeneratedValuesSpecificColumn() throws Exception {
-        H2ServerExtension SERVER = new H2ServerExtension();
+    void returnGeneratedValuesSpecificColumn(JdbcOperations jdbcOperations, H2ServerExtension extension) throws Exception {
+
+        jdbcOperations.execute("DROP TABLE IF EXISTS test;");
 
         ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
             .option(DRIVER, H2_DRIVER)
-            .option(PASSWORD, SERVER.getPassword())
-            .option(URL, SERVER.getUrl())
-            .option(USER, SERVER.getUsername())
+            .option(PASSWORD, extension.getPassword())
+            .option(URL, extension.getUrl())
+            .option(USER, extension.getUsername())
             .build());
 
-        SERVER.beforeAll(null);
-
-        SERVER.getJdbcOperations().execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, test_value INTEGER);");
+        jdbcOperations.execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, test_value INTEGER);");
 
         Mono.from(connectionFactory.create())
             .flatMapMany(connection -> Flux.from(connection
@@ -332,9 +337,7 @@ final class H2StatementTest {
             }))
             .verifyComplete();
 
-        SERVER.getJdbcOperations().execute("DROP TABLE test");
-
-        SERVER.afterAll(null);
+        jdbcOperations.execute("DROP TABLE test");
     }
 
     @Test
