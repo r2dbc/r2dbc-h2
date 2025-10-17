@@ -45,8 +45,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <r2dbc-spi.version>1.0.0.RELEASE</r2dbc-spi.version>
         <reactor.version>2022.0.0</reactor.version>
-        <spring-boot.version>2.7.5</spring-boot.version>
-        <spring-hateoas.version>1.5.2</spring-hateoas.version>
+        <spring-framework.version>5.3.39</spring-framework.version>
     </properties>
 
     <licenses>
@@ -70,6 +69,10 @@
         <developer>
             <name>Greg Turnquist</name>
             <email>gturnquist@vmware.com</email>
+        </developer>
+        <developer>
+            <name>Mark Paluch</name>
+            <email>mpaluch@paluch.biz</email>
         </developer>
     </developers>
 
@@ -166,27 +169,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-jdbc</artifactId>
-            <version>${spring-boot.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.jayway.jsonpath</groupId>
-            <artifactId>json-path</artifactId>
-            <version>2.4.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.hateoas</groupId>
-            <artifactId>spring-hateoas</artifactId>
-            <version>${spring-hateoas.version}</version>
-            <scope>test</scope>
-         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-webflux</artifactId>
-            <version>${spring-boot.version}</version>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring-framework.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

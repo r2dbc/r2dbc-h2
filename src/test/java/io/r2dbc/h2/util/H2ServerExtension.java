@@ -16,11 +16,11 @@
 
 package io.r2dbc.h2.util;
 
-import com.zaxxer.hikari.HikariDataSource;
+import org.h2.jdbcx.JdbcConnectionPool;
+import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import reactor.util.annotation.Nullable;
@@ -35,24 +35,20 @@ public final class H2ServerExtension implements BeforeAllCallback, AfterAllCallb
 
     private final String username = UUID.randomUUID().toString();
 
-    private HikariDataSource dataSource;
+    private JdbcConnectionPool dataSource;
 
     private JdbcOperations jdbcOperations;
 
     @Override
     public void afterAll(ExtensionContext context) {
-        this.dataSource.close();
     }
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
-        this.dataSource = DataSourceBuilder.create()
-            .type(HikariDataSource.class)
-            .url(String.format("jdbc:h2:%s;USER=%s;PASSWORD=%s;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=4", this.url, this.username, this.password))
-            .build();
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setURL(String.format("jdbc:h2:%s;USER=%s;PASSWORD=%s;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=4", this.url, this.username, this.password));
 
-        this.dataSource.setMaximumPoolSize(1);
-
+        this.dataSource = JdbcConnectionPool.create(dataSource);
         this.jdbcOperations = new JdbcTemplate(this.dataSource);
     }
 
