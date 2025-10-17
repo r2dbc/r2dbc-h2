@@ -16,28 +16,45 @@
 
 package io.r2dbc.h2;
 
-import io.r2dbc.h2.client.SessionClient;
 import io.r2dbc.h2.codecs.DefaultCodecs;
-import org.h2.engine.ConnectionInfo;
+import io.r2dbc.h2.util.IntegrationTestSupport;
+import io.r2dbc.spi.Option;
+import io.r2dbc.spi.TransactionDefinition;
 import org.h2.engine.Constants;
 import org.junit.jupiter.api.Test;
-
-import java.util.Properties;
-import java.util.UUID;
+import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-final class H2ConnectionIntegrationTest {
+final class H2ConnectionIntegrationTest extends IntegrationTestSupport {
 
     @Test
     void getMetadata() {
 
-        ConnectionInfo configuration = new ConnectionInfo("jdbc:h2:mem:" + UUID.randomUUID().toString() + ";USER=sa;PASSWORD=sa;", new Properties(), null, null);
-        SessionClient sessionClient = new SessionClient(configuration, false);
-
-        H2Connection connection = new H2Connection(sessionClient, new DefaultCodecs(sessionClient));
-        H2ConnectionMetadata metadata = connection.getMetadata();
+        H2ConnectionMetadata metadata = TestSessionClient.create(options).doWithClient(sessionClient -> {
+            H2Connection connection = new H2Connection(sessionClient, new DefaultCodecs(sessionClient));
+            return connection.getMetadata();
+        });
 
         assertThat(metadata.getDatabaseVersion()).isEqualTo(Constants.VERSION);
+    }
+
+    @Test
+    void beginTransaction() {
+
+        TransactionDefinition definition = new TransactionDefinition() {
+
+            @Override
+            public <T> T getAttribute(Option<T> option) {
+
+                if (TransactionDefinition.READ_ONLY == option) {
+                    return (T) (Boolean.TRUE);
+                }
+
+                return null;
+            }
+        };
+
+        connection.beginTransaction(definition).as(StepVerifier::create).verifyComplete();
     }
 }
