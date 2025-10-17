@@ -21,11 +21,13 @@ import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Statement;
+import org.h2.command.CommandInterface;
 import org.h2.engine.GeneratedKeysMode;
 import org.h2.message.DbException;
 import org.h2.result.ResultInterface;
 import org.h2.result.ResultWithGeneratedKeys;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.util.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -100,14 +102,19 @@ public final class H2Statement implements Statement {
     @Override
     public Flux<H2Result> execute() {
         Assert.requireTrue(!this.bindings.open, "No unfinished bindings!");
-
         return Flux.fromArray(this.sql.split(";"))
-            .flatMap(sql -> {
-                if (this.generatedColumns == null) {
-                    return execute(this.client, sql.trim(), this.bindings, this.codecs, this.allGeneratedColumns);
-                }
-                return execute(this.client, sql.trim(), this.bindings, this.codecs, this.generatedColumns);
-            });
+            .map(String::trim)
+            .filter(it -> !it.isEmpty())
+            .flatMap(it -> doExecute(it, this.bindings));
+    }
+
+    Flux<H2Result> doExecute(Bindings bindings) {
+        return doExecute(this.sql, bindings);
+    }
+
+    Flux<H2Result> doExecute(String sql, Bindings bindings) {
+        return Flux.fromIterable(() -> this.client.prepareCommand(sql, bindings.bindings))
+            .flatMap(it -> execute(it, this.client, this.codecs, this.generatedColumns == null ? this.allGeneratedColumns : this.generatedColumns));
     }
 
     @Override
@@ -136,9 +143,8 @@ public final class H2Statement implements Statement {
         return this;
     }
 
-    private static Flux<H2Result> execute(Client client, String sql, Bindings bindings, Codecs codecs, Object generatedColumns) {
-        return Flux.fromIterable(() -> client.prepareCommand(sql, bindings.bindings))
-            .map(command -> {
+    private static Mono<H2Result> execute(CommandInterface command, Client client, Codecs codecs, Object generatedColumns) {
+        return Mono.fromSupplier(() -> {
 
                 try {
                     if (command.isQuery()) {
@@ -171,7 +177,9 @@ public final class H2Statement implements Statement {
         return Integer.parseInt(matcher.group(BIND_POSITION_NUMBER_GROUP)) - 1;
     }
 
-    private static final class Bindings {
+    static final class Bindings {
+
+        static final Bindings EMPTY = new Bindings();
 
         private final List<Binding> bindings = new ArrayList<>();
 
@@ -180,14 +188,14 @@ public final class H2Statement implements Statement {
         private boolean open = false;
 
         public boolean isOpen() {
-            return open;
+            return this.open;
         }
 
         @Override
         public String toString() {
             return "Bindings{" +
-                "bindings=" + bindings +
-                ", current=" + current +
+                "bindings=" + this.bindings +
+                ", current=" + this.current +
                 '}';
         }
 
