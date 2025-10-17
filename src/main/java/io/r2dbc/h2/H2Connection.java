@@ -19,7 +19,11 @@ package io.r2dbc.h2;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
-import io.r2dbc.spi.*;
+import io.r2dbc.spi.Connection;
+import io.r2dbc.spi.IsolationLevel;
+import io.r2dbc.spi.Option;
+import io.r2dbc.spi.TransactionDefinition;
+import io.r2dbc.spi.ValidationDepth;
 import org.h2.command.CommandInterface;
 import org.h2.engine.Constants;
 import org.h2.message.DbException;
@@ -35,8 +39,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.function.Function;
 
-import static io.r2dbc.spi.IsolationLevel.*;
-import static org.h2.engine.Constants.*;
+import static io.r2dbc.spi.IsolationLevel.READ_COMMITTED;
+import static io.r2dbc.spi.IsolationLevel.READ_UNCOMMITTED;
+import static io.r2dbc.spi.IsolationLevel.REPEATABLE_READ;
+import static io.r2dbc.spi.IsolationLevel.SERIALIZABLE;
+import static org.h2.engine.Constants.LOCK_MODE_OFF;
+import static org.h2.engine.Constants.LOCK_MODE_READ_COMMITTED;
+import static org.h2.engine.Constants.LOCK_MODE_TABLE;
 
 /**
  * An implementation of {@link Connection} for connecting to an H2 database.
@@ -87,7 +96,7 @@ public final class H2Connection implements Connection {
                 IsolationLevel isolationLevel = definition.getAttribute(TransactionDefinition.ISOLATION_LEVEL);
                 Boolean readOnly = definition.getAttribute(TransactionDefinition.READ_ONLY);
 
-                Mono<Void> startTransaction = Mono.fromRunnable(() -> this.client.disableAutoCommit());
+                Mono<Void> startTransaction = Mono.fromRunnable(this.client::disableAutoCommit);
 
                 if (isolationLevel != null) {
                     startTransaction = startTransaction.then(setTransactionIsolationLevel(isolationLevel));
@@ -228,9 +237,8 @@ public final class H2Connection implements Connection {
         Assert.requireNonNull(isolationLevel, "isolationLevel must not be null");
 
         return Mono.<Void>fromRunnable(() -> this.client.execute(getTransactionIsolationLevelQuery(isolationLevel)))
-            .map(aVoid -> {
+            .doOnSuccess(aVoid -> {
                 this.isolationLevel = isolationLevel;
-                return aVoid;
             })
             .onErrorMap(DbException.class, H2DatabaseExceptionFactory::convert);
     }

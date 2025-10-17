@@ -24,16 +24,13 @@ import io.r2dbc.h2.util.Assert;
 import io.r2dbc.spi.Closeable;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.ConnectionFactoryMetadata;
-import org.h2.engine.ConnectionInfo;
 import org.h2.message.DbException;
 import reactor.core.publisher.Mono;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Properties;
 import java.util.function.Supplier;
 
-import static org.h2.engine.Constants.START_URL;
 
 /**
  * An implementation of {@link ConnectionFactory} for creating connections to an H2 database.
@@ -114,7 +111,7 @@ public final class H2ConnectionFactory implements ConnectionFactory {
         Assert.requireNonNull(configuration, "configuration must not be null");
 
         try {
-            return new SessionClient(getConnectionInfo(configuration), shutdownDatabaseOnClose);
+            return new SessionClient(configuration.getConnectionInfo(), shutdownDatabaseOnClose);
         } catch (DbException e) {
             throw H2DatabaseExceptionFactory.convert(e);
         }
@@ -140,21 +137,6 @@ public final class H2ConnectionFactory implements ConnectionFactory {
         return "H2ConnectionFactory{" +
             "clientFactory=" + this.clientFactory +
             '}';
-    }
-
-    private static ConnectionInfo getConnectionInfo(H2ConnectionConfiguration configuration) {
-        StringBuilder sb = new StringBuilder(START_URL).append(configuration.getUrl());
-        configuration.getUsername().ifPresent(username -> sb.append(";USER=").append(username));
-        configuration.getPassword().ifPresent(password -> sb.append(";PASSWORD=").append(password));
-
-        try {
-            Properties properties = new Properties();
-            properties.putAll(configuration.getProperties());
-
-            return new ConnectionInfo(sb.toString(), properties, null, null);
-        } catch (DbException e) {
-            throw H2DatabaseExceptionFactory.convert(e);
-        }
     }
 
     private static class DefaultCloseableConnectionFactory implements CloseableConnectionFactory {

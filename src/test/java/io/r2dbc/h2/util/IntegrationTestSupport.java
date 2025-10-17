@@ -43,10 +43,12 @@ public abstract class IntegrationTestSupport {
 
     protected static H2Connection connection;
 
+    protected static ConnectionFactoryOptions options;
+
     @BeforeAll
     static void beforeAll() {
 
-        ConnectionFactoryOptions options = builder()
+        options = builder()
             .option(DRIVER, H2ConnectionFactoryProvider.H2_DRIVER)
             .option(PASSWORD, SERVER.getPassword())
             .option(URL, SERVER.getUrl())

@@ -17,6 +17,8 @@
 package io.r2dbc.h2;
 
 import io.r2dbc.h2.util.Assert;
+import org.h2.engine.ConnectionInfo;
+import org.h2.message.DbException;
 import reactor.util.annotation.Nullable;
 
 import java.util.ArrayList;
@@ -24,6 +26,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
+
+import static org.h2.engine.Constants.START_URL;
 
 /**
  * Connection configuration information for connecting to an H2 database.
@@ -52,6 +57,22 @@ public final class H2ConnectionConfiguration {
      */
     public static Builder builder() {
         return new Builder();
+    }
+
+    public ConnectionInfo getConnectionInfo() {
+
+        StringBuilder sb = new StringBuilder(START_URL).append(getUrl());
+        getUsername().ifPresent(username -> sb.append(";USER=").append(username));
+        getPassword().ifPresent(password -> sb.append(";PASSWORD=").append(password));
+
+        try {
+            Properties properties = new Properties();
+            properties.putAll(getProperties());
+
+            return new ConnectionInfo(sb.toString(), properties, null, null);
+        } catch (DbException e) {
+            throw H2DatabaseExceptionFactory.convert(e);
+        }
     }
 
     @Override

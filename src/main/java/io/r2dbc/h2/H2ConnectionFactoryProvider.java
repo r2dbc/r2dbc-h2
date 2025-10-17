@@ -27,7 +27,11 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static io.r2dbc.spi.ConnectionFactoryOptions.*;
+import static io.r2dbc.spi.ConnectionFactoryOptions.DATABASE;
+import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
+import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
+import static io.r2dbc.spi.ConnectionFactoryOptions.PROTOCOL;
+import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 
 /**
  * An implementation of {@link ConnectionFactoryProvider} for creating {@link H2ConnectionFactory}s.
@@ -65,6 +69,10 @@ public final class H2ConnectionFactoryProvider implements ConnectionFactoryProvi
 
     @Override
     public H2ConnectionFactory create(ConnectionFactoryOptions connectionFactoryOptions) {
+        return new H2ConnectionFactory(getConfiguration(connectionFactoryOptions));
+    }
+
+    public static H2ConnectionConfiguration getConfiguration(ConnectionFactoryOptions connectionFactoryOptions) {
         Assert.requireNonNull(connectionFactoryOptions, "connectionFactoryOptions must not be null");
 
         H2ConnectionConfiguration.Builder builder = H2ConnectionConfiguration.builder();
@@ -110,7 +118,8 @@ public final class H2ConnectionFactoryProvider implements ConnectionFactoryProvi
             }
         }
 
-        return new H2ConnectionFactory(builder.build());
+        H2ConnectionConfiguration configuration = builder.build();
+        return configuration;
     }
 
     @Override
