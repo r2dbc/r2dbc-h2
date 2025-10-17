@@ -31,7 +31,11 @@ import reactor.core.publisher.Mono;
 import reactor.util.Logger;
 import reactor.util.Loggers;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An implementation of {@link Client} that wraps an H2 {@link Session}.
@@ -104,7 +108,6 @@ public final class SessionClient implements Client {
         }
 
         Iterator<Binding> bindingIterator = bindings.isEmpty() ? emptyBinding.iterator() : bindings.iterator();
-
         return new Iterator<CommandInterface>() {
 
             @Override
@@ -115,10 +118,9 @@ public final class SessionClient implements Client {
             @Override
             public CommandInterface next() {
                 Binding binding = bindingIterator.next();
-
                 try {
                     CommandInterface command = createCommand(sql, binding);
-                    logger.debug("Request:  {}", command);
+                    SessionClient.this.logger.debug("Request:  {}", command);
                     return command;
                 } catch (DbException e) {
                     throw H2DatabaseExceptionFactory.convert(e);
