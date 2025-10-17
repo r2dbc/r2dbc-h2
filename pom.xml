@@ -34,13 +34,13 @@
     <properties>
         <assertj.version>3.23.1</assertj.version>
         <h2.version>2.4.240</h2.version>
-        <jmh.version>1.35</jmh.version>
-        <jsr305.version>3.0.2</jsr305.version>
         <jts.version>1.16.1</jts.version>
-        <junit.version>5.7.0</junit.version>
-        <logback.version>1.2.3</logback.version>
-        <mbr.version>0.2.0.RELEASE</mbr.version>
-        <mockito.version>4.6.1</mockito.version>
+        <jsr305.version>3.0.2</jsr305.version>
+        <junit.version>5.13.4</junit.version>
+        <jmh.version>1.37</jmh.version>
+        <mbr.version>0.6.0.RELEASE</mbr.version>
+        <logback.version>1.5.18</logback.version>
+        <mockito.version>4.11.0</mockito.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <r2dbc-spi.version>1.0.0.RELEASE</r2dbc-spi.version>
@@ -187,7 +187,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.14.1</version>
                 <configuration>
                     <showWarnings>true</showWarnings>
                     <release>8</release>
@@ -196,7 +196,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>3.4.2</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -213,12 +213,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.2</version>
+                <version>3.1.4</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.1.0</version>
+                <version>3.6.2</version>
                 <executions>
                     <execution>
                         <id>enforce-no-snapshots</id>
@@ -239,7 +239,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.12.0</version>
                 <configuration>
                     <excludePackageNames>
                         io.r2dbc.h2.client,io.r2dbc.h2.util
@@ -264,7 +264,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -277,7 +277,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
+                <version>3.5.4</version>
                 <configuration>
                     <runOrder>random</runOrder>
                     <includes>
@@ -289,7 +289,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.2.1</version>
+                <version>1.7.3</version>
                 <executions>
                     <execution>
                         <id>flatten</id>
@@ -372,7 +372,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>build-helper-maven-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.6.1</version>
                         <executions>
                             <execution>
                                 <id>add-source</id>
@@ -406,7 +406,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
+                        <version>3.6.1</version>
                         <executions>
                             <execution>
                                 <id>run-benchmarks</id>
@@ -460,7 +460,7 @@
                         <plugin>
                             <groupId>org.apache.maven.plugins</groupId>
                             <artifactId>maven-gpg-plugin</artifactId>
-                            <version>1.6</version>
+                            <version>3.2.8</version>
                             <executions>
                                 <execution>
                                     <id>sign-artifacts</id>
