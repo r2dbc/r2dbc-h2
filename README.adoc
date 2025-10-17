@@ -104,6 +104,17 @@ CloseableConnectionFactory connectionFactory = H2ConnectionFactory.inMemory("tes
 Mono<Connection> connection = connectionFactory.create();
 ----
 
+== Compatibility Matrix
+
+The following matrix indicates which versions of R2DBC H2 are compatible with which versions of H2 Database:
+
+[%header,cols=2*]
+|===
+| R2DBC H2 Version  | H2 Driver Version
+| 1.1.x             | 2.4.x (2.4.240)
+| 1.0.x             | 2.1.x - 2.3.x (2.1.214 - 2.3.232)
+|===
+
 == Maven
 
 Artifacts can be found on https://search.maven.org/search?q=r2dbc-h2[Maven Central].
