@@ -229,6 +229,36 @@ final class H2StatementTest {
     }
 
     @Test
+    void executeMultipleCommands() {
+        CommandInterface insertCommand1 = mock(CommandInterface.class);
+        when(this.client.prepareCommand("insert test-query-1", Collections.emptyList())).thenReturn(Collections.singleton(insertCommand1).iterator());
+        when(this.client.update(insertCommand1, false)).thenReturn(new ResultWithGeneratedKeys.WithKeys(0, new LocalResult()));
+
+        CommandInterface insertCommand2 = mock(CommandInterface.class);
+        when(this.client.prepareCommand("insert test-query-2", Collections.emptyList())).thenReturn(Collections.singleton(insertCommand2).iterator());
+        when(this.client.update(insertCommand2, false)).thenReturn(new ResultWithGeneratedKeys.WithKeys(0, new LocalResult()));
+
+        new H2Statement(this.client, this.codecs, "insert test-query-1;insert test-query-2")
+            .execute()
+            .as(StepVerifier::create)
+            .expectNextCount(2)
+            .verifyComplete();
+    }
+
+    @Test
+    void executeMultipleCommandsIgnoringEmptyOne() {
+        CommandInterface command = mock(CommandInterface.class);
+        when(this.client.prepareCommand("insert test-query-1", Collections.emptyList())).thenReturn(Collections.singleton(command).iterator());
+        when(this.client.update(command, false)).thenReturn(new ResultWithGeneratedKeys.WithKeys(0, new LocalResult()));
+
+        new H2Statement(this.client, this.codecs, "insert test-query-1;\n  ")
+            .execute()
+            .as(StepVerifier::create)
+            .expectNextCount(1)
+            .verifyComplete();
+    }
+
+    @Test
     void returnGeneratedValues() {
         CommandInterface command = mock(CommandInterface.class);
         when(this.client.prepareCommand("INSERT test-query", Collections.emptyList())).thenReturn(Collections.singleton(command).iterator());
