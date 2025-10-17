@@ -20,9 +20,7 @@ import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.MockCodecs;
 import io.r2dbc.h2.util.H2ServerExtension;
-import io.r2dbc.spi.ConnectionFactories;
 import io.r2dbc.spi.ConnectionFactory;
-import io.r2dbc.spi.ConnectionFactoryOptions;
 import io.r2dbc.spi.Parameter;
 import io.r2dbc.spi.Parameters;
 import io.r2dbc.spi.R2dbcBadGrammarException;
@@ -46,11 +44,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static io.r2dbc.h2.H2ConnectionFactoryProvider.H2_DRIVER;
-import static io.r2dbc.h2.H2ConnectionFactoryProvider.URL;
-import static io.r2dbc.spi.ConnectionFactoryOptions.DRIVER;
-import static io.r2dbc.spi.ConnectionFactoryOptions.PASSWORD;
-import static io.r2dbc.spi.ConnectionFactoryOptions.USER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
@@ -243,16 +236,9 @@ final class H2StatementTest {
     }
 
     @Test
-    void returnGenerateValuesNoArguments(JdbcOperations jdbcOperations, H2ServerExtension extension) throws Exception {
+    void returnGenerateValuesNoArguments(JdbcOperations jdbcOperations, ConnectionFactory connectionFactory) throws Exception {
 
         jdbcOperations.execute("DROP TABLE IF EXISTS test;");
-
-        ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
-            .option(DRIVER, H2_DRIVER)
-            .option(PASSWORD, extension.getPassword())
-            .option(URL, extension.getUrl())
-            .option(USER, extension.getUsername())
-            .build());
 
         jdbcOperations.execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, test_value INTEGER);");
 
@@ -278,16 +264,9 @@ final class H2StatementTest {
     }
 
     @Test
-    void returnGeneratedValuesNotUsed(JdbcOperations jdbcOperations, H2ServerExtension extension) throws Exception {
+    void returnGeneratedValuesNotUsed(JdbcOperations jdbcOperations, ConnectionFactory connectionFactory) throws Exception {
 
         jdbcOperations.execute("DROP TABLE IF EXISTS test;");
-
-        ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
-            .option(DRIVER, H2_DRIVER)
-            .option(PASSWORD, extension.getPassword())
-            .option(URL, extension.getUrl())
-            .option(USER, extension.getUsername())
-            .build());
 
         jdbcOperations.execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, test_value INTEGER);");
 
@@ -307,16 +286,9 @@ final class H2StatementTest {
     }
 
     @Test
-    void returnGeneratedValuesSpecificColumn(JdbcOperations jdbcOperations, H2ServerExtension extension) throws Exception {
+    void returnGeneratedValuesSpecificColumn(JdbcOperations jdbcOperations, ConnectionFactory connectionFactory) throws Exception {
 
         jdbcOperations.execute("DROP TABLE IF EXISTS test;");
-
-        ConnectionFactory connectionFactory = ConnectionFactories.get(ConnectionFactoryOptions.builder()
-            .option(DRIVER, H2_DRIVER)
-            .option(PASSWORD, extension.getPassword())
-            .option(URL, extension.getUrl())
-            .option(USER, extension.getUsername())
-            .build());
 
         jdbcOperations.execute("CREATE TABLE test ( id INTEGER AUTO_INCREMENT, id2 INTEGER AUTO_INCREMENT, test_value INTEGER);");
 
