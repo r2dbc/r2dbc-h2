@@ -24,7 +24,7 @@
 
     <groupId>io.r2dbc</groupId>
     <artifactId>r2dbc-h2</artifactId>
-    <version>1.0.1.BUILD-SNAPSHOT</version>
+    <version>1.0.1.RELEASE</version>
     <packaging>jar</packaging>
 
     <name>Reactive Relational Database Connectivity - H2</name>
@@ -493,11 +493,6 @@
                                 </execution>
                             </executions>
                         </plugin>
-
-                        <plugin>
-                            <groupId>org.sonatype.central</groupId>
-                            <artifactId>central-publishing-maven-plugin</artifactId>
-                        </plugin>
                     </plugins>
 
                 </pluginManagement>
@@ -510,36 +505,16 @@
                     </plugin>
 
                     <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
                     </plugin>
 
                 </plugins>
 
             </build>
 
-            <distributionManagement>
-                <repository>
-                    <id>sonatype</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
-
         </profile>
 
     </profiles>
-
-    <repositories>
-        <repository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Sonatype OSS Snapshot Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-
-        <repository>
-            <id>spring-libs-milestone</id>
-            <url>https://repo.spring.io/libs-milestone</url>
-        </repository>
-    </repositories>
 
 </project>
