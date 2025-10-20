@@ -1,6 +1,16 @@
 R2DBC H2 Changelog
 =============================
 
+1.1.0.RELEASE
+------------------
+* StackOverflowException when attempting to decode Geometry #240
+* execute empty sql causing IndexOutOfBoundsException #245
+* Fix typo #249
+* Unnecessary Warning log #254
+* Update com.h2database:h2 to v2.4.240 #257
+* Switch to Sonatype Central Publishing #259
+* Upgrade to Reactor 2024.0 #262
+
 1.0.1.RELEASE
 ------------------
 * execute empty sql causing IndexOutOfBoundsException #245
