@@ -338,6 +338,7 @@
                 <version>0.8.0</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <autoPublish>true</autoPublish>
                     <publishingServerId>central</publishingServerId>
                 </configuration>
             </plugin>
