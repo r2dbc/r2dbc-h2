@@ -18,8 +18,12 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
+import io.r2dbc.spi.Blob;
+import io.r2dbc.spi.Clob;
+import io.r2dbc.spi.Parameter;
 import org.h2.value.Value;
 import org.h2.value.ValueNull;
+import reactor.core.publisher.Mono;
 import reactor.util.annotation.Nullable;
 
 import java.util.List;
@@ -72,6 +76,37 @@ public final class DefaultCodecs implements Codecs {
         }
 
         throw new IllegalArgumentException(String.format("Cannot encode parameter of type %s", value.getClass().getName()));
+    }
+
+    @Override
+    public Mono<Value> encodeReactive(Object value) {
+        Assert.requireNonNull(value, "value must not be null");
+
+        if (value instanceof Parameter) {
+            Parameter parameter = (Parameter) value;
+            if (parameter.getValue() == null) {
+                return Mono.just(encodeNull(parameter.getType().getJavaType()));
+            }
+            return encodeReactive(parameter.getValue());
+        }
+
+        if (value instanceof Blob) {
+            for (Codec<?> codec : this.codecs) {
+                if (codec instanceof BlobCodec && codec.canEncode(value)) {
+                    return ((BlobCodec) codec).encodeReactive((Blob) value);
+                }
+            }
+        }
+
+        if (value instanceof Clob) {
+            for (Codec<?> codec : this.codecs) {
+                if (codec instanceof ClobCodec && codec.canEncode(value)) {
+                    return ((ClobCodec) codec).encodeReactive((Clob) value);
+                }
+            }
+        }
+
+        return Mono.fromCallable(() -> encode(value));
     }
 
     @Override

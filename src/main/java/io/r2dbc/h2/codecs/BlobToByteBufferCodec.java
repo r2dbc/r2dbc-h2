@@ -18,18 +18,12 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.util.Assert;
-import io.r2dbc.spi.Blob;
 import org.h2.value.Value;
 import org.h2.value.ValueBlob;
 import org.h2.value.ValueNull;
-import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
 
-import java.io.InputStream;
-import java.io.SequenceInputStream;
+import java.io.ByteArrayInputStream;
 import java.nio.ByteBuffer;
-import java.util.Enumeration;
-import java.util.Iterator;
 
 final class BlobToByteBufferCodec extends AbstractCodec<ByteBuffer> {
 
@@ -63,39 +57,15 @@ final class BlobToByteBufferCodec extends AbstractCodec<ByteBuffer> {
     Value doEncode(ByteBuffer value) {
         Assert.requireNonNull(value, "value must not be null");
 
+        ByteBuffer buffer = value.duplicate();
+        byte[] bytes = new byte[buffer.remaining()];
+        buffer.get(bytes);
+
         ValueBlob blob = this.client.getSession().getDataHandler().getLobStorage().createBlob(
-            new SequenceInputStream(
-                new BlobInputStreamEnumeration(value)), -1);
+            new ByteArrayInputStream(bytes), bytes.length);
 
         this.client.getSession().addTemporaryLob(blob);
 
         return blob;
-    }
-
-    /**
-     * Converts a {@link Flux} of {@link Blob}s into an {@link Enumeration} of {@link InputStream}s.
-     */
-    private final class BlobInputStreamEnumeration implements Enumeration<InputStream> {
-
-        private final Iterator<ByteBufferInputStream> inputStreams;
-
-        BlobInputStreamEnumeration(ByteBuffer value) {
-            this.inputStreams = Flux.just(value)
-                .map(ByteBufferInputStream::new)
-                .subscribeOn(Schedulers.boundedElastic())
-                .cancelOn(Schedulers.boundedElastic())
-                .toIterable()
-                .iterator();
-        }
-
-        @Override
-        public boolean hasMoreElements() {
-            return inputStreams.hasNext();
-        }
-
-        @Override
-        public InputStream nextElement() {
-            return inputStreams.next();
-        }
     }
 }
