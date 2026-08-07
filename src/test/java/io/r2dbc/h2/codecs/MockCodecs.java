@@ -18,6 +18,7 @@ package io.r2dbc.h2.codecs;
 
 import io.r2dbc.h2.util.Assert;
 import org.h2.value.Value;
+import reactor.core.publisher.Mono;
 import reactor.util.annotation.Nullable;
 
 import java.util.HashMap;
@@ -70,6 +71,11 @@ public final class MockCodecs implements Codecs {
         }
 
         return this.encodings.get(value);
+    }
+
+    @Override
+    public Mono<Value> encodeReactive(Object value) {
+        return Mono.fromCallable(() -> encode(value));
     }
 
     @Override
