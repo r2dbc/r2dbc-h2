@@ -23,12 +23,12 @@ import org.h2.value.Value;
 import org.h2.value.ValueBlob;
 import org.h2.value.ValueNull;
 import reactor.core.publisher.Flux;
-import reactor.core.scheduler.Schedulers;
+import reactor.core.publisher.Mono;
 
-import java.io.InputStream;
-import java.io.SequenceInputStream;
-import java.util.Enumeration;
-import java.util.Iterator;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 final class BlobCodec extends AbstractCodec<Blob> {
 
@@ -55,41 +55,48 @@ final class BlobCodec extends AbstractCodec<Blob> {
 
     @Override
     Value doEncode(Blob value) {
-        Assert.requireNonNull(value, "value must not be null");
-
-        ValueBlob blob = this.client.getSession().getDataHandler().getLobStorage().createBlob(
-            new SequenceInputStream(
-                new BlobInputStreamEnumeration(value)), -1);
-
-        this.client.getSession().addTemporaryLob(blob);
-
-        return blob;
+        return encodeReactive(value).block();
     }
 
     /**
-     * Converts a {@link Flux} of {@link Blob}s into an {@link Enumeration} of {@link InputStream}s.
+     * Encode a {@link Blob} by materializing its stream reactively.
+     * Does not block; consumption is deferred until the returned {@link Mono} is subscribed
+     * (typically during statement execution).
+     *
+     * @param value the blob to encode
+     * @return a mono emitting the H2 value
      */
-    private final class BlobInputStreamEnumeration implements Enumeration<InputStream> {
+    Mono<Value> encodeReactive(Blob value) {
+        Assert.requireNonNull(value, "value must not be null");
 
-        private final Iterator<ByteBufferInputStream> inputStreams;
+        return Flux.from(value.stream())
+            .reduceWith(ByteArrayOutputStream::new, BlobCodec::write)
+            .map(out -> {
+                ValueBlob blob = this.client.getSession().getDataHandler().getLobStorage().createBlob(
+                    new ByteArrayInputStream(out.toByteArray()), out.size());
 
-        BlobInputStreamEnumeration(Blob value) {
-            this.inputStreams = Flux.from(value.stream())
-                .map(ByteBufferInputStream::new)
-                .subscribeOn(Schedulers.boundedElastic())
-                .cancelOn(Schedulers.boundedElastic())
-                .toIterable()
-                .iterator();
-        }
+                this.client.getSession().addTemporaryLob(blob);
 
-        @Override
-        public boolean hasMoreElements() {
-            return inputStreams.hasNext();
-        }
+                return (Value) blob;
+            })
+            .flatMap(encoded -> Mono.from(value.discard())
+                .onErrorResume(e -> Mono.empty())
+                .thenReturn(encoded));
+    }
 
-        @Override
-        public InputStream nextElement() {
-            return inputStreams.next();
+    private static ByteArrayOutputStream write(ByteArrayOutputStream out, ByteBuffer buffer) {
+        try {
+            if (buffer.hasArray()) {
+                out.write(buffer.array(), buffer.arrayOffset() + buffer.position(), buffer.remaining());
+                buffer.position(buffer.limit());
+            } else {
+                byte[] bytes = new byte[buffer.remaining()];
+                buffer.get(bytes);
+                out.write(bytes);
+            }
+            return out;
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to materialize Blob stream", e);
         }
     }
 

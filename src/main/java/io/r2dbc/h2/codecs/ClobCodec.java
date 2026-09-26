@@ -23,12 +23,9 @@ import org.h2.value.Value;
 import org.h2.value.ValueClob;
 import org.h2.value.ValueNull;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.io.CharArrayReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.nio.CharBuffer;
-import java.util.Iterator;
+import java.io.StringReader;
 
 final class ClobCodec extends AbstractCodec<Clob> {
 
@@ -55,62 +52,34 @@ final class ClobCodec extends AbstractCodec<Clob> {
 
     @Override
     Value doEncode(Clob value) {
-        Assert.requireNonNull(value, "value must not be null");
-
-        ValueClob clob = this.client.getSession().getDataHandler().getLobStorage().createClob(
-            new AggregateCharArrayReader(value), -1);
-
-        this.client.getSession().addTemporaryLob(clob);
-
-        return clob;
+        return encodeReactive(value).block();
     }
 
     /**
-     * Converts a {@link Flux} of {@link Clob}s into a {@link Reader} of {@link CharArrayReader}s.
+     * Encode a {@link Clob} by materializing its stream reactively.
+     * Does not block; consumption is deferred until the returned {@link Mono} is subscribed
+     * (typically during statement execution).
+     *
+     * @param value the clob to encode
+     * @return a mono emitting the H2 value
      */
-    private final class AggregateCharArrayReader extends Reader {
+    Mono<Value> encodeReactive(Clob value) {
+        Assert.requireNonNull(value, "value must not be null");
 
-        private final Iterator<CharArrayReader> readers;
+        return Flux.from(value.stream())
+            .reduceWith(StringBuilder::new, StringBuilder::append)
+            .map(sb -> {
+                String content = sb.toString();
+                ValueClob clob = this.client.getSession().getDataHandler().getLobStorage().createClob(
+                    new StringReader(content), content.length());
 
-        private CharArrayReader current;
+                this.client.getSession().addTemporaryLob(clob);
 
-        private AggregateCharArrayReader(Clob value) {
-            this.readers = Flux.from(value.stream())
-                .map(CharBuffer::wrap)
-                .map(charBuffer -> {
-                    if (charBuffer.hasArray()) {
-                        return charBuffer.array();
-                    } else {
-                        return charBuffer.toString().toCharArray();
-                    }
-                })
-                .map(CharArrayReader::new)
-                .toIterable()
-                .iterator();
-
-            if (this.readers.hasNext()) {
-                this.current = this.readers.next();
-            }
-
-        }
-
-        @Override
-        public int read(char[] cbuf, int off, int len) throws IOException {
-            int results = this.current.read(cbuf, off, len);
-
-            if (results == -1) {
-                if (this.readers.hasNext()) {
-                    this.current = this.readers.next();
-                    return read(cbuf, off, len);
-                }
-            }
-
-            return results;
-        }
-
-        @Override
-        public void close() {
-            this.current.close();
-        }
+                return (Value) clob;
+            })
+            .flatMap(encoded -> Mono.from(value.discard())
+                .onErrorResume(e -> Mono.empty())
+                .thenReturn(encoded));
     }
+
 }

@@ -16,9 +16,13 @@
 
 package io.r2dbc.h2.client;
 
+import org.h2.value.Value;
 import org.h2.value.ValueInteger;
 import org.junit.jupiter.api.Test;
+import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 final class BindingTest {
@@ -31,8 +35,32 @@ final class BindingTest {
 
     @Test
     void addNoValue() {
-        assertThatIllegalArgumentException().isThrownBy(() -> new Binding().add(1, null))
+        assertThatIllegalArgumentException().isThrownBy(() -> new Binding().add(1, (Value) null))
             .withMessage("value must not be null");
+    }
+
+    @Test
+    void addNoDeferredValue() {
+        assertThatIllegalArgumentException().isThrownBy(() -> new Binding().add(1, (Mono<Value>) null))
+            .withMessage("value must not be null");
+    }
+
+    @Test
+    void resolveDeferredParameters() {
+        Binding binding = new Binding()
+            .add(0, ValueInteger.get(1))
+            .add(1, Mono.just(ValueInteger.get(2)));
+
+        assertThat(binding.hasDeferredParameters()).isTrue();
+
+        binding.resolve()
+            .as(StepVerifier::create)
+            .assertNext(resolved -> {
+                assertThat(resolved.hasDeferredParameters()).isFalse();
+                assertThat(resolved.getParameters()).containsEntry(0, ValueInteger.get(1));
+                assertThat(resolved.getParameters()).containsEntry(1, ValueInteger.get(2));
+            })
+            .verifyComplete();
     }
 
 }
