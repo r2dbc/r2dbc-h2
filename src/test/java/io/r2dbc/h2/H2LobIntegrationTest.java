@@ -25,12 +25,14 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Hooks;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 import reactor.test.StepVerifier;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -182,6 +184,84 @@ class H2LobIntegrationTest extends IntegrationTestSupport {
             .as(StepVerifier::create)
             .expectNext(i * TEST_STRING.length())
             .verifyComplete();
+    }
+
+    /**
+     * Regression for {@code #129}: binding a Blob on a NonBlocking Reactor thread must not
+     * throw {@link IllegalStateException} from {@code toIterable()}/blocking stream consumption.
+     */
+    @Test
+    void testSmallBlobBindOnParallelScheduler() {
+        createTable(connection, "IMAGE");
+
+        Flux.defer(() -> Flux.from(connection.createStatement("INSERT INTO lob_test values($1)")
+                .bind("$1", Blob.from(Mono.just(ByteBuffer.wrap("foo".getBytes()))))
+                .execute()))
+            .subscribeOn(Schedulers.parallel())
+            .flatMap(Result::getRowsUpdated)
+            .as(StepVerifier::create)
+            .expectNext(1L)
+            .verifyComplete();
+
+        connection.createStatement("SELECT my_col FROM lob_test")
+            .execute()
+            .flatMap(it -> it.map((row, rowMetadata) -> row.get("my_col", Blob.class)))
+            .flatMap(Blob::stream)
+            .as(StepVerifier::create)
+            .consumeNextWith(actual -> assertThat(actual).isEqualTo(ByteBuffer.wrap("foo".getBytes())))
+            .verifyComplete();
+    }
+
+    /**
+     * Regression for {@code #129}: binding a Clob on a NonBlocking Reactor thread.
+     */
+    @Test
+    void testClobBindOnParallelScheduler() {
+        createTable(connection, "CLOB");
+
+        Flux.defer(() -> Flux.from(connection.createStatement("INSERT INTO lob_test values($1)")
+                .bind("$1", Clob.from(Mono.just("foo你好")))
+                .execute()))
+            .subscribeOn(Schedulers.parallel())
+            .flatMap(Result::getRowsUpdated)
+            .as(StepVerifier::create)
+            .expectNext(1L)
+            .verifyComplete();
+
+        connection.createStatement("SELECT my_col FROM lob_test")
+            .execute()
+            .flatMap(it -> it.map((row, rowMetadata) -> row.get("my_col", Clob.class)))
+            .flatMap(Clob::stream)
+            .as(StepVerifier::create)
+            .consumeNextWith(actual -> assertThat(actual).isEqualTo("foo你好"))
+            .verifyComplete();
+    }
+
+    /**
+     * Binding a Blob must not subscribe to the LOB publisher until {@code execute()}.
+     */
+    @Test
+    void testBlobStreamDeferredUntilExecute() {
+        createTable(connection, "IMAGE");
+
+        AtomicBoolean subscribed = new AtomicBoolean();
+        Blob blob = Blob.from(Flux.defer(() -> {
+            subscribed.set(true);
+            return Flux.just(ByteBuffer.wrap("foo".getBytes()));
+        }));
+
+        H2Statement statement = (H2Statement) connection.createStatement("INSERT INTO lob_test values($1)")
+            .bind("$1", blob);
+
+        assertThat(subscribed).isFalse();
+
+        Flux.from(statement.execute())
+            .flatMap(Result::getRowsUpdated)
+            .as(StepVerifier::create)
+            .expectNext(1L)
+            .verifyComplete();
+
+        assertThat(subscribed).isTrue();
     }
 
     private void createTable(H2Connection connection, String columnType) {

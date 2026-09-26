@@ -17,6 +17,7 @@
 package io.r2dbc.h2.codecs;
 
 import org.h2.value.Value;
+import reactor.core.publisher.Mono;
 import reactor.util.annotation.Nullable;
 
 /**
@@ -45,6 +46,17 @@ public interface Codecs {
      * @throws NullPointerException if {@code value} is {@code null}
      */
     Value encode(Object value);
+
+    /**
+     * Encode a value, deferring consumption of reactive sources (for example
+     * {@link io.r2dbc.spi.Blob} / {@link io.r2dbc.spi.Clob} streams) until the
+     * returned {@link Mono} is subscribed.
+     *
+     * @param value the value to encode
+     * @return a mono emitting the encoded value
+     * @throws NullPointerException if {@code value} is {@code null}
+     */
+    Mono<Value> encodeReactive(Object value);
 
     /**
      * Encode a {@code null} value.

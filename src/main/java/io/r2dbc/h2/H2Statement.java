@@ -20,6 +20,9 @@ import io.r2dbc.h2.client.Binding;
 import io.r2dbc.h2.client.Client;
 import io.r2dbc.h2.codecs.Codecs;
 import io.r2dbc.h2.util.Assert;
+import io.r2dbc.spi.Blob;
+import io.r2dbc.spi.Clob;
+import io.r2dbc.spi.Parameter;
 import io.r2dbc.spi.Statement;
 import org.h2.command.CommandInterface;
 import org.h2.engine.GeneratedKeysMode;
@@ -113,8 +116,13 @@ public final class H2Statement implements Statement {
     }
 
     Flux<H2Result> doExecute(String sql, Bindings bindings) {
-        return Flux.fromIterable(() -> this.client.prepareCommand(sql, bindings.bindings))
-            .flatMap(it -> execute(it, this.client, this.codecs, this.generatedColumns == null ? this.allGeneratedColumns : this.generatedColumns));
+        // Resolve deferred LOB parameters (Blob/Clob streams) before preparing H2 commands.
+        // See https://github.com/r2dbc/r2dbc-h2/issues/129
+        return Flux.fromIterable(bindings.bindings)
+            .concatMap(Binding::resolve)
+            .collectList()
+            .flatMapMany(resolved -> Flux.fromIterable(() -> this.client.prepareCommand(sql, resolved))
+                .flatMap(it -> execute(it, this.client, this.codecs, this.generatedColumns == null ? this.allGeneratedColumns : this.generatedColumns)));
     }
 
     @Override
@@ -138,9 +146,27 @@ public final class H2Statement implements Statement {
         Assert.requireNonNull(value, "value must not be null");
 
         this.bindings.open = false;
-        this.bindings.getCurrent().add(index, this.codecs.encode(value));
+
+        // Defer Blob/Clob stream consumption until execute (issue #129). Binding on a
+        // NonBlocking Reactor thread must not call Flux.toIterable()/block().
+        if (requiresReactiveEncoding(value)) {
+            this.bindings.getCurrent().add(index, this.codecs.encodeReactive(value));
+        } else {
+            this.bindings.getCurrent().add(index, this.codecs.encode(value));
+        }
 
         return this;
+    }
+
+    private static boolean requiresReactiveEncoding(Object value) {
+        Object effective = value;
+        if (value instanceof Parameter) {
+            effective = ((Parameter) value).getValue();
+            if (effective == null) {
+                return false;
+            }
+        }
+        return effective instanceof Blob || effective instanceof Clob;
     }
 
     private static Mono<H2Result> execute(CommandInterface command, Client client, Codecs codecs, Object generatedColumns) {
