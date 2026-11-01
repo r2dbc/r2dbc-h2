@@ -113,9 +113,7 @@ final class H2ConnectionTest {
 
     @Test
     void commitTransactionErrorResponse() {
-        when(this.client.inTransaction()).thenReturn(true);
-        doThrow(DbException.convert(new SQLTransactionRollbackException("can't commit", "some state", 999)))
-            .when(this.client).execute("COMMIT");
+        setupClientInTransactionAndExecuteStubs("COMMIT", DbException.convert(new SQLTransactionRollbackException("can't commit", "some state", 999)));
 
         new H2Connection(this.client, MockCodecs.empty())
             .commitTransaction()
@@ -163,9 +161,7 @@ final class H2ConnectionTest {
 
     @Test
     void createSavepointErrorResponse() {
-        when(this.client.inTransaction()).thenReturn(true);
-        doThrow(DbException.convert(new SQLFeatureNotSupportedException("can't savepoint", "some state", 999)))
-            .when(this.client).execute("SAVEPOINT test-name");
+        setupClientInTransactionAndExecuteStubs("SAVEPOINT test-name", DbException.convert(new SQLFeatureNotSupportedException("can't savepoint", "some state", 999)));
 
         new H2Connection(this.client, MockCodecs.empty())
             .createSavepoint("test-name")
@@ -207,9 +203,7 @@ final class H2ConnectionTest {
 
     @Test
     void releaseSavepointErrorResponse() {
-        when(this.client.inTransaction()).thenReturn(true);
-        doThrow(DbException.convert(new SQLFeatureNotSupportedException("can't savepoint", "some state", 999)))
-            .when(this.client).execute("RELEASE SAVEPOINT test-name");
+        setupClientInTransactionAndExecuteStubs("RELEASE SAVEPOINT test-name", DbException.convert(new SQLFeatureNotSupportedException("can't savepoint", "some state", 999)));
 
         new H2Connection(this.client, MockCodecs.empty())
             .releaseSavepoint("test-name")
@@ -246,9 +240,7 @@ final class H2ConnectionTest {
 
     @Test
     void rollbackTransactionErrorResponse() {
-        when(this.client.inTransaction()).thenReturn(true);
-        doThrow(DbException.convert(new SQLTransactionRollbackException("can't savepoint", "some state", 999)))
-            .when(this.client).execute("ROLLBACK");
+        setupClientInTransactionAndExecuteStubs("ROLLBACK", DbException.convert(new SQLTransactionRollbackException("can't savepoint", "some state", 999)));
 
         new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransaction()
@@ -279,9 +271,7 @@ final class H2ConnectionTest {
 
     @Test
     void rollbackTransactionToSavepointErrorResponse() {
-        when(this.client.inTransaction()).thenReturn(true);
-        doThrow(DbException.convert(new SQLTransactionRollbackException("can't savepoint", "some state", 999)))
-            .when(this.client).execute("ROLLBACK TO SAVEPOINT test-name");
+        setupClientInTransactionAndExecuteStubs("ROLLBACK TO SAVEPOINT test-name", DbException.convert(new SQLTransactionRollbackException("can't savepoint", "some state", 999)));
 
         new H2Connection(this.client, MockCodecs.empty())
             .rollbackTransactionToSavepoint("test-name")
@@ -371,4 +361,8 @@ final class H2ConnectionTest {
             .withMessage("isolationLevel must not be null");
     }
 
+    private void setupClientInTransactionAndExecuteStubs(String executeArg1, DbException executeThrown) {
+        when(this.client.inTransaction()).thenReturn(true);
+        doThrow(executeThrown).when(this.client).execute(executeArg1);
+    }
 }
