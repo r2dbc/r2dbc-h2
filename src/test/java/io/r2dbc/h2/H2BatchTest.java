@@ -67,10 +67,7 @@ final class H2BatchTest {
         when(this.client.prepareCommand("select test-query-1", Collections.emptyList())).thenReturn(Collections.singleton(
             command1
         ).iterator());
-        when(this.client.prepareCommand("select test-query-2", Collections.emptyList())).thenReturn(Collections.singleton(
-            command1
-        ).iterator());
-        when(command1.isQuery()).thenReturn(true);
+        setupClientPrepareCommandAndIsQueryStubs(command1, "select test-query-2");
         when(command2.isQuery()).thenReturn(true);
         when(this.client.query(command1)).thenReturn(new LocalResult());
         when(this.client.query(command2)).thenReturn(new LocalResult());
@@ -87,10 +84,7 @@ final class H2BatchTest {
     @Test
     void executeErrorResponse() {
         CommandInterface command = mock(CommandInterface.class);
-        when(this.client.prepareCommand("select test-query", Collections.emptyList())).thenReturn(Collections.singleton(
-            command
-        ).iterator());
-        when(command.isQuery()).thenReturn(true);
+        setupClientPrepareCommandAndIsQueryStubs(command, "select test-query");
         when(this.client.query(command)).thenThrow(DbException.getSyntaxError("bad statement", 999));
 
         new H2Batch(this.client, MockCodecs.empty())
@@ -100,4 +94,8 @@ final class H2BatchTest {
             .verifyError(R2dbcBadGrammarException.class);
     }
 
+    private void setupClientPrepareCommandAndIsQueryStubs(CommandInterface command1, String prepareCommandArg1) {
+        when(this.client.prepareCommand(prepareCommandArg1, Collections.emptyList())).thenReturn(Collections.singleton(command1).iterator());
+        when(command1.isQuery()).thenReturn(true);
+    }
 }
